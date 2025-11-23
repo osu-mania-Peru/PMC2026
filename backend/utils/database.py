@@ -3,7 +3,7 @@ Database session management
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from backend.config import Config
+from config import Config
 
 # Create engine
 engine = create_engine(

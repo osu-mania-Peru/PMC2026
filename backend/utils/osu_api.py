@@ -4,7 +4,7 @@ Based on the Go implementation pattern
 """
 import httpx
 from typing import Dict, Any, Optional
-from backend.config import Config
+from config import Config
 
 
 class OsuAPI:
