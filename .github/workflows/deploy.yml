@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Deploy to VPS
       uses: appleboy/ssh-action@master
@@ -18,15 +18,15 @@ jobs:
         script: |
           cd /home/deploy/apps/PMC2026
           git pull origin main
-          
-          # backend
-          cd backend
-          source .venv/bin/activate
-          pip install -r requirements.txt
-        #   sudo systemctl restart your-backend-service
-          
-          # frontend
-            #   cd ../frontend
-            #   npm install
-            #   npm run build
-            #   sudo systemctl restart nginx
+
+          # Rebuild and restart containers
+          docker-compose down
+          docker-compose build
+          docker-compose up -d
+
+          # Build frontend (outside docker for now)
+          cd frontend
+          npm install
+          npm run build
+          sudo cp -r dist/* /var/www/pmc/
+          sudo systemctl reload nginx

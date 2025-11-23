@@ -1,0 +1,285 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #1a1a1a;
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navigation */
+.nav {
+  background: #252525;
+  border-bottom: 2px solid #ff66aa;
+  padding: 1rem;
+}
+
+.nav-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.nav h1 {
+  font-size: 1.5rem;
+}
+
+.nav h1 a {
+  color: #ff66aa;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  color: #e0e0e0;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: #ff66aa;
+}
+
+.nav-links button {
+  background: none;
+  border: 1px solid #ff66aa;
+  color: #ff66aa;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+}
+
+.nav-links button:hover {
+  background: #ff66aa;
+  color: #1a1a1a;
+}
+
+/* Main content */
+.main {
+  flex: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  width: 100%;
+}
+
+.page {
+  background: #252525;
+  padding: 2rem;
+  border-radius: 4px;
+}
+
+.page h2 {
+  color: #ff66aa;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.page h3 {
+  color: #e0e0e0;
+  margin: 1.5rem 0 1rem;
+}
+
+/* Lists */
+.list {
+  list-style: none;
+}
+
+.list-item {
+  background: #2a2a2a;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-left: 3px solid #ff66aa;
+}
+
+.list-item:hover {
+  background: #303030;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+th, td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+th {
+  background: #2a2a2a;
+  color: #ff66aa;
+  font-weight: 600;
+}
+
+tr:hover {
+  background: #2a2a2a;
+}
+
+/* Buttons */
+button, .button {
+  background: #ff66aa;
+  color: #1a1a1a;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button:hover, .button:hover {
+  background: #ff4488;
+}
+
+button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+/* Links */
+a {
+  color: #ff66aa;
+}
+
+/* Status badges */
+.status {
+  padding: 0.2rem 0.6rem;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status.completed {
+  background: #2d5f2d;
+  color: #90ee90;
+}
+
+.status.in_progress {
+  background: #5f5f2d;
+  color: #ffff90;
+}
+
+.status.scheduled {
+  background: #2d4f5f;
+  color: #90daff;
+}
+
+/* Stats boxes */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.stat-box {
+  background: #2a2a2a;
+  padding: 1.5rem;
+  border-left: 4px solid #ff66aa;
+}
+
+.stat-box h4 {
+  color: #999;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.stat-box .value {
+  font-size: 2rem;
+  color: #ff66aa;
+  font-weight: bold;
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.2rem;
+}
+
+/* Error */
+.error {
+  background: #5f2d2d;
+  color: #ff9090;
+  padding: 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+/* Footer */
+.footer {
+  background: #252525;
+  border-top: 2px solid #ff66aa;
+  padding: 1.5rem;
+  text-align: center;
+  color: #999;
+}
+
+/* Bracket visualization */
+.bracket-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.bracket-card {
+  background: #2a2a2a;
+  padding: 1.5rem;
+  border-left: 4px solid #ff66aa;
+}
+
+.bracket-card h3 {
+  margin: 0 0 1rem;
+}
+
+.progress-bar {
+  background: #1a1a1a;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-bar-fill {
+  background: #ff66aa;
+  height: 100%;
+  transition: width 0.3s;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    width: 100%;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+}

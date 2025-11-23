@@ -1,0 +1,55 @@
+from datetime import datetime
+from typing import Optional
+
+from sqlalchemy import String, Boolean, Integer, DateTime, ForeignKey, Index, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+
+from models.base import Base
+
+
+class Match(Base):
+    __tablename__ = "matches"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    bracket_id: Mapped[int] = mapped_column(Integer, ForeignKey('brackets.id'), nullable=False)
+    player1_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
+    player2_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
+    map_id: Mapped[int] = mapped_column(Integer, ForeignKey('maps.id'), nullable=False)
+    player1_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='Player 1 final score')
+    player2_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='Player 2 final score')
+    winner_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Winner of the match')
+    scheduled_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, comment='When match is scheduled to happen')
+    actual_start_time: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, comment='When match actually started')
+    match_status: Mapped[str] = mapped_column(
+        String(20),
+        default='scheduled',
+        nullable=False,
+        comment='scheduled, in_progress, completed, cancelled, forfeit'
+    )
+    is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    no_show_player_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Player who didn\'t show up')
+    forfeit_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment='Reason for forfeit/cancellation')
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    bracket = relationship("Bracket", back_populates="matches")
+    player1 = relationship("User", foreign_keys=[player1_id])
+    player2 = relationship("User", foreign_keys=[player2_id])
+    winner = relationship("User", foreign_keys=[winner_id])
+    no_show_player = relationship("User", foreign_keys=[no_show_player_id])
+    map = relationship("Map", back_populates="matches")
+    notifications = relationship("Notification", back_populates="related_match")
+
+    # Indexes
+    __table_args__ = (
+        Index('ix_matches_bracket_id', 'bracket_id'),
+        Index('ix_matches_player1_id', 'player1_id'),
+        Index('ix_matches_player2_id', 'player2_id'),
+        Index('ix_matches_winner_id', 'winner_id'),
+        Index('ix_matches_match_status', 'match_status'),
+    )
+
+    def __repr__(self):
+        return f"<Match(id={self.id}, bracket_id={self.bracket_id}, status='{self.match_status}')>"

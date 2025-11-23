@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Auth Microservice (handles osu! OAuth only)
+  auth-service:
+    build: ./auth-service
+    container_name: pmc-auth
+    ports:
+      - "8001:8001"
+    environment:
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
+      - OSU_CLIENT_ID=${OSU_CLIENT_ID}
+      - OSU_CLIENT_SECRET=${OSU_CLIENT_SECRET}
+      - OSU_REDIRECT_URI=${OSU_REDIRECT_URI}
+      - SECRET_KEY=${SECRET_KEY}
+      - MAIN_BACKEND_URL=http://backend:8000
+      - DEBUG=${DEBUG:-False}
+    restart: unless-stopped
+    networks:
+      - pmc-network
+
+  # Main Backend API (tournament logic)
+  backend:
+    build: ./backend
+    container_name: pmc-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - pmc-network
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: pmc-db
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
+      - POSTGRES_DB=${DB_NAME:-pmc}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pmc-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - pmc-network
+
+networks:
+  pmc-network:
+    driver: bridge
+
+volumes:
+  pmc-db-data:

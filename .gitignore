@@ -92,7 +92,10 @@ celerybeat.pid
 # Environments
 .env
 .env.local
+.env.development
+.env.production
 .env.*.local
+!.env.example
 
 # Spyder project settings
 .spyderproject
@@ -212,10 +215,33 @@ Thumbs.db
 logs/
 *.log
 
+# Documentation (keep local only)
+*.md
+README.md
+
 # Database
 *.db
 *.sqlite
 *.sqlite3
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+
+# Alembic
+backend/alembic/versions/*.py
+!backend/alembic/versions/.gitkeep
+
+# Auth Service
+auth-service/.env
+auth-service/__pycache__/
+auth-service/*.pyc
+
+# Backend
+backend/.env
+backend/__pycache__/
+backend/*.pyc
+backend/alembic.ini.bak
 
 # Secrets and credentials
 *.pem
