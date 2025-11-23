@@ -71,10 +71,33 @@ async def get_bracket(bracket_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{bracket_id}/matches")
 async def get_bracket_matches(bracket_id: int, db: Session = Depends(get_db)):
-    """Get all matches in a bracket"""
+    """Get all matches in a bracket with player details"""
     bracket = db.query(Bracket).filter(Bracket.id == bracket_id).first()
     if not bracket:
         raise HTTPException(status_code=404, detail="Bracket not found")
 
-    matches = db.query(Match).filter(Match.bracket_id == bracket_id).all()
-    return {"matches": matches, "total": len(matches)}
+    matches = db.query(Match).filter(Match.bracket_id == bracket_id).order_by(Match.id).all()
+
+    result = []
+    for match in matches:
+        player1 = db.query(User).filter(User.id == match.player1_id).first()
+        player2 = db.query(User).filter(User.id == match.player2_id).first()
+        winner = db.query(User).filter(User.id == match.winner_id).first() if match.winner_id else None
+
+        result.append({
+            "id": match.id,
+            "bracket_id": match.bracket_id,
+            "player1_id": match.player1_id,
+            "player1_username": player1.username if player1 else "TBD",
+            "player2_id": match.player2_id,
+            "player2_username": player2.username if player2 else "TBD",
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "winner_id": match.winner_id,
+            "winner_username": winner.username if winner else None,
+            "match_status": match.match_status,
+            "is_completed": match.is_completed,
+            "scheduled_time": match.scheduled_time
+        })
+
+    return {"matches": result, "total": len(result), "bracket": {"id": bracket.id, "name": bracket.bracket_name, "size": bracket.bracket_size}}
