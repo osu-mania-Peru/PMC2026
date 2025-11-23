@@ -12,18 +12,18 @@ export default function Brackets() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="page">
-      <h2>Tournament Brackets</h2>
+      <h2>Brackets del Torneo</h2>
 
       <div className="bracket-grid">
         {brackets.map(bracket => (
           <div key={bracket.id} className="bracket-card">
             <h3>{bracket.bracket_name}</h3>
-            <p>Size: {bracket.bracket_size} players</p>
-            <p>Matches: {bracket.completed_matches || 0}/{bracket.total_matches || 0}</p>
+            <p>Tamaño: {bracket.bracket_size} jugadores</p>
+            <p>Partidas: {bracket.completed_matches || 0}/{bracket.total_matches || 0}</p>
 
             <div className="progress-bar">
               <div
@@ -35,12 +35,12 @@ export default function Brackets() {
             </div>
 
             <span className={`status ${bracket.is_completed ? 'completed' : 'in_progress'}`}>
-              {bracket.is_completed ? 'Completed' : 'In Progress'}
+              {bracket.is_completed ? 'Completado' : 'En Progreso'}
             </span>
 
             {bracket.total_matches > 0 && (
               <p style={{ marginTop: '1rem' }}>
-                <a href={`/matches?bracket_id=${bracket.id}`}>View Matches →</a>
+                <a href={`/matches?bracket_id=${bracket.id}`}>Ver Partidas →</a>
               </p>
             )}
           </div>
@@ -48,7 +48,7 @@ export default function Brackets() {
       </div>
 
       {brackets.length === 0 && (
-        <p>No brackets created yet.</p>
+        <p>Aún no se han creado brackets.</p>
       )}
     </div>
   );

@@ -16,7 +16,7 @@ export default function Register({ user, setUser }) {
     try {
       const result = await api.register();
       setUser(result.user);
-      alert('Successfully registered for the tournament!');
+      alert('¡Te has registrado exitosamente al torneo!');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -25,7 +25,7 @@ export default function Register({ user, setUser }) {
   };
 
   const handleUnregister = async () => {
-    if (!confirm('Are you sure you want to unregister?')) return;
+    if (!confirm('¿Estás seguro de que quieres cancelar tu registro?')) return;
 
     setLoading(true);
     setError(null);
@@ -33,7 +33,7 @@ export default function Register({ user, setUser }) {
       await api.unregister();
       const updatedUser = await api.getMe();
       setUser(updatedUser);
-      alert('Successfully unregistered from the tournament.');
+      alert('Has cancelado tu registro del torneo exitosamente.');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,22 +41,22 @@ export default function Register({ user, setUser }) {
     }
   };
 
-  if (!status) return <div className="loading">Loading...</div>;
+  if (!status) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="page">
-      <h2>Tournament Registration</h2>
+      <h2>Registro al Torneo</h2>
 
       {error && <div className="error">{error}</div>}
 
       {user.is_registered ? (
         <div>
           <div className="stat-box" style={{ borderLeftColor: '#90ee90' }}>
-            <h4>You are registered!</h4>
-            <p>Username: <strong>{user.username}</strong></p>
-            <p>Country: <strong>{user.flag_code}</strong></p>
-            <p>Seed Number: <strong>{user.seed_number || 'TBD'}</strong></p>
-            <p>Registered: <strong>{user.registered_at ? new Date(user.registered_at).toLocaleDateString() : 'N/A'}</strong></p>
+            <h4>¡Estás registrado!</h4>
+            <p>Usuario: <strong>{user.username}</strong></p>
+            <p>País: <strong>{user.flag_code}</strong></p>
+            <p>Número de Seed: <strong>{user.seed_number || 'Por Determinar'}</strong></p>
+            <p>Registrado: <strong>{user.registered_at ? new Date(user.registered_at).toLocaleDateString('es-PE') : 'N/A'}</strong></p>
           </div>
 
           <button
@@ -64,25 +64,25 @@ export default function Register({ user, setUser }) {
             disabled={loading}
             style={{ marginTop: '1rem', background: '#d44', border: 'none' }}
           >
-            {loading ? 'Processing...' : 'Unregister'}
+            {loading ? 'Procesando...' : 'Cancelar Registro'}
           </button>
         </div>
       ) : status.registration_open ? (
         <div>
           <div className="stat-box">
-            <h4>Registration is Open</h4>
-            <p>Spots Remaining: <strong>{32 - status.total_registered_players}/32</strong></p>
-            <p>Your Username: <strong>{user.username}</strong></p>
-            <p>Your Country: <strong>{user.flag_code}</strong></p>
+            <h4>El Registro está Abierto</h4>
+            <p>Cupos Restantes: <strong>{32 - status.total_registered_players}/32</strong></p>
+            <p>Tu Usuario: <strong>{user.username}</strong></p>
+            <p>Tu País: <strong>{user.flag_code}</strong></p>
           </div>
 
           <button onClick={handleRegister} disabled={loading} style={{ marginTop: '1rem' }}>
-            {loading ? 'Registering...' : 'Register for Tournament'}
+            {loading ? 'Registrando...' : 'Registrarse al Torneo'}
           </button>
         </div>
       ) : (
         <div className="error">
-          Registration is currently closed.
+          El registro está actualmente cerrado.
         </div>
       )}
     </div>

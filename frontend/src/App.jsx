@@ -28,7 +28,7 @@ function App() {
     }
 
     if (error) {
-      alert(`Login error: ${error}`);
+      alert(`Error de inicio de sesión: ${error}`);
       window.history.replaceState({}, '', '/');
     }
 
@@ -52,7 +52,7 @@ function App() {
   };
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return <div className="loading">Cargando...</div>;
   }
 
   return (
@@ -62,19 +62,19 @@ function App() {
           <div className="nav-content">
             <h1><Link to="/">Peru Mania Cup 2025</Link></h1>
             <div className="nav-links">
-              <Link to="/">Home</Link>
+              <Link to="/">Inicio</Link>
               <Link to="/brackets">Brackets</Link>
-              <Link to="/matches">Matches</Link>
-              <Link to="/players">Players</Link>
-              <Link to="/maps">Maps</Link>
+              <Link to="/matches">Partidas</Link>
+              <Link to="/players">Jugadores</Link>
+              <Link to="/maps">Mapas</Link>
               {user ? (
                 <>
-                  <Link to="/register">Register</Link>
+                  <Link to="/register">Registrar</Link>
                   <span>{user.username}</span>
-                  <button onClick={handleLogout}>Logout</button>
+                  <button onClick={handleLogout}>Cerrar Sesión</button>
                 </>
               ) : (
-                <Link to="/login">Login</Link>
+                <Link to="/login">Iniciar Sesión</Link>
               )}
             </div>
           </div>
@@ -93,7 +93,7 @@ function App() {
         </main>
 
         <footer className="footer">
-          <p>Peru Mania Cup 2025 | osu! Tournament</p>
+          <p>Peru Mania Cup 2025 | Torneo de osu!</p>
         </footer>
       </div>
     </BrowserRouter>

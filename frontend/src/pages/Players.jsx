@@ -12,20 +12,20 @@ export default function Players() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="page">
-      <h2>Registered Players</h2>
+      <h2>Jugadores Registrados</h2>
       <p>Total: {players.length}/32</p>
 
       <table>
         <thead>
           <tr>
             <th>Seed</th>
-            <th>Username</th>
-            <th>Country</th>
-            <th>osu! ID</th>
+            <th>Usuario</th>
+            <th>País</th>
+            <th>ID de osu!</th>
           </tr>
         </thead>
         <tbody>
@@ -51,7 +51,7 @@ export default function Players() {
       </table>
 
       {players.length === 0 && (
-        <p>No players registered yet.</p>
+        <p>Aún no hay jugadores registrados.</p>
       )}
     </div>
   );

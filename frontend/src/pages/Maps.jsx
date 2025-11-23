@@ -12,20 +12,20 @@ export default function Maps() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="page">
-      <h2>Map Pool</h2>
-      <p>Total Maps: {maps.length}</p>
+      <h2>Pool de Mapas</h2>
+      <p>Total de Mapas: {maps.length}</p>
 
       <table>
         <thead>
           <tr>
-            <th>Map</th>
-            <th>Difficulty</th>
-            <th>Mapper</th>
-            <th>Link</th>
+            <th>Mapa</th>
+            <th>Dificultad</th>
+            <th>Mapeador</th>
+            <th>Enlace</th>
           </tr>
         </thead>
         <tbody>
@@ -45,7 +45,7 @@ export default function Maps() {
       </table>
 
       {maps.length === 0 && (
-        <p>No maps in pool yet.</p>
+        <p>Aún no hay mapas en el pool.</p>
       )}
     </div>
   );

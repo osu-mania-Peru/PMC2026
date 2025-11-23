@@ -16,39 +16,39 @@ export default function Matches() {
       .finally(() => setLoading(false));
   }, [filter]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">Cargando...</div>;
 
   return (
     <div className="page">
-      <h2>Matches</h2>
+      <h2>Partidas</h2>
 
       <div style={{ marginBottom: '1rem' }}>
-        <label>Filter: </label>
+        <label>Filtrar: </label>
         <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ padding: '0.5rem', background: '#2a2a2a', color: '#e0e0e0', border: '1px solid #555' }}>
-          <option value="all">All Matches</option>
-          <option value="scheduled">Scheduled</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
+          <option value="all">Todas las Partidas</option>
+          <option value="scheduled">Programadas</option>
+          <option value="in_progress">En Progreso</option>
+          <option value="completed">Completadas</option>
         </select>
       </div>
 
       <table>
         <thead>
           <tr>
-            <th>Match #</th>
-            <th>Player 1</th>
-            <th>Player 2</th>
-            <th>Score</th>
-            <th>Status</th>
-            <th>Scheduled</th>
+            <th>Partida #</th>
+            <th>Jugador 1</th>
+            <th>Jugador 2</th>
+            <th>Puntaje</th>
+            <th>Estado</th>
+            <th>Programada</th>
           </tr>
         </thead>
         <tbody>
           {matches.map(match => (
             <tr key={match.id}>
               <td>#{match.id}</td>
-              <td>Player {match.player1_id}</td>
-              <td>Player {match.player2_id}</td>
+              <td>Jugador {match.player1_id}</td>
+              <td>Jugador {match.player2_id}</td>
               <td>
                 {match.player1_score !== null && match.player2_score !== null
                   ? `${match.player1_score} - ${match.player2_score}`
@@ -57,17 +57,20 @@ export default function Matches() {
               </td>
               <td>
                 <span className={`status ${match.match_status}`}>
-                  {match.match_status}
+                  {match.match_status === 'scheduled' ? 'Programada' :
+                   match.match_status === 'in_progress' ? 'En Progreso' :
+                   match.match_status === 'completed' ? 'Completada' :
+                   match.match_status}
                 </span>
               </td>
-              <td>{match.scheduled_time ? new Date(match.scheduled_time).toLocaleDateString() : 'TBD'}</td>
+              <td>{match.scheduled_time ? new Date(match.scheduled_time).toLocaleDateString('es-PE') : 'Por Determinar'}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
       {matches.length === 0 && (
-        <p>No matches found.</p>
+        <p>No se encontraron partidas.</p>
       )}
     </div>
   );
