@@ -106,6 +106,7 @@ body {
   width: 100%;
   min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
 .main::before {
@@ -119,6 +120,18 @@ body {
   opacity: 0.09;
   z-index: 999;
   pointer-events: none;
+  animation: moveCats 15s linear infinite;
+  transform: rotate(15deg);
+  overflow: hidden;
+}
+
+@keyframes moveCats {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 1000px 1000px;
+  }
 }
 
 .main.has-container {
