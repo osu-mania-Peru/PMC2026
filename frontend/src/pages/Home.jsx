@@ -64,7 +64,7 @@ export default function Home({ user }) {
 
       {user?.is_registered && (
         <div className="stat-box" style={{ marginTop: '2rem', borderLeftColor: '#90ee90' }}>
-          <h4>✓ You're Registered!</h4>
+          <h4>You're Registered!</h4>
           <p>Seed Number: {user.seed_number || 'TBD'}</p>
           <p>Good luck in the tournament!</p>
         </div>

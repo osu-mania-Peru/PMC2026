@@ -21,5 +21,8 @@ class Config:
     # Main Backend
     MAIN_BACKEND_URL = os.getenv("MAIN_BACKEND_URL", "http://localhost:8000")
 
+    # Internal service authentication
+    INTERNAL_SECRET = os.getenv("INTERNAL_SECRET", "internal-service-secret-change-this")
+
     # Debug
     DEBUG = os.getenv("DEBUG", "True") == "True"

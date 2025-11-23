@@ -52,7 +52,7 @@ export default function Register({ user, setUser }) {
       {user.is_registered ? (
         <div>
           <div className="stat-box" style={{ borderLeftColor: '#90ee90' }}>
-            <h4>✓ You are registered!</h4>
+            <h4>You are registered!</h4>
             <p>Username: <strong>{user.username}</strong></p>
             <p>Country: <strong>{user.flag_code}</strong></p>
             <p>Seed Number: <strong>{user.seed_number || 'TBD'}</strong></p>

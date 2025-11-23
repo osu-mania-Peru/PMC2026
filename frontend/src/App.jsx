@@ -70,7 +70,7 @@ function App() {
               {user ? (
                 <>
                   <Link to="/register">Register</Link>
-                  <span>👤 {user.username}</span>
+                  <span>{user.username}</span>
                   <button onClick={handleLogout}>Logout</button>
                 </>
               ) : (

@@ -20,7 +20,7 @@ body {
 /* Navigation */
 .nav {
   background: #252525;
-  border-bottom: 2px solid #ff66aa;
+  border-bottom: 2px solid #ff0000;
   padding: 1rem;
 }
 
@@ -39,7 +39,7 @@ body {
 }
 
 .nav h1 a {
-  color: #ff66aa;
+  color: #ff0000;
   text-decoration: none;
 }
 
@@ -56,19 +56,19 @@ body {
 }
 
 .nav-links a:hover {
-  color: #ff66aa;
+  color: #ff0000;
 }
 
 .nav-links button {
   background: none;
-  border: 1px solid #ff66aa;
-  color: #ff66aa;
+  border: 1px solid #ff0000;
+  color: #ff0000;
   padding: 0.3rem 0.8rem;
   cursor: pointer;
 }
 
 .nav-links button:hover {
-  background: #ff66aa;
+  background: #ff0000;
   color: #1a1a1a;
 }
 
@@ -88,7 +88,7 @@ body {
 }
 
 .page h2 {
-  color: #ff66aa;
+  color: #ff0000;
   margin-bottom: 1.5rem;
   font-size: 1.8rem;
 }
@@ -107,7 +107,7 @@ body {
   background: #2a2a2a;
   padding: 1rem;
   margin-bottom: 0.5rem;
-  border-left: 3px solid #ff66aa;
+  border-left: 3px solid #ff0000;
 }
 
 .list-item:hover {
@@ -129,7 +129,7 @@ th, td {
 
 th {
   background: #2a2a2a;
-  color: #ff66aa;
+  color: #ff0000;
   font-weight: 600;
 }
 
@@ -139,7 +139,7 @@ tr:hover {
 
 /* Buttons */
 button, .button {
-  background: #ff66aa;
+  background: #ff0000;
   color: #1a1a1a;
   border: none;
   padding: 0.6rem 1.2rem;
@@ -150,7 +150,7 @@ button, .button {
 }
 
 button:hover, .button:hover {
-  background: #ff4488;
+  background: #cc0000;
 }
 
 button:disabled {
@@ -160,7 +160,7 @@ button:disabled {
 
 /* Links */
 a {
-  color: #ff66aa;
+  color: #ff0000;
 }
 
 /* Status badges */
@@ -197,7 +197,7 @@ a {
 .stat-box {
   background: #2a2a2a;
   padding: 1.5rem;
-  border-left: 4px solid #ff66aa;
+  border-left: 4px solid #ff0000;
 }
 
 .stat-box h4 {
@@ -208,7 +208,7 @@ a {
 
 .stat-box .value {
   font-size: 2rem;
-  color: #ff66aa;
+  color: #ff0000;
   font-weight: bold;
 }
 
@@ -231,7 +231,7 @@ a {
 /* Footer */
 .footer {
   background: #252525;
-  border-top: 2px solid #ff66aa;
+  border-top: 2px solid #ff0000;
   padding: 1.5rem;
   text-align: center;
   color: #999;
@@ -247,7 +247,7 @@ a {
 .bracket-card {
   background: #2a2a2a;
   padding: 1.5rem;
-  border-left: 4px solid #ff66aa;
+  border-left: 4px solid #ff0000;
 }
 
 .bracket-card h3 {
@@ -263,7 +263,7 @@ a {
 }
 
 .progress-bar-fill {
-  background: #ff66aa;
+  background: #ff0000;
   height: 100%;
   transition: width 0.3s;
 }

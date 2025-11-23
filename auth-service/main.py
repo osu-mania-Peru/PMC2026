@@ -33,8 +33,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -117,6 +117,9 @@ async def callback(
                     "osu_id": osu_user["id"],
                     "username": osu_user["username"],
                     "flag_code": osu_user.get("country_code", "XX"),
+                },
+                headers={
+                    "X-Internal-Secret": Config.INTERNAL_SECRET
                 },
                 timeout=10.0
             )

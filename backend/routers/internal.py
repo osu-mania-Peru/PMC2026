@@ -32,8 +32,8 @@ async def sync_user(
     This endpoint is called by the auth microservice after OAuth
     """
     # Verify internal secret (simple auth between services)
-    # if x_internal_secret != Config.INTERNAL_SECRET:
-    #     raise HTTPException(status_code=403, detail="Forbidden")
+    if x_internal_secret != Config.INTERNAL_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
     # Get or create user
     user = db.query(User).filter(User.osu_id == user_data.osu_id).first()
