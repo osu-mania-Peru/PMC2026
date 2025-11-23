@@ -16,7 +16,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          cd /var/www/yourrepo
+          cd /home/deploy/apps
           git pull origin main
           
           # backend
