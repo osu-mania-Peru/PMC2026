@@ -64,7 +64,8 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     return rounds;
   };
 
-  const rounds = organizeRounds(data.matches, data.bracket.size);
+  const bracketSize = data.bracket.size || data.bracket.bracket_size || 32;
+  const rounds = organizeRounds(data.matches, bracketSize);
 
   const getRoundName = (roundIndex, totalRounds) => {
     const remaining = totalRounds - roundIndex;
