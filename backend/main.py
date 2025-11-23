@@ -5,7 +5,7 @@ FastAPI Backend
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config import Config
+from config import Config
 from routers import auth, users, tournament, brackets, maps, matches, notifications
 
 # Create FastAPI app
