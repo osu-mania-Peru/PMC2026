@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import './Register.css';
 
 export default function Register({ user, setUser }) {
   const [status, setStatus] = useState(null);

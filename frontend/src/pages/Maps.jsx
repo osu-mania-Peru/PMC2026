@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import './Maps.css';
 
 export default function Maps() {
   const [maps, setMaps] = useState([]);

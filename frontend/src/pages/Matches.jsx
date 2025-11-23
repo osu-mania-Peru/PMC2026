@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import './Matches.css';
 
 export default function Matches() {
   const [matches, setMatches] = useState([]);

@@ -56,5 +56,12 @@
 @media (max-width: 768px) {
   .bracket-tree {
     border-radius: 0;
+    min-height: 500px;
+  }
+
+  .loading,
+  .no-data {
+    padding: 1.5rem;
+    font-size: 1rem;
   }
 }

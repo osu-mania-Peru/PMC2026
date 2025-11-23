@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import './Players.css';
 
 export default function Players() {
   const [players, setPlayers] = useState([]);

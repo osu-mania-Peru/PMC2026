@@ -38,7 +38,7 @@ body {
 .nav {
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border);
-  padding: 1rem 3rem;
+  padding: 1rem 1.5rem;
   position: fixed;
   top: 0;
   left: 0;
@@ -50,11 +50,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
 .nav-logo {
   display: block;
-  height: 50px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
 .nav-logo img {
@@ -64,17 +66,20 @@ body {
 
 .nav-links {
   display: flex;
-  gap: 2.5rem;
+  gap: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .nav-links a {
   color: var(--text-primary);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
@@ -88,10 +93,11 @@ body {
   color: var(--text-primary);
   padding: 0;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .nav-links button:hover {
@@ -255,6 +261,16 @@ th {
 
 tr:hover {
   background: var(--bg-tertiary);
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: 0.85rem;
+  }
+
+  th, td {
+    padding: 0.5rem 0.3rem;
+  }
 }
 
 /* Buttons */
@@ -440,13 +456,35 @@ a {
 }
 
 @media (max-width: 768px) {
+  .app {
+    padding-top: 4rem;
+  }
+
+  .nav {
+    padding: 0.75rem 1rem;
+  }
+
   .nav-content {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .nav-logo {
+    height: 35px;
   }
 
   .nav-links {
+    gap: 1rem;
+    font-size: 0.75rem;
+    justify-content: center;
     width: 100%;
+  }
+
+  .nav-links a,
+  .nav-links button,
+  .nav-links span {
+    font-size: 0.7rem;
   }
 
   .stats {
@@ -457,9 +495,14 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .footer {
+    padding: 1.5rem 1rem;
+  }
+
   .footer-content {
     flex-direction: column;
     text-align: center;
+    gap: 1rem;
   }
 
   .discord-link {
@@ -469,6 +512,9 @@ a {
 
   .page {
     padding: 1rem;
-    border-radius: 4px;
+  }
+
+  .main.has-container {
+    padding: 1.5rem;
   }
 }
