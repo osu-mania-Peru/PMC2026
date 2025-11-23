@@ -112,7 +112,6 @@ export default function Home({ user }) {
       ) : (
         <div className="bento-action">
           <h3>INSCRÍBETE AHORA</h3>
-          <p>Únete a la competencia y compite con los mejores jugadores de Perú.</p>
           <Link to="/register" className="bento-button">INSCRIBIRSE AL PMC2026</Link>
         </div>
       )}
