@@ -1,18 +1,26 @@
 import { useEffect, useState } from 'react';
 import './BracketTree.css';
 
-export default function BracketTree({ bracketId, api }) {
+export default function BracketTree({ bracketId, api, defaultBracket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!bracketId) return;
+    if (!bracketId) {
+      // No bracket in database, use default skeleton
+      setData({
+        bracket: defaultBracket,
+        matches: []
+      });
+      setLoading(false);
+      return;
+    }
 
     api.getBracketMatches(bracketId)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [bracketId]);
+  }, [bracketId, defaultBracket]);
 
   if (loading) return <div className="loading">Cargando bracket...</div>;
   if (!data) {
