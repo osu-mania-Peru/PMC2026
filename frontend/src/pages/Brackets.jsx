@@ -40,26 +40,26 @@ export default function Brackets() {
               {bracket.is_completed ? 'Completado' : 'En Progreso'}
             </span>
 
-            {bracket.total_matches > 0 && (
-              <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-                <button
-                  onClick={() => setSelectedBracket(selectedBracket === bracket.id ? null : bracket.id)}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: selectedBracket === bracket.id ? '#ff0000' : '#333',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {selectedBracket === bracket.id ? 'Ocultar Bracket' : 'Ver Bracket'}
-                </button>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+              <button
+                onClick={() => setSelectedBracket(selectedBracket === bracket.id ? null : bracket.id)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: selectedBracket === bracket.id ? '#ff0000' : '#333',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                {selectedBracket === bracket.id ? 'Ocultar Bracket' : 'Ver Bracket'}
+              </button>
+              {bracket.total_matches > 0 && (
                 <a href={`/matches?bracket_id=${bracket.id}`} style={{ textAlign: 'center' }}>
                   Ver Partidas →
                 </a>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         ))}
       </div>

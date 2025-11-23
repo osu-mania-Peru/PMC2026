@@ -92,6 +92,16 @@
   flex: 1;
 }
 
+.bracket-match[data-empty="true"] .player-name {
+  color: #666;
+  font-style: italic;
+}
+
+.bracket-match[data-empty="true"] {
+  border-color: #333;
+  opacity: 0.6;
+}
+
 .match-player.winner .player-name {
   color: #ff0000;
 }

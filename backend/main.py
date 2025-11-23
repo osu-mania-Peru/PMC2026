@@ -19,10 +19,14 @@ app = FastAPI(
 
 # Configure CORS
 origins = [
-    f"{Config.FRONTEND_URL}:{Config.FRONTEND_PORT}",
-    Config.FRONTEND_URL,
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    f"{Config.FRONTEND_URL}:{Config.FRONTEND_PORT}",
+    Config.FRONTEND_URL,
+    "https://perumaniacup.info",
+    "http://perumaniacup.info",
 ]
 
 app.add_middleware(
@@ -62,6 +66,19 @@ def read_root():
 def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+# Debug CORS - handle OPTIONS explicitly
+from fastapi import Response
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(rest_of_path: str, response: Response):
+    """Handle CORS preflight"""
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return {"message": "OK"}
 
 
 if __name__ == "__main__":

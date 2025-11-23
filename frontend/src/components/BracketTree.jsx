@@ -15,8 +15,8 @@ export default function BracketTree({ bracketId, api }) {
   }, [bracketId]);
 
   if (loading) return <div className="loading">Cargando bracket...</div>;
-  if (!data || !data.matches || data.matches.length === 0) {
-    return <div className="no-data">No hay partidas en este bracket.</div>;
+  if (!data) {
+    return <div className="no-data">Error cargando bracket.</div>;
   }
 
   // Organize matches into rounds based on bracket size
@@ -25,15 +25,32 @@ export default function BracketTree({ bracketId, api }) {
     const numRounds = Math.log2(bracketSize);
     const rounds = [];
 
-    // For a standard single elimination bracket:
-    // Round 1 has bracketSize/2 matches
-    // Round 2 has bracketSize/4 matches
-    // etc.
+    // Calculate expected matches per round
     let matchIndex = 0;
     for (let round = 0; round < numRounds; round++) {
       const matchesInRound = bracketSize / Math.pow(2, round + 1);
-      rounds.push(matches.slice(matchIndex, matchIndex + matchesInRound));
-      matchIndex += matchesInRound;
+      const roundMatches = [];
+
+      // Fill with actual matches or create empty placeholders
+      for (let i = 0; i < matchesInRound; i++) {
+        if (matches && matches[matchIndex]) {
+          roundMatches.push(matches[matchIndex]);
+          matchIndex++;
+        } else {
+          // Create empty match placeholder
+          roundMatches.push({
+            id: `empty-${round}-${i}`,
+            isEmpty: true,
+            player1_username: 'Vacío',
+            player2_username: 'Vacío',
+            player1_score: null,
+            player2_score: null,
+            winner_id: null
+          });
+        }
+      }
+
+      rounds.push(roundMatches);
     }
 
     return rounds;
@@ -59,7 +76,7 @@ export default function BracketTree({ bracketId, api }) {
             <div className="round-label">{getRoundName(roundIndex, rounds.length)}</div>
             <div className="round-matches">
               {round.map((match) => (
-                <div key={match.id} className="bracket-match">
+                <div key={match.id} className="bracket-match" data-empty={match.isEmpty || false}>
                   <div className={`match-player ${match.winner_id === match.player1_id ? 'winner' : ''}`}>
                     <span className="player-name">{match.player1_username}</span>
                     {match.player1_score !== null && (
