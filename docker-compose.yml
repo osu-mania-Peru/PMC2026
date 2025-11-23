@@ -7,15 +7,10 @@ services:
     container_name: pmc-auth
     ports:
       - "8001:8001"
+    env_file:
+      - ./auth-service/.env
     environment:
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
-      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
-      - OSU_CLIENT_ID=${OSU_CLIENT_ID}
-      - OSU_CLIENT_SECRET=${OSU_CLIENT_SECRET}
-      - OSU_REDIRECT_URI=${OSU_REDIRECT_URI}
-      - SECRET_KEY=${SECRET_KEY}
       - MAIN_BACKEND_URL=http://backend:8000
-      - DEBUG=${DEBUG:-False}
     restart: unless-stopped
     networks:
       - pmc-network
@@ -26,12 +21,8 @@ services:
     container_name: pmc-backend
     ports:
       - "8000:8000"
-    environment:
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
-      - FRONTEND_PORT=${FRONTEND_PORT:-5173}
-      - DATABASE_URL=${DATABASE_URL}
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG:-False}
+    env_file:
+      - ./backend/.env
     depends_on:
       - db
     restart: unless-stopped
@@ -43,9 +34,9 @@ services:
     image: postgres:15-alpine
     container_name: pmc-db
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-password}
-      - POSTGRES_DB=${DB_NAME:-pmc}
+      - POSTGRES_USER=pmc_user
+      - POSTGRES_PASSWORD=your-actual-db-password-change-this
+      - POSTGRES_DB=pmc
     ports:
       - "5432:5432"
     volumes:
