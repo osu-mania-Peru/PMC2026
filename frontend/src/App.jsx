@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { api } from './api';
+import { FaDiscord } from 'react-icons/fa';
+import logo from './assets/logo.svg';
 import './App.css';
 
 // Pages
 import Home from './pages/Home';
-import Login from './pages/Login';
 import Register from './pages/Register';
 import Brackets from './pages/Brackets';
 import Matches from './pages/Matches';
@@ -60,40 +61,68 @@ function App() {
       <div className="app">
         <nav className="nav">
           <div className="nav-content">
-            <h1><Link to="/">Peru Mania Cup 2025</Link></h1>
+            <Link to="/" className="nav-logo">
+              <img src={logo} alt="PMC2026" />
+            </Link>
             <div className="nav-links">
-              <Link to="/">Inicio</Link>
-              <Link to="/brackets">Brackets</Link>
-              <Link to="/matches">Partidas</Link>
-              <Link to="/players">Jugadores</Link>
-              <Link to="/maps">Mapas</Link>
+              <Link to="/">INICIO</Link>
+              <Link to="/brackets">BRACKETS</Link>
+              <Link to="/matches">PARTIDAS</Link>
+              <Link to="/players">JUGADORES</Link>
+              <Link to="/maps">MAPPOOL</Link>
               {user ? (
                 <>
-                  <Link to="/register">Registrar</Link>
                   <span>{user.username}</span>
-                  <button onClick={handleLogout}>Cerrar Sesión</button>
+                  <button onClick={handleLogout}>CERRAR SESIÓN</button>
                 </>
               ) : (
-                <Link to="/login">Iniciar Sesión</Link>
+                <button onClick={api.login}>INICIAR SESIÓN</button>
               )}
             </div>
           </div>
         </nav>
 
-        <main className="main">
-          <Routes>
-            <Route path="/" element={<Home user={user} />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={user ? <Register user={user} setUser={setUser} /> : <Navigate to="/login" />} />
-            <Route path="/brackets" element={<Brackets />} />
-            <Route path="/matches" element={<Matches />} />
-            <Route path="/players" element={<Players />} />
-            <Route path="/maps" element={<Maps />} />
-          </Routes>
-        </main>
+        <Routes>
+          <Route path="/" element={
+            <main className="main">
+              <Home user={user} />
+            </main>
+          } />
+          <Route path="/register" element={
+            <main className="main has-container">
+              {user ? <Register user={user} setUser={setUser} /> : <Navigate to="/" />}
+            </main>
+          } />
+          <Route path="/brackets" element={
+            <main className="main">
+              <Brackets />
+            </main>
+          } />
+          <Route path="/matches" element={
+            <main className="main has-container">
+              <Matches />
+            </main>
+          } />
+          <Route path="/players" element={
+            <main className="main has-container">
+              <Players />
+            </main>
+          } />
+          <Route path="/maps" element={
+            <main className="main has-container">
+              <Maps />
+            </main>
+          } />
+        </Routes>
 
         <footer className="footer">
-          <p>Peru Mania Cup 2025 | Torneo de osu!</p>
+          <div className="footer-content">
+            <p>PMC2025</p>
+            <a href="https://discord.gg/placeholder" target="_blank" rel="noopener noreferrer" className="discord-link">
+              <FaDiscord size={20} />
+              <span>Únete a nuestro Discord</span>
+            </a>
+          </div>
         </footer>
       </div>
     </BrowserRouter>

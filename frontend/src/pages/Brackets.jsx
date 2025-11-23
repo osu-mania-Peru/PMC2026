@@ -18,16 +18,11 @@ export default function Brackets() {
   // Always show a 32-player bracket skeleton
   const defaultBracket = {
     id: 'default',
-    bracket_name: 'Peru Mania Cup 2025',
+    bracket_name: 'PMC2026',
     bracket_size: 32
   };
 
   return (
-    <div className="page">
-      <h2>Brackets del Torneo</h2>
-
-      {/* Always show the main bracket tree */}
-      <BracketTree bracketId={brackets.length > 0 ? brackets[0].id : null} api={api} defaultBracket={defaultBracket} />
-    </div>
+    <BracketTree bracketId={brackets.length > 0 ? brackets[0].id : null} api={api} defaultBracket={defaultBracket} />
   );
 }

@@ -1,169 +1,60 @@
 .bracket-tree {
   width: 100%;
-  overflow-x: auto;
-  padding: 2rem 1rem;
-  background: #1a1a1a;
-  border-radius: 8px;
-  margin-top: 2rem;
-}
-
-.bracket-title {
-  text-align: center;
-  color: #ff0000;
-  margin-bottom: 2rem;
-  font-size: 1.5rem;
-}
-
-.bracket-rounds {
+  height: 100%;
+  flex: 1;
   display: flex;
-  gap: 3rem;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: center;
-  min-width: max-content;
+  background: var(--bg-primary);
+  overflow: hidden;
 }
 
-.bracket-round {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.round-label {
+.loading {
   text-align: center;
-  font-weight: bold;
-  color: #ff0000;
-  padding: 0.5rem;
-  background: #2a2a2a;
-  border-radius: 4px;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.round-matches {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  justify-content: space-around;
-  flex: 1;
-}
-
-.bracket-match {
-  background: #2a2a2a;
-  border: 2px solid #444;
-  border-radius: 8px;
-  padding: 0;
-  min-width: 180px;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.bracket-match:hover {
-  border-color: #ff0000;
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
-}
-
-.match-player {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: #1a1a1a;
-  transition: all 0.2s ease;
-}
-
-.match-player:first-child {
-  border-radius: 6px 6px 0 0;
-  border-bottom: 1px solid #444;
-}
-
-.match-player:last-child {
-  border-radius: 0 0 6px 6px;
-}
-
-.match-player.winner {
-  background: linear-gradient(90deg, #1a1a1a 0%, #2d0a0a 100%);
-  border-left: 3px solid #ff0000;
-  font-weight: bold;
-}
-
-.player-name {
-  color: #e0e0e0;
-  font-size: 0.95rem;
-  flex: 1;
-}
-
-.bracket-match[data-empty="true"] .player-name {
-  color: #666;
-  font-style: italic;
-}
-
-.bracket-match[data-empty="true"] {
-  border-color: #333;
-  opacity: 0.6;
-}
-
-.match-player.winner .player-name {
-  color: #ff0000;
-}
-
-.player-score {
-  color: #fff;
-  font-weight: bold;
-  font-size: 1.1rem;
-  margin-left: 0.5rem;
-  min-width: 30px;
-  text-align: right;
-}
-
-.match-connector {
-  height: 1px;
-  background: #444;
-  width: 100%;
-}
-
-/* Lines connecting matches */
-.bracket-match::after {
-  content: '';
-  position: absolute;
-  right: -3rem;
-  top: 50%;
-  width: 3rem;
-  height: 2px;
-  background: #555;
-  transform: translateY(-50%);
-}
-
-.bracket-round:last-child .bracket-match::after {
-  display: none;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .bracket-rounds {
-    gap: 2rem;
-  }
-
-  .bracket-match {
-    min-width: 150px;
-  }
-
-  .bracket-match::after {
-    width: 2rem;
-    right: -2rem;
-  }
-
-  .player-name {
-    font-size: 0.85rem;
-  }
-
-  .round-label {
-    font-size: 0.8rem;
-  }
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
 }
 
 .no-data {
   text-align: center;
   padding: 2rem;
-  color: #888;
+  color: var(--text-muted);
   font-style: italic;
+}
+
+/* Override library styles to match theme */
+:where(.bracket-tree) svg {
+  background: var(--bg-primary) !important;
+}
+
+:where(.bracket-tree) svg text {
+  fill: var(--text-primary) !important;
+}
+
+:where(.bracket-tree) svg rect {
+  fill: var(--bg-tertiary) !important;
+  stroke: var(--border) !important;
+}
+
+:where(.bracket-tree) svg line,
+:where(.bracket-tree) svg path {
+  stroke: var(--text-primary) !important;
+}
+
+/* Make the SVG viewer container match background */
+:where(.bracket-tree) > div {
+  background: var(--bg-primary) !important;
+}
+
+:where(.bracket-tree) > div > div {
+  background: var(--bg-primary) !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .bracket-tree {
+    border-radius: 0;
+  }
 }

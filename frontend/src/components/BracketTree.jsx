@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { SingleEliminationBracket, Match, SVGViewer } from '@g-loot/react-tournament-brackets';
 import './BracketTree.css';
 
 export default function BracketTree({ bracketId, api, defaultBracket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dimensions, setDimensions] = useState({ width: 1400, height: 900 });
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!bracketId) {
@@ -22,89 +25,156 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
       .finally(() => setLoading(false));
   }, [bracketId, defaultBracket]);
 
-  if (loading) return <div className="loading">Cargando bracket...</div>;
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+      }
+    };
+
+    // Update on mount and when data changes
+    updateDimensions();
+
+    // Small delay to ensure layout is complete
+    setTimeout(updateDimensions, 100);
+
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [data]);
+
+  if (loading) return <div className="bracket-tree" ref={containerRef}><div className="loading">Cargando brackets...</div></div>;
   if (!data) {
-    return <div className="no-data">Error cargando bracket.</div>;
+    return <div className="bracket-tree" ref={containerRef}><div className="no-data">Error al cargar brackets.</div></div>;
   }
 
-  // Organize matches into rounds based on bracket size
-  const organizeRounds = (matches, bracketSize) => {
-    // Calculate number of rounds (log2 of bracket size)
+  // Transform API data to @g-loot/react-tournament-brackets format
+  const transformMatches = (matches, bracketSize) => {
+    const totalMatches = bracketSize - 1;
     const numRounds = Math.log2(bracketSize);
-    const rounds = [];
 
-    // Calculate expected matches per round
-    let matchIndex = 0;
-    for (let round = 0; round < numRounds; round++) {
-      const matchesInRound = bracketSize / Math.pow(2, round + 1);
-      const roundMatches = [];
+    // Calculate nextMatchId for a given match index
+    const getNextMatchId = (matchIndex) => {
+      if (matchIndex === totalMatches - 1) return null; // Final match
 
-      // Fill with actual matches or create empty placeholders
-      for (let i = 0; i < matchesInRound; i++) {
-        if (matches && matches[matchIndex]) {
-          roundMatches.push(matches[matchIndex]);
-          matchIndex++;
-        } else {
-          // Create empty match placeholder
-          roundMatches.push({
-            id: `empty-${round}-${i}`,
-            isEmpty: true,
-            player1_username: 'Vacío',
-            player2_username: 'Vacío',
-            player1_score: null,
-            player2_score: null,
-            winner_id: null
-          });
+      // Calculate which round this match is in and its position
+      let matchCount = 0;
+      for (let round = 0; round < numRounds; round++) {
+        const matchesInRound = bracketSize / Math.pow(2, round + 1);
+        if (matchIndex < matchCount + matchesInRound) {
+          // This match is in 'round'
+          const positionInRound = matchIndex - matchCount;
+          const nextRoundStart = matchCount + matchesInRound;
+          return nextRoundStart + Math.floor(positionInRound / 2);
         }
+        matchCount += matchesInRound;
+      }
+      return null;
+    };
+
+    if (!matches || matches.length === 0) {
+      // Generate empty bracket structure
+      const emptyMatches = [];
+
+      for (let i = 0; i < totalMatches; i++) {
+        emptyMatches.push({
+          id: i,
+          name: `Partida ${i + 1}`,
+          nextMatchId: getNextMatchId(i),
+          tournamentRoundText: getRoundText(i, bracketSize),
+          startTime: new Date().toISOString(),
+          state: 'SCHEDULED',
+          participants: [
+            {
+              id: `${i}-p1`,
+              resultText: null,
+              isWinner: false,
+              status: null,
+              name: 'POR DEFINIR'
+            },
+            {
+              id: `${i}-p2`,
+              resultText: null,
+              isWinner: false,
+              status: null,
+              name: 'POR DEFINIR'
+            }
+          ]
+        });
       }
 
-      rounds.push(roundMatches);
+      return emptyMatches;
     }
 
-    return rounds;
+    // Transform actual match data
+    return matches.map((match, index) => ({
+      id: match.id || index,
+      name: `Partida ${index + 1}`,
+      nextMatchId: match.next_match_id !== undefined ? match.next_match_id : getNextMatchId(index),
+      tournamentRoundText: match.round_name || getRoundText(index, bracketSize),
+      startTime: match.scheduled_time || new Date().toISOString(),
+      state: match.winner_id ? 'DONE' : 'SCHEDULED',
+      participants: [
+        {
+          id: match.player1_id || `${index}-p1`,
+          resultText: match.player1_score !== null ? String(match.player1_score) : null,
+          isWinner: match.winner_id === match.player1_id,
+          status: match.winner_id === match.player1_id ? 'PLAYED' : null,
+          name: match.player1_username || 'POR DEFINIR'
+        },
+        {
+          id: match.player2_id || `${index}-p2`,
+          resultText: match.player2_score !== null ? String(match.player2_score) : null,
+          isWinner: match.winner_id === match.player2_id,
+          status: match.winner_id === match.player2_id ? 'PLAYED' : null,
+          name: match.player2_username || 'POR DEFINIR'
+        }
+      ]
+    }));
+  };
+
+  const getRoundText = (matchIndex, bracketSize) => {
+    const totalMatches = bracketSize - 1;
+    const numRounds = Math.log2(bracketSize);
+
+    // Calculate which round this match belongs to
+    let matchCount = 0;
+    for (let round = 0; round < numRounds; round++) {
+      const matchesInRound = bracketSize / Math.pow(2, round + 1);
+      if (matchIndex < matchCount + matchesInRound) {
+        // Found the round
+        const remaining = numRounds - round;
+        if (remaining === 1) return 'Final';
+        if (remaining === 2) return 'Semifinales';
+        if (remaining === 3) return 'Cuartos de Final';
+        if (remaining === 4) return 'Octavos de Final';
+        return `Ronda ${round + 1}`;
+      }
+      matchCount += matchesInRound;
+    }
+    return 'Final';
   };
 
   const bracketSize = data.bracket.size || data.bracket.bracket_size || 32;
-  const rounds = organizeRounds(data.matches, bracketSize);
-
-  const getRoundName = (roundIndex, totalRounds) => {
-    const remaining = totalRounds - roundIndex;
-    if (remaining === 1) return 'Final';
-    if (remaining === 2) return 'Semifinal';
-    if (remaining === 3) return 'Cuartos de Final';
-    return `Ronda ${roundIndex + 1}`;
-  };
+  const transformedMatches = transformMatches(data.matches, bracketSize);
 
   return (
-    <div className="bracket-tree">
-      <h3 className="bracket-title">{data.bracket.name}</h3>
-
-      <div className="bracket-rounds">
-        {rounds.map((round, roundIndex) => (
-          <div key={roundIndex} className="bracket-round">
-            <div className="round-label">{getRoundName(roundIndex, rounds.length)}</div>
-            <div className="round-matches">
-              {round.map((match) => (
-                <div key={match.id} className="bracket-match" data-empty={match.isEmpty || false}>
-                  <div className={`match-player ${match.winner_id === match.player1_id ? 'winner' : ''}`}>
-                    <span className="player-name">{match.player1_username}</span>
-                    {match.player1_score !== null && (
-                      <span className="player-score">{match.player1_score}</span>
-                    )}
-                  </div>
-                  <div className="match-connector"></div>
-                  <div className={`match-player ${match.winner_id === match.player2_id ? 'winner' : ''}`}>
-                    <span className="player-name">{match.player2_username}</span>
-                    {match.player2_score !== null && (
-                      <span className="player-score">{match.player2_score}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="bracket-tree" ref={containerRef}>
+      <SingleEliminationBracket
+        matches={transformedMatches}
+        matchComponent={Match}
+        svgWrapper={({ children, ...props }) => (
+          <SVGViewer
+            width={dimensions.width}
+            height={dimensions.height}
+            background="#000000"
+            SVGBackground="#000000"
+            {...props}
+          >
+            {children}
+          </SVGViewer>
+        )}
+      />
     </div>
   );
 }

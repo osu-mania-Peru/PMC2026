@@ -1,84 +1,121 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import './Home.css';
 
 export default function Home({ user }) {
   const [status, setStatus] = useState(null);
-  const [registrations, setRegistrations] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
-    api.getRegistrations().then(setRegistrations).catch(console.error);
   }, []);
 
   return (
-    <div className="page">
-      <h2>Peru Mania Cup 2025</h2>
-      <p>Bienvenido a la plataforma oficial del torneo Peru Mania Cup de osu!.</p>
+    <div className="home-bento">
+      {/* Timeline - Large Left Section */}
+      <div className="bento-timeline">
+        <h2>CRONOGRAMA</h2>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>INSCRIPCIONES</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>QUALIFIERS</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>SEMANA 1</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>SEMANA 2</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>SEMANA 3</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-content">
+            <h3>FINALES</h3>
+          </div>
+        </div>
+      </div>
 
+      {/* Stats - Top Right */}
       {status && (
-        <div className="stats">
-          <div className="stat-box">
-            <h4>Estado del Torneo</h4>
-            <div className="value">{status.status}</div>
+        <div className="bento-stats">
+          <div className="stat-item">
+            <div className="stat-label">ESTADO</div>
+            <div className="stat-value">{status.status}</div>
           </div>
-          <div className="stat-box">
-            <h4>Jugadores Registrados</h4>
-            <div className="value">{status.total_registered_players}/32</div>
+          <div className="stat-item">
+            <div className="stat-label">JUGADORES</div>
+            <div className="stat-value">{status.total_registered_players}/32</div>
           </div>
-          <div className="stat-box">
-            <h4>Registro</h4>
-            <div className="value">{status.registration_open ? 'Abierto' : 'Cerrado'}</div>
+          <div className="stat-item">
+            <div className="stat-label">INSCRIPCIÓN</div>
+            <div className="stat-value">{status.registration_open ? 'ABIERTA' : 'CERRADA'}</div>
           </div>
         </div>
       )}
 
-      {status?.current_bracket && (
-        <div className="bracket-card">
-          <h3>Ronda Actual</h3>
-          <p><strong>{status.current_bracket.bracket_name}</strong></p>
-          <p>Tamaño: {status.current_bracket.bracket_size} jugadores</p>
-          <Link to="/brackets">Ver Brackets →</Link>
+      {/* Mappool Card */}
+      <div className="bento-mappool">
+        <div>
+          <h3 className="bento-card-title">mappool qualifiers</h3>
+          <p className="bento-card-description">Descarga y estadísticas del mappool</p>
         </div>
-      )}
+        <Link to="/maps" className="bento-button">VER MAPPOOL</Link>
+      </div>
 
-      {!user && (
-        <div className="stat-box" style={{ marginTop: '2rem' }}>
-          <h4>Comenzar</h4>
-          <p>Inicia sesión con tu cuenta de osu! para registrarte al torneo.</p>
-          <Link to="/login" className="button" style={{ marginTop: '1rem' }}>
-            Iniciar Sesión con osu!
-          </Link>
+      {/* Registration Card */}
+      <div className="bento-registration">
+        <div>
+          <h3 className="bento-card-title">inscripción de equipos</h3>
+          <p className="bento-card-description">Las inscripciones cierran POR DEFINIR a las 00:00 UTC</p>
         </div>
-      )}
+        {user && !user.is_registered && status?.registration_open ? (
+          <Link to="/register" className="bento-button">INSCRIBIRSE</Link>
+        ) : !user ? (
+          <button onClick={api.login} className="bento-button">INICIAR SESIÓN</button>
+        ) : (
+          <div className="unavailable-text">¡INSCRITO!</div>
+        )}
+      </div>
 
-      {user && !user.is_registered && status?.registration_open && (
-        <div className="stat-box" style={{ marginTop: '2rem' }}>
-          <h4>Regístrate Ahora</h4>
-          <p>¡El registro está abierto! Inscríbete para competir en Peru Mania Cup 2025.</p>
-          <Link to="/register" className="button" style={{ marginTop: '1rem' }}>
-            Registrarse al Torneo
-          </Link>
+      {/* Action Card - Bottom Right */}
+      {!user ? (
+        <div className="bento-action">
+          <h3>COMIENZA AQUÍ</h3>
+          <p>Inicia sesión con tu cuenta de osu! para inscribirte al torneo.</p>
+          <button onClick={api.login} className="bento-button">INICIAR SESIÓN</button>
         </div>
-      )}
-
-      {user?.is_registered && (
-        <div className="stat-box" style={{ marginTop: '2rem', borderLeftColor: '#90ee90' }}>
-          <h4>¡Estás Registrado!</h4>
+      ) : user.is_registered ? (
+        <div className="bento-action registered">
+          <h3>¡ESTÁS INSCRITO!</h3>
           <p>Número de Seed: {user.seed_number || 'Por Determinar'}</p>
           <p>¡Buena suerte en el torneo!</p>
         </div>
+      ) : (
+        <div className="bento-action">
+          <h3>INSCRÍBETE AHORA</h3>
+          <p>Únete a la competencia y compite con los mejores jugadores de Perú.</p>
+          <Link to="/register" className="bento-button">INSCRIBIRSE AL PMC2026</Link>
+        </div>
       )}
-
-      <div style={{ marginTop: '3rem' }}>
-        <h3>Enlaces Rápidos</h3>
-        <ul className="list">
-          <li className="list-item"><Link to="/brackets">Ver Brackets del Torneo</Link></li>
-          <li className="list-item"><Link to="/matches">Ver Calendario de Partidas</Link></li>
-          <li className="list-item"><Link to="/players">Jugadores Registrados</Link></li>
-          <li className="list-item"><Link to="/maps">Pool de Mapas</Link></li>
-        </ul>
-      </div>
     </div>
   );
 }
