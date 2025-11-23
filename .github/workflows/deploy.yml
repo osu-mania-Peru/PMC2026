@@ -23,7 +23,7 @@ jobs:
           cd backend
           source .venv/bin/activate
           pip install -r requirements.txt
-          sudo systemctl restart your-backend-service
+        #   sudo systemctl restart your-backend-service
           
           # frontend
             #   cd ../frontend
