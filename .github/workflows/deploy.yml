@@ -16,7 +16,7 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          cd /home/deploy/apps
+          cd /home/deploy/apps/PMC2026
           git pull origin main
           
           # backend
