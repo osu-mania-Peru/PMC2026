@@ -5,7 +5,6 @@ import BracketTree from '../components/BracketTree';
 export default function Brackets() {
   const [brackets, setBrackets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedBracket, setSelectedBracket] = useState(null);
 
   useEffect(() => {
     api.getBrackets()
@@ -20,9 +19,13 @@ export default function Brackets() {
     <div className="page">
       <h2>Brackets del Torneo</h2>
 
-      <div className="bracket-grid">
-        {brackets.map(bracket => (
-          <div key={bracket.id} className="bracket-card">
+      {brackets.length === 0 && (
+        <p>Aún no se han creado brackets.</p>
+      )}
+
+      {brackets.map(bracket => (
+        <div key={bracket.id} style={{ marginBottom: '3rem' }}>
+          <div className="bracket-card">
             <h3>{bracket.bracket_name}</h3>
             <p>Tamaño: {bracket.bracket_size} jugadores</p>
             <p>Partidas: {bracket.completed_matches || 0}/{bracket.total_matches || 0}</p>
@@ -40,35 +43,16 @@ export default function Brackets() {
               {bracket.is_completed ? 'Completado' : 'En Progreso'}
             </span>
 
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
-              <button
-                onClick={() => setSelectedBracket(selectedBracket === bracket.id ? null : bracket.id)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: selectedBracket === bracket.id ? '#ff0000' : '#333',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                {selectedBracket === bracket.id ? 'Ocultar Bracket' : 'Ver Bracket'}
-              </button>
-              {bracket.total_matches > 0 && (
-                <a href={`/matches?bracket_id=${bracket.id}`} style={{ textAlign: 'center' }}>
-                  Ver Partidas →
-                </a>
-              )}
-            </div>
+            {bracket.total_matches > 0 && (
+              <div style={{ marginTop: '1rem' }}>
+                <a href={`/matches?bracket_id=${bracket.id}`}>Ver Partidas →</a>
+              </div>
+            )}
           </div>
-        ))}
-      </div>
 
-      {brackets.length === 0 && (
-        <p>Aún no se han creado brackets.</p>
-      )}
-
-      {selectedBracket && <BracketTree bracketId={selectedBracket} api={api} />}
+          <BracketTree bracketId={bracket.id} api={api} />
+        </div>
+      ))}
     </div>
   );
 }
