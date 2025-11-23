@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Auth Microservice (handles osu! OAuth only)
   auth-service:
