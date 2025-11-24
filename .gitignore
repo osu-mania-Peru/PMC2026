@@ -229,8 +229,8 @@ docker-compose.override.yml
 .dockerignore
 
 # Alembic
-backend/alembic/versions/*.py
-!backend/alembic/versions/.gitkeep
+!backend/alembic/versions/*.py
+backend/alembic/versions/.gitkeep
 
 # Auth Service
 auth-service/.env
