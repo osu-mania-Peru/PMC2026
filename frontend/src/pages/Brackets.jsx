@@ -15,11 +15,11 @@ export default function Brackets() {
 
   if (loading) return <div className="loading">Cargando...</div>;
 
-  // Always show a 32-player bracket skeleton
+  // Always show a 16-player bracket skeleton (4 rounds: RO16, Quarterfinals, Semifinals, Finals)
   const defaultBracket = {
     id: 'default',
     bracket_name: 'PMC2026',
-    bracket_size: 32
+    bracket_size: 16
   };
 
   return (

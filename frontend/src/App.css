@@ -72,6 +72,7 @@ body {
   justify-content: flex-end;
 }
 
+
 .nav-links a {
   color: var(--text-primary);
   text-decoration: none;
@@ -86,7 +87,6 @@ body {
   color: var(--accent-secondary);
 }
 
-.nav-links button,
 .nav-links span {
   background: none;
   border: none;
@@ -100,9 +100,6 @@ body {
   white-space: nowrap;
 }
 
-.nav-links button:hover {
-  color: var(--accent-secondary);
-}
 
 /* Main content */
 .main {
@@ -115,30 +112,6 @@ body {
   overflow: hidden;
 }
 
-.main::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url('/src/assets/cat.gif') center center repeat;
-  opacity: 0.09;
-  z-index: 999;
-  pointer-events: none;
-  animation: moveCats 15s linear infinite;
-  transform: rotate(15deg);
-  overflow: hidden;
-}
-
-@keyframes moveCats {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: 1000px 1000px;
-  }
-}
 
 .main.has-container {
   max-width: 1400px;

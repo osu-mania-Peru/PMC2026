@@ -17,39 +17,63 @@ export default function Home({ user }) {
       <div className="bento-timeline">
         <h2>CRONOGRAMA</h2>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">16/01/26 - 01/02/26</div>
           <div className="timeline-content">
-            <h3>INSCRIPCIONES</h3>
+            <h3>REGISTROS</h3>
           </div>
         </div>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">01/02/26 - 08/02/26</div>
+          <div className="timeline-content">
+            <h3>SCREENING</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">08/02/26</div>
+          <div className="timeline-content">
+            <h3>QUALIFIERS SHOWCASE</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">13/02/26 - 15/02/26</div>
           <div className="timeline-content">
             <h3>QUALIFIERS</h3>
           </div>
         </div>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">20/02/26 - 22/02/26</div>
           <div className="timeline-content">
-            <h3>SEMANA 1</h3>
+            <h3>ROUND OF 32</h3>
           </div>
         </div>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">27/02/26 - 01/03/26</div>
           <div className="timeline-content">
-            <h3>SEMANA 2</h3>
+            <h3>ROUND OF 16</h3>
           </div>
         </div>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">06/03/26 - 08/03/26</div>
           <div className="timeline-content">
-            <h3>SEMANA 3</h3>
+            <h3>QUARTERFINALS</h3>
           </div>
         </div>
         <div className="timeline-item">
-          <div className="timeline-date">POR DEFINIR</div>
+          <div className="timeline-date">13/03/26 - 15/03/26</div>
           <div className="timeline-content">
-            <h3>FINALES</h3>
+            <h3>SEMIFINALS</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">20/03/26 - 22/03/26</div>
+          <div className="timeline-content">
+            <h3>FINALS</h3>
+          </div>
+        </div>
+        <div className="timeline-item">
+          <div className="timeline-date">27/03/26 - 29/03/26</div>
+          <div className="timeline-content">
+            <h3>GRANDFINALS</h3>
           </div>
         </div>
       </div>

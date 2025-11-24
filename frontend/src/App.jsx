@@ -17,13 +17,14 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // () => {}, [] means this will get run after the component is rendered 
   useEffect(() => {
     // Check for token in URL (from auth callback)
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const error = params.get('error');
 
-    if (token) {
+    if (token) { // get token from URL and set to the api to log in
       api.setToken(token);
       window.history.replaceState({}, '', '/');
     }
@@ -47,6 +48,9 @@ function App() {
     }
   }, []);
 
+  const handleLogin = () => {
+    api.login();
+  };
   const handleLogout = () => {
     api.logout();
     setUser(null);
@@ -76,7 +80,7 @@ function App() {
                   <button onClick={handleLogout}>CERRAR SESIÓN</button>
                 </>
               ) : (
-                <button onClick={api.login}>INICIAR SESIÓN</button>
+                <button onClick={handleLogin}>INICIAR SESIÓN</button>
               )}
             </div>
           </div>

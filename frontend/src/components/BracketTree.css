@@ -4,10 +4,30 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: var(--bg-primary);
+  overflow-y: auto;
+  overflow-x: auto;
+  position: relative;
+}
+
+.bracket-section {
+  width: 100%;
+  min-height: 50%;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
-  overflow: hidden;
+}
+
+.bracket-title {
+  color: var(--accent-secondary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 1rem 2rem;
+  text-align: center;
+  border-bottom: 2px solid var(--border);
 }
 
 .loading {
@@ -15,6 +35,8 @@
   padding: 2rem;
   color: var(--text-secondary);
   font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .no-data {
@@ -24,23 +46,21 @@
   font-style: italic;
 }
 
-/* Override library styles to match theme */
+/* Override library styles */
 :where(.bracket-tree) svg {
   background: var(--bg-primary) !important;
 }
 
-:where(.bracket-tree) svg text {
-  fill: var(--text-primary) !important;
+/* Reduce vertical spacing between matches */
+:where(.bracket-tree) g[transform] {
+  transform-origin: center !important;
 }
 
-:where(.bracket-tree) svg rect {
-  fill: var(--bg-tertiary) !important;
-  stroke: var(--border) !important;
-}
-
+/* Connector lines */
 :where(.bracket-tree) svg line,
 :where(.bracket-tree) svg path {
-  stroke: var(--text-primary) !important;
+  stroke: var(--border) !important;
+  stroke-width: 2px !important;
 }
 
 /* Make the SVG viewer container match background */
@@ -50,6 +70,87 @@
 
 :where(.bracket-tree) > div > div {
   background: var(--bg-primary) !important;
+}
+
+/* Custom Styled Match Component */
+.styled-match {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: auto !important;
+}
+
+.styled-match:hover {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 15px rgba(255, 8, 68, 0.3);
+}
+
+.match-round-text {
+  background: var(--bg-tertiary);
+  color: var(--accent-secondary);
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.3rem;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.match-team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 22px;
+}
+
+.match-team:last-child {
+  border-bottom: none;
+}
+
+.match-team:hover {
+  background: var(--bg-tertiary);
+}
+
+.match-team.winner {
+  background: rgba(255, 8, 68, 0.1);
+}
+
+.team-name {
+  color: var(--text-primary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.4rem;
+}
+
+.match-team.winner .team-name {
+  color: var(--accent-secondary);
+  font-weight: 900;
+}
+
+.team-score {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 25px;
+  text-align: right;
+}
+
+.match-team.winner .team-score {
+  color: var(--accent-secondary);
+  font-weight: 900;
 }
 
 /* Responsive design */

@@ -1,11 +1,53 @@
 import { useEffect, useState, useRef } from 'react';
-import { SingleEliminationBracket, Match, SVGViewer } from '@g-loot/react-tournament-brackets';
+import { SingleEliminationBracket, SVGViewer, createTheme } from '@g-loot/react-tournament-brackets';
 import './BracketTree.css';
+
+// Custom Match component with proper styling
+const StyledMatch = ({ match, onMatchClick, onPartyClick }) => {
+  const topParty = match.participants?.[0];
+  const bottomParty = match.participants?.[1];
+
+  return (
+    <div
+      className="styled-match"
+      onClick={onMatchClick}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+      }}
+    >
+      <div className="match-round-text">
+        {match.tournamentRoundText}
+      </div>
+      <div
+        className={`match-team ${topParty?.isWinner ? 'winner' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPartyClick?.(topParty);
+        }}
+      >
+        <span className="team-name">{topParty?.name || 'TBD'}</span>
+        <span className="team-score">{topParty?.resultText || ''}</span>
+      </div>
+      <div
+        className={`match-team ${bottomParty?.isWinner ? 'winner' : ''}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onPartyClick?.(bottomParty);
+        }}
+      >
+        <span className="team-name">{bottomParty?.name || 'TBD'}</span>
+        <span className="team-score">{bottomParty?.resultText || ''}</span>
+      </div>
+    </div>
+  );
+};
 
 export default function BracketTree({ bracketId, api, defaultBracket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dimensions, setDimensions] = useState({ width: 1400, height: 900 });
+  const [dimensions, setDimensions] = useState({ width: 1400, height: 600 });
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -142,17 +184,13 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     for (let round = 0; round < numRounds; round++) {
       const matchesInRound = bracketSize / Math.pow(2, round + 1);
       if (matchIndex < matchCount + matchesInRound) {
-        // Found the round
-        const remaining = numRounds - round;
-        if (remaining === 1) return 'Final';
-        if (remaining === 2) return 'Semifinales';
-        if (remaining === 3) return 'Cuartos de Final';
-        if (remaining === 4) return 'Octavos de Final';
-        return `Ronda ${round + 1}`;
+        // Found the round - rename from Round 5 to Round 1
+        const roundNumber = round + 1;
+        return `Round ${roundNumber}`;
       }
       matchCount += matchesInRound;
     }
-    return 'Final';
+    return 'Finals';
   };
 
   const bracketSize = data.bracket.size || data.bracket.bracket_size || 32;
@@ -160,21 +198,87 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
 
   return (
     <div className="bracket-tree" ref={containerRef}>
-      <SingleEliminationBracket
-        matches={transformedMatches}
-        matchComponent={Match}
-        svgWrapper={({ children, ...props }) => (
-          <SVGViewer
-            width={dimensions.width}
-            height={dimensions.height}
-            background="#000000"
-            SVGBackground="#000000"
-            {...props}
-          >
-            {children}
-          </SVGViewer>
-        )}
-      />
+      <div className="bracket-section">
+        <SingleEliminationBracket
+          matches={transformedMatches}
+          matchComponent={StyledMatch}
+          options={{
+            style: {
+              width: 250,
+              roundSeparatorWidth: 40,
+              connectorColor: '#222222',
+              connectorColorHighlight: '#ff0844',
+              spaceBetweenRows: 0,
+              roundHeader: {
+                isShown: true,
+                backgroundColor: '#212121ff',
+                fontColor: '#ffffffff',
+                fontSize: 14,
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                roundTextGenerator: (currentRoundNumber, roundsTotalNumber) => {
+                  const roundFromEnd = roundsTotalNumber - currentRoundNumber + 1;
+                  if (roundFromEnd === 1) return 'Finals';
+                  if (roundFromEnd === 2) return 'Semifinals';
+                  if (roundFromEnd === 3) return 'Quarterfinals';
+                  if (roundFromEnd === 4) return 'Round of 16';
+                  return `Round ${currentRoundNumber}`;
+                },
+              },
+            },
+          }}
+          svgWrapper={({ children, ...props }) => (
+            <SVGViewer
+              width={dimensions.width}
+              height={dimensions.height * 0.50}
+              background="#000000"
+              SVGBackground="#000000"
+              {...props}
+            >
+              {children}
+            </SVGViewer>
+          )}
+        />
+      </div>
+      <div className="bracket-section">
+        <SingleEliminationBracket
+          matches={transformedMatches}
+          matchComponent={StyledMatch}
+          options={{
+            style: {
+              roundSeparatorWidth: 40,
+              connectorColor: '#222222',
+              connectorColorHighlight: '#00ff00',
+              spaceBetweenRows: 0,
+              roundHeader: {
+                isShown: true,
+                backgroundColor: '#141414',
+                fontColor: '#ffffffff',
+                fontSize: 14,
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                roundTextGenerator: (currentRoundNumber, roundsTotalNumber) => {
+                  const roundFromEnd = roundsTotalNumber - currentRoundNumber + 1;
+                  if (roundFromEnd === 1) return 'Finals';
+                  if (roundFromEnd === 2) return 'Semifinals';
+                  if (roundFromEnd === 3) return 'Quarterfinals';
+                  if (roundFromEnd === 4) return 'Round of 16';
+                  return `Round ${currentRoundNumber}`;
+                },
+              },
+            },
+          }}
+          svgWrapper={({ children, ...props }) => (
+            <SVGViewer
+              width={dimensions.width}
+              height={dimensions.height * 0.50}
+              background="#000000"
+              SVGBackground="#000000"
+              {...props}
+            >
+              {children}
+            </SVGViewer>
+          )}
+        />
+      </div>
     </div>
   );
 }
