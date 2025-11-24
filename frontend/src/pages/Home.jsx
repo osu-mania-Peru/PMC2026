@@ -16,6 +16,7 @@ export default function Home({ user }) {
       {/* Timeline - Large Left Section */}
       <div className="bento-timeline">
         <h2>CRONOGRAMA</h2>
+        <h4>El siguiente cronograma esta sujeto a cambios sin aviso previo.</h4>
         <div className="timeline-item">
           <div className="timeline-date">16/01/26 - 01/02/26</div>
           <div className="timeline-content">
@@ -38,12 +39,6 @@ export default function Home({ user }) {
           <div className="timeline-date">13/02/26 - 15/02/26</div>
           <div className="timeline-content">
             <h3>QUALIFIERS</h3>
-          </div>
-        </div>
-        <div className="timeline-item">
-          <div className="timeline-date">20/02/26 - 22/02/26</div>
-          <div className="timeline-content">
-            <h3>ROUND OF 32</h3>
           </div>
         </div>
         <div className="timeline-item">

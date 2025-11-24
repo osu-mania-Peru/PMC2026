@@ -4,7 +4,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--bg-primary);
+  background: transparent;
   overflow-y: auto;
   overflow-x: auto;
   position: relative;
@@ -12,11 +12,42 @@
 
 .bracket-section {
   width: 100%;
-  min-height: 50%;
+  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: #111111;
+  overflow: hidden;
+  padding-top: 2rem;
+  padding-left: 2rem;
+}
+
+.bracket-section-title {
+  color: #000000;
+  background: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  width: 100%;
+  padding: 1rem 2rem;
+  margin-left: -2rem;
+  margin-top: -2rem;
+  margin-bottom: 1.5rem;
+}
+
+.bracket-section-title.loser {
+  background: #666666;
+  color: #ffffff;
+}
+
+.bracket-section-title.grandfinals {
+  background: #ff0844;
+  color: #ffffff;
 }
 
 .bracket-title {
@@ -48,7 +79,7 @@
 
 /* Override library styles */
 :where(.bracket-tree) svg {
-  background: var(--bg-primary) !important;
+  background: transparent !important;
 }
 
 /* Reduce vertical spacing between matches */
@@ -63,13 +94,18 @@
   stroke-width: 2px !important;
 }
 
-/* Make the SVG viewer container match background */
-:where(.bracket-tree) > div {
-  background: var(--bg-primary) !important;
+/* Make the SVG viewer container match background and fill space */
+.bracket-section > div {
+  width: 100% !important;
+  background: transparent !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex: 1 !important;
 }
 
-:where(.bracket-tree) > div > div {
-  background: var(--bg-primary) !important;
+.bracket-section > div > div {
+  background: transparent !important;
 }
 
 /* Custom Styled Match Component */

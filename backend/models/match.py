@@ -30,6 +30,10 @@ class Match(Base):
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
     no_show_player_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Player who didn\'t show up')
     forfeit_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment='Reason for forfeit/cancellation')
+    round_name: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, comment='Round name (e.g., Round of 16, Quarterfinals)')
+    next_match_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('matches.id'), nullable=True, comment='Next match for winner')
+    loser_next_match_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('matches.id'), nullable=True, comment='Next match for loser (double elimination)')
+    is_grandfinals_reset: Mapped[bool] = mapped_column(Boolean, default=False, comment='True if this is the bracket reset match')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -41,6 +45,8 @@ class Match(Base):
     no_show_player = relationship("User", foreign_keys=[no_show_player_id])
     map = relationship("Map", back_populates="matches")
     notifications = relationship("Notification", back_populates="related_match")
+    next_match = relationship("Match", foreign_keys=[next_match_id], remote_side="Match.id")
+    loser_next_match = relationship("Match", foreign_keys=[loser_next_match_id], remote_side="Match.id")
 
     # Indexes
     __table_args__ = (
@@ -49,6 +55,8 @@ class Match(Base):
         Index('ix_matches_player2_id', 'player2_id'),
         Index('ix_matches_winner_id', 'winner_id'),
         Index('ix_matches_match_status', 'match_status'),
+        Index('ix_matches_next_match_id', 'next_match_id'),
+        Index('ix_matches_loser_next_match_id', 'loser_next_match_id'),
     )
 
     def __repr__(self):

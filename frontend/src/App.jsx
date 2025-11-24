@@ -13,6 +13,9 @@ import Matches from './pages/Matches';
 import Players from './pages/Players';
 import Maps from './pages/Maps';
 
+// Components
+import AdminPanel from './components/AdminPanel';
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -128,6 +131,9 @@ function App() {
             </a>
           </div>
         </footer>
+
+        {/* Admin Debug Panel */}
+        <AdminPanel />
       </div>
     </BrowserRouter>
   );

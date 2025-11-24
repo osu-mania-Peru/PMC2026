@@ -18,6 +18,12 @@ class Bracket(Base):
         nullable=False,
         comment='e.g., Round of 32, Round of 16, Quarterfinals, Semifinals, Finals'
     )
+    bracket_type: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        default='winner',
+        comment='winner or loser bracket for double elimination'
+    )
     bracket_order: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
@@ -33,6 +39,7 @@ class Bracket(Base):
     # Indexes
     __table_args__ = (
         Index('ix_brackets_bracket_order', 'bracket_order', unique=True),
+        Index('ix_brackets_bracket_type', 'bracket_type'),
     )
 
     def __repr__(self):

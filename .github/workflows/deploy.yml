@@ -19,10 +19,14 @@ jobs:
           cd /home/deploy/apps/PMC2026
           git pull origin main
 
-          # Rebuild and restart containers
+          # Rebuild and restart containers (migrations run automatically in Dockerfile CMD)
           docker-compose down
           docker-compose build
           docker-compose up -d
+
+          # Wait for backend to be ready (migrations to complete)
+          echo "Waiting for backend migrations to complete..."
+          sleep 10
 
           # Build frontend (outside docker for now)
           cd frontend

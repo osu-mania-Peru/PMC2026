@@ -47,7 +47,7 @@ const StyledMatch = ({ match, onMatchClick, onPartyClick }) => {
 export default function BracketTree({ bracketId, api, defaultBracket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dimensions, setDimensions] = useState({ width: 1400, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 1400, height: 400 });
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -195,23 +195,46 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
 
   const bracketSize = data.bracket.size || data.bracket.bracket_size || 32;
   const transformedMatches = transformMatches(data.matches, bracketSize);
+  const bracketType = data.bracket.type || 'winner';
+
+  const getBracketTitle = () => {
+    switch (bracketType) {
+      case 'winner':
+        return 'Winner Bracket';
+      case 'loser':
+        return 'Loser Bracket';
+      case 'grandfinals':
+        return 'Grand Finals';
+      default:
+        return 'Tournament Bracket';
+    }
+  };
+
+  const getTitleClass = () => {
+    if (bracketType === 'loser') return 'loser';
+    if (bracketType === 'grandfinals') return 'grandfinals';
+    return '';
+  };
 
   return (
     <div className="bracket-tree" ref={containerRef}>
       <div className="bracket-section">
+        <h2 className={`bracket-section-title ${getTitleClass()}`}>
+          {getBracketTitle()}
+        </h2>
         <SingleEliminationBracket
           matches={transformedMatches}
           matchComponent={StyledMatch}
           options={{
             style: {
-              width: 250,
-              roundSeparatorWidth: 40,
+              width: 300,
+              roundSeparatorWidth: 60,
               connectorColor: '#222222',
-              connectorColorHighlight: '#ff0844',
+              connectorColorHighlight: bracketType === 'winner' ? '#ff0844' : '#00ff00',
               spaceBetweenRows: 0,
               roundHeader: {
                 isShown: true,
-                backgroundColor: '#212121ff',
+                backgroundColor: bracketType === 'winner' ? '#212121ff' : '#141414',
                 fontColor: '#ffffffff',
                 fontSize: 14,
                 fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -229,49 +252,9 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
           svgWrapper={({ children, ...props }) => (
             <SVGViewer
               width={dimensions.width}
-              height={dimensions.height * 0.50}
-              background="#000000"
-              SVGBackground="#000000"
-              {...props}
-            >
-              {children}
-            </SVGViewer>
-          )}
-        />
-      </div>
-      <div className="bracket-section">
-        <SingleEliminationBracket
-          matches={transformedMatches}
-          matchComponent={StyledMatch}
-          options={{
-            style: {
-              roundSeparatorWidth: 40,
-              connectorColor: '#222222',
-              connectorColorHighlight: '#00ff00',
-              spaceBetweenRows: 0,
-              roundHeader: {
-                isShown: true,
-                backgroundColor: '#141414',
-                fontColor: '#ffffffff',
-                fontSize: 14,
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-                roundTextGenerator: (currentRoundNumber, roundsTotalNumber) => {
-                  const roundFromEnd = roundsTotalNumber - currentRoundNumber + 1;
-                  if (roundFromEnd === 1) return 'Finals';
-                  if (roundFromEnd === 2) return 'Semifinals';
-                  if (roundFromEnd === 3) return 'Quarterfinals';
-                  if (roundFromEnd === 4) return 'Round of 16';
-                  return `Round ${currentRoundNumber}`;
-                },
-              },
-            },
-          }}
-          svgWrapper={({ children, ...props }) => (
-            <SVGViewer
-              width={dimensions.width}
-              height={dimensions.height * 0.50}
-              background="#000000"
-              SVGBackground="#000000"
+              height={dimensions.height}
+              background="transparent"
+              SVGBackground="transparent"
               {...props}
             >
               {children}

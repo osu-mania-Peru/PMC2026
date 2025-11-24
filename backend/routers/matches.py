@@ -11,6 +11,7 @@ from utils.auth import get_current_user, get_current_staff_user
 from utils.database import get_db
 from models.match import Match
 from models.user import User
+from services.bracket_progression import BracketProgressionService
 
 router = APIRouter(prefix="/matches", tags=["Matches"])
 
@@ -95,7 +96,24 @@ async def update_match_score(
 
     db.commit()
     db.refresh(match)
-    return match
+
+    # Auto-progress players to next matches
+    try:
+        progression_service = BracketProgressionService(db)
+        progression_result = progression_service.progress_match(match)
+
+        return {
+            "match": match,
+            "progression": progression_result
+        }
+    except Exception as e:
+        # If progression fails, still return the match result
+        # but log the error
+        print(f"Match progression error: {str(e)}")
+        return {
+            "match": match,
+            "progression": {"error": str(e)}
+        }
 
 
 @router.patch("/{match_id}/complete")

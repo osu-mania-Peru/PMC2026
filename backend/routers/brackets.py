@@ -31,6 +31,7 @@ async def get_all_brackets(db: Session = Depends(get_db)):
             "id": bracket.id,
             "bracket_size": bracket.bracket_size,
             "bracket_name": bracket.bracket_name,
+            "bracket_type": bracket.bracket_type,
             "bracket_order": bracket.bracket_order,
             "is_completed": bracket.is_completed,
             "total_matches": total_matches,
@@ -45,6 +46,7 @@ async def create_bracket(
     bracket_size: int,
     bracket_name: str,
     bracket_order: int,
+    bracket_type: str = "winner",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
@@ -52,7 +54,8 @@ async def create_bracket(
     bracket = Bracket(
         bracket_size=bracket_size,
         bracket_name=bracket_name,
-        bracket_order=bracket_order
+        bracket_order=bracket_order,
+        bracket_type=bracket_type
     )
     db.add(bracket)
     db.commit()
@@ -97,7 +100,11 @@ async def get_bracket_matches(bracket_id: int, db: Session = Depends(get_db)):
             "winner_username": winner.username if winner else None,
             "match_status": match.match_status,
             "is_completed": match.is_completed,
-            "scheduled_time": match.scheduled_time
+            "scheduled_time": match.scheduled_time,
+            "round_name": match.round_name,
+            "next_match_id": match.next_match_id,
+            "loser_next_match_id": match.loser_next_match_id,
+            "is_grandfinals_reset": match.is_grandfinals_reset
         })
 
-    return {"matches": result, "total": len(result), "bracket": {"id": bracket.id, "name": bracket.bracket_name, "size": bracket.bracket_size}}
+    return {"matches": result, "total": len(result), "bracket": {"id": bracket.id, "name": bracket.bracket_name, "size": bracket.bracket_size, "type": bracket.bracket_type}}
