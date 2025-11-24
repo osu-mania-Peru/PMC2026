@@ -9,5 +9,5 @@ COPY . .
 
 EXPOSE 8000
 
-# Run migrations and start server
-CMD alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000
+# Start server without migrations
+CMD uvicorn main:app --host 0.0.0.0 --port 8000

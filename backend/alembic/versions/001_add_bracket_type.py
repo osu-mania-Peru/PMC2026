@@ -1,7 +1,7 @@
 """Add bracket_type field to brackets table
 
 Revision ID: 001
-Revises: 94505cbc33fc
+Revises:
 Create Date: 2025-11-24
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '001'
-down_revision = '94505cbc33fc'
+down_revision = None
 branch_labels = None
 depends_on = None
 
