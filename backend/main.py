@@ -34,7 +34,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Admin-Password"],
 )
 
 # Include routers
@@ -76,7 +76,7 @@ async def preflight_handler(rest_of_path: str, response: Response):
     """Handle CORS preflight"""
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Admin-Password"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     return {"message": "OK"}
 

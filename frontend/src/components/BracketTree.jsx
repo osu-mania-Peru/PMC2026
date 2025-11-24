@@ -47,7 +47,7 @@ const StyledMatch = ({ match, onMatchClick, onPartyClick }) => {
 export default function BracketTree({ bracketId, api, defaultBracket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dimensions, setDimensions] = useState({ width: 1400, height: 400 });
+  const [dimensions, setDimensions] = useState({ width: 1400, height: 800 });
   const containerRef = useRef(null);
 
   useEffect(() => {
