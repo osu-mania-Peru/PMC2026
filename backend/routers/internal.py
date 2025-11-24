@@ -268,7 +268,7 @@ async def get_tournament_state(
         bracket_summary.append({
             "id": bracket.id,
             "name": bracket.bracket_name,
-            "type": bracket.bracket_type,
+            "type": getattr(bracket, 'bracket_type', 'unknown'),
             "total_matches": len(matches_in_bracket),
             "completed_matches": completed
         })
