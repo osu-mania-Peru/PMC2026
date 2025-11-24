@@ -69,16 +69,12 @@ def health_check():
 
 
 # Debug CORS - handle OPTIONS explicitly
-from fastapi import Response, Request
+from fastapi import Response
 
 @app.options("/{rest_of_path:path}")
-async def preflight_handler(rest_of_path: str, request: Request, response: Response):
+async def preflight_handler(rest_of_path: str, response: Response):
     """Handle CORS preflight"""
-    origin = request.headers.get("origin", "")
-    if origin in origins:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    else:
-        response.headers["Access-Control-Allow-Origin"] = Config.FRONTEND_URL
+    response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Admin-Password"
     response.headers["Access-Control-Allow-Credentials"] = "true"
