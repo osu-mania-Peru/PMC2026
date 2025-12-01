@@ -1,6 +1,6 @@
 """
-Internal endpoints for inter-service communication and admin tools
-NOT exposed to public - used by auth service and admin panel
+Endpoints internos para comunicación entre servicios y herramientas de admin
+NO expuesto al público - usado por el servicio de auth y panel de admin
 """
 from fastapi import APIRouter, HTTPException, Header
 from sqlalchemy.orm import Session
@@ -33,8 +33,8 @@ async def sync_user(
     x_internal_secret: str = Header(None)
 ):
     """
-    Create or update user from auth service
-    This endpoint is called by the auth microservice after OAuth
+    Crear o actualizar usuario desde el servicio de auth
+    Este endpoint es llamado por el microservicio de auth después de OAuth
     """
     # Verify internal secret (simple auth between services)
     if x_internal_secret != Config.INTERNAL_SECRET:
@@ -79,7 +79,7 @@ async def sync_user(
 # Admin Debug Endpoints (Password Protected)
 
 def verify_admin_password(x_admin_password: str = Header(None)):
-    """Verify admin password matches INTERNAL_SECRET"""
+    """Verificar que la contraseña de admin coincida con INTERNAL_SECRET"""
     if x_admin_password != Config.INTERNAL_SECRET:
         raise HTTPException(status_code=403, detail="Invalid admin password")
     return True
@@ -90,7 +90,7 @@ async def seed_database(
     db: Session = Depends(get_db),
     _: bool = Depends(verify_admin_password)
 ):
-    """Seed database with test tournament data"""
+    """Poblar base de datos con datos de torneo de prueba"""
 
     # Create test players if needed
     test_players = []
@@ -190,7 +190,7 @@ async def simulate_match(
     db: Session = Depends(get_db),
     _: bool = Depends(verify_admin_password)
 ):
-    """Simulate a match completion with random scores"""
+    """Simular finalización de partida con puntajes aleatorios"""
     from services.bracket_progression import BracketProgressionService
 
     match = db.query(Match).filter(Match.id == match_id).first()
@@ -232,7 +232,7 @@ async def reset_tournament(
     db: Session = Depends(get_db),
     _: bool = Depends(verify_admin_password)
 ):
-    """Delete all tournament data (brackets, matches)"""
+    """Eliminar todos los datos del torneo (llaves, partidas)"""
 
     # Delete all matches
     matches_deleted = db.query(Match).delete()
@@ -254,7 +254,7 @@ async def get_tournament_state(
     db: Session = Depends(get_db),
     _: bool = Depends(verify_admin_password)
 ):
-    """Get current tournament state for debugging"""
+    """Obtener estado actual del torneo para depuración"""
 
     brackets = db.query(Bracket).all()
     matches = db.query(Match).all()
@@ -268,7 +268,7 @@ async def get_tournament_state(
         bracket_summary.append({
             "id": bracket.id,
             "name": bracket.bracket_name,
-            "type": getattr(bracket, 'bracket_type', 'unknown'),
+            "type": bracket.bracket_type,
             "total_matches": len(matches_in_bracket),
             "completed_matches": completed
         })

@@ -1,5 +1,5 @@
 """
-Bracket management endpoints
+Endpoints de gestión de llaves
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/brackets", tags=["Brackets"])
 
 @router.get("")
 async def get_all_brackets(db: Session = Depends(get_db)):
-    """Get all brackets with match statistics"""
+    """Obtener todas las llaves con estadísticas de partidas"""
     brackets = db.query(Bracket).order_by(Bracket.bracket_order).all()
 
     result = []
@@ -50,7 +50,7 @@ async def create_bracket(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Create bracket structure (staff only)"""
+    """Crear estructura de llave (solo staff)"""
     bracket = Bracket(
         bracket_size=bracket_size,
         bracket_name=bracket_name,
@@ -65,7 +65,7 @@ async def create_bracket(
 
 @router.get("/{bracket_id}")
 async def get_bracket(bracket_id: int, db: Session = Depends(get_db)):
-    """Get specific bracket details"""
+    """Obtener detalles de una llave específica"""
     bracket = db.query(Bracket).filter(Bracket.id == bracket_id).first()
     if not bracket:
         raise HTTPException(status_code=404, detail="Bracket not found")
@@ -74,7 +74,7 @@ async def get_bracket(bracket_id: int, db: Session = Depends(get_db)):
 
 @router.get("/{bracket_id}/matches")
 async def get_bracket_matches(bracket_id: int, db: Session = Depends(get_db)):
-    """Get all matches in a bracket with player details"""
+    """Obtener todas las partidas de una llave con detalles de jugadores"""
     bracket = db.query(Bracket).filter(Bracket.id == bracket_id).first()
     if not bracket:
         raise HTTPException(status_code=404, detail="Bracket not found")

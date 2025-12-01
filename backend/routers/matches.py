@@ -1,5 +1,5 @@
 """
-Match management endpoints
+Endpoints de gestión de partidas
 """
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
@@ -36,7 +36,7 @@ async def get_matches(
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Get all matches with optional filters"""
+    """Obtener todas las partidas con filtros opcionales"""
     query = db.query(Match)
 
     if bracket_id:
@@ -54,7 +54,7 @@ async def create_match(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Create a new match (staff only)"""
+    """Crear una nueva partida (solo staff)"""
     new_match = Match(**match_data.dict())
     db.add(new_match)
     db.commit()
@@ -64,7 +64,7 @@ async def create_match(
 
 @router.get("/{match_id}")
 async def get_match(match_id: int, db: Session = Depends(get_db)):
-    """Get specific match details"""
+    """Obtener detalles de una partida específica"""
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -78,7 +78,7 @@ async def update_match_score(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Submit/update match scores (staff or players in match)"""
+    """Enviar/actualizar puntajes de la partida (staff o jugadores de la partida)"""
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -122,7 +122,7 @@ async def complete_match(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Mark match as completed (staff only)"""
+    """Marcar partida como completada (solo staff)"""
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
@@ -140,7 +140,7 @@ async def delete_match(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Delete match (staff only)"""
+    """Eliminar partida (solo staff)"""
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")

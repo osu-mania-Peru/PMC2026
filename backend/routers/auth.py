@@ -1,7 +1,7 @@
 """
-Authentication endpoints
-NOTE: OAuth flow is handled by auth-service microservice
-This only provides token validation endpoints
+Endpoints de autenticación
+NOTA: El flujo OAuth es manejado por el microservicio auth-service
+Esto solo provee endpoints de validación de tokens
 """
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -15,8 +15,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: User = Depends(get_current_user)):
     """
-    Get current logged-in user info
-    Requires authentication
+    Obtener información del usuario actual
+    Requiere autenticación
     """
     return current_user
 
@@ -24,7 +24,7 @@ async def get_me(current_user: User = Depends(get_current_user)):
 @router.post("/logout", response_model=LogoutResponse)
 async def logout(current_user: User = Depends(get_current_user)):
     """
-    Logout current user
-    Note: With JWT, logout is primarily client-side (remove token)
+    Cerrar sesión del usuario actual
+    Nota: Con JWT, el logout es principalmente del lado del cliente (eliminar token)
     """
     return LogoutResponse(message="Logged out successfully")

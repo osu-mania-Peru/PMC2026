@@ -7,6 +7,7 @@ from models.match import Match
 from models.session import Session
 from models.audit_log import AuditLog
 from models.notification import Notification
+from models.api_key import APIKey
 
 __all__ = [
     "Base",
@@ -18,4 +19,5 @@ __all__ = [
     "Session",
     "AuditLog",
     "Notification",
+    "APIKey",
 ]

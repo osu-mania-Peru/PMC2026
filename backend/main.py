@@ -6,12 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
-from routers import auth, users, tournament, brackets, maps, matches, notifications
+from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys
 
 # Create FastAPI app
 app = FastAPI(
     title="Peru Mania Cup API",
-    description="osu! Tournament Management System",
+    description="Torneo de osu! Peru Mania Cup",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -34,7 +34,7 @@ app.add_middleware(
     allow_origins=origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Admin-Password"],
+    allow_headers=["Authorization", "Content-Type", "X-Admin-Password", "X-API-Key"],
 )
 
 # Include routers
@@ -45,6 +45,7 @@ app.include_router(brackets.router)
 app.include_router(maps.router)
 app.include_router(matches.router)
 app.include_router(notifications.router)
+app.include_router(api_keys.router)
 
 # Internal routers (for inter-service communication)
 from routers import internal
@@ -53,7 +54,7 @@ app.include_router(internal.router)
 
 @app.get("/")
 def read_root():
-    """Root endpoint"""
+    """Endpoint raíz"""
     return {
         "name": "Peru Mania Cup API",
         "version": "1.0.0",
@@ -64,7 +65,7 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    """Health check endpoint"""
+    """Verificación de estado"""
     return {"status": "healthy"}
 
 
@@ -73,10 +74,10 @@ from fastapi import Response
 
 @app.options("/{rest_of_path:path}")
 async def preflight_handler(rest_of_path: str, response: Response):
-    """Handle CORS preflight"""
+    """Manejar preflight de CORS"""
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Admin-Password"
+    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Admin-Password, X-API-Key"
     response.headers["Access-Control-Allow-Credentials"] = "true"
     return {"message": "OK"}
 

@@ -1,5 +1,5 @@
 """
-Beatmap pool management endpoints
+Endpoints de gestión del mappool
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -29,7 +29,7 @@ class MapUpdate(BaseModel):
 
 @router.get("")
 async def get_all_maps(db: Session = Depends(get_db)):
-    """Get all maps in pool (public)"""
+    """Obtener todos los mapas del pool (público)"""
     maps = db.query(Map).all()
     return {"maps": maps, "total": len(maps)}
 
@@ -40,7 +40,7 @@ async def add_map(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Add map to pool (staff only)"""
+    """Agregar mapa al pool (solo staff)"""
     new_map = Map(**map_data.dict())
     db.add(new_map)
     db.commit()
@@ -50,7 +50,7 @@ async def add_map(
 
 @router.get("/{map_id}")
 async def get_map(map_id: int, db: Session = Depends(get_db)):
-    """Get specific map details"""
+    """Obtener detalles de un mapa específico"""
     map_obj = db.query(Map).filter(Map.id == map_id).first()
     if not map_obj:
         raise HTTPException(status_code=404, detail="Map not found")
@@ -64,7 +64,7 @@ async def update_map(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Update map info (staff only)"""
+    """Actualizar información del mapa (solo staff)"""
     map_obj = db.query(Map).filter(Map.id == map_id).first()
     if not map_obj:
         raise HTTPException(status_code=404, detail="Map not found")
@@ -83,7 +83,7 @@ async def delete_map(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_staff_user)
 ):
-    """Remove map from pool (staff only)"""
+    """Eliminar mapa del pool (solo staff)"""
     map_obj = db.query(Map).filter(Map.id == map_id).first()
     if not map_obj:
         raise HTTPException(status_code=404, detail="Map not found")

@@ -1,5 +1,5 @@
 """
-Notification management endpoints
+Endpoints de gestión de notificaciones
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ async def get_notifications(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get user notifications"""
+    """Obtener notificaciones del usuario"""
     query = db.query(Notification).filter(Notification.user_id == current_user.id)
 
     if unread_only:
@@ -43,7 +43,7 @@ async def mark_notification_read(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Mark notification as read"""
+    """Marcar notificación como leída"""
     notification = db.query(Notification).filter(
         Notification.id == notification_id,
         Notification.user_id == current_user.id
@@ -64,7 +64,7 @@ async def delete_notification(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Delete notification"""
+    """Eliminar notificación"""
     notification = db.query(Notification).filter(
         Notification.id == notification_id,
         Notification.user_id == current_user.id

@@ -1,5 +1,5 @@
 """
-Tournament registration and management endpoints
+Endpoints de registro y gestión del torneo
 """
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -18,7 +18,7 @@ async def register_for_tournament(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Register current user for tournament"""
+    """Registrar al usuario actual en el torneo"""
     # Check if tournament registration is open
     tournament_state = db.query(TournamentState).first()
     if tournament_state and not tournament_state.registration_open:
@@ -43,7 +43,7 @@ async def unregister_from_tournament(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Unregister current user from tournament"""
+    """Cancelar registro del usuario actual del torneo"""
     if not current_user.is_registered:
         raise HTTPException(status_code=400, detail="Not registered for tournament")
 
@@ -56,7 +56,7 @@ async def unregister_from_tournament(
 
 @router.get("/registrations")
 async def get_registration_stats(db: Session = Depends(get_db)):
-    """Get tournament registration statistics"""
+    """Obtener estadísticas de registro del torneo"""
     tournament_state = db.query(TournamentState).first()
     registered_users = db.query(User).filter(User.is_registered == True).all()
 
@@ -74,7 +74,7 @@ async def get_registration_stats(db: Session = Depends(get_db)):
 
 @router.get("/status")
 async def get_tournament_status(db: Session = Depends(get_db)):
-    """Get current tournament state"""
+    """Obtener estado actual del torneo"""
     tournament_state = db.query(TournamentState).first()
     if not tournament_state:
         return {
