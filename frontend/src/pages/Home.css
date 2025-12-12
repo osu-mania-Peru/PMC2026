@@ -38,6 +38,12 @@
   gap: 2rem;
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--border);
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.timeline-item:hover {
+  background: linear-gradient(90deg, rgba(255, 8, 68, 0.05) 0%, transparent 100%);
 }
 
 .timeline-item:last-child {
@@ -48,6 +54,7 @@
   font-weight: 600;
   color: var(--text-secondary);
   font-size: 0.85rem;
+  font-family: monospace;
 }
 
 .timeline-content h3 {
@@ -57,6 +64,12 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  position: relative;
+  display: inline-block;
+}
+
+.timeline-item:hover .timeline-content h3 {
+  color: var(--accent-secondary);
 }
 
 /* Stats - Top Right */
@@ -73,7 +86,10 @@
   background: rgba(0, 0, 0, 0.5);
   padding: 2rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
+
 
 .stat-label {
   font-size: 0.75rem;
@@ -136,7 +152,10 @@
   justify-content: center;
   align-items: center;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
+
 
 .bento-action h3 {
   color: var(--text-primary);
@@ -151,20 +170,16 @@
   margin-bottom: 2rem;
 }
 
-.bento-action.registered {
-  border: 2px solid var(--accent-secondary);
-}
-
 .bento-action.registered h3 {
   color: var(--accent-secondary);
 }
 
-/* Button Styles */
+/* Button Styles - Parallelogram */
 .bento-button {
   background: var(--accent-secondary);
   color: var(--text-primary);
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.8rem 2rem;
   cursor: pointer;
   font-size: 0.85rem;
   text-decoration: none;
@@ -172,11 +187,14 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
+  transform: skewX(-10deg);
+  transition: all 0.2s ease;
 }
 
 .bento-button:hover {
   background: var(--text-primary);
   color: var(--bg-primary);
+  transform: skewX(-10deg) translateX(4px);
 }
 
 .unavailable-text {

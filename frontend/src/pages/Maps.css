@@ -1,13 +1,146 @@
+.maps-page {
+  background: var(--bg-primary);
+  flex: 1;
+  margin: 0;
+  min-height: 0;
+  padding: 3rem;
+}
+
+.maps-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.maps-header h2 {
+  margin-bottom: 0;
+}
+
+.maps-count {
+  background: var(--accent-secondary);
+  color: var(--text-primary);
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  transform: skewX(-10deg);
+}
+
+.maps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+.map-card {
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: stretch;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-card:hover {
+  background: var(--bg-secondary);
+  transform: translateX(4px);
+}
+
+.map-index {
+  background: var(--bg-primary);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: monospace;
+}
+
+.map-info {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  min-width: 0;
+}
+
+.map-name {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-difficulty {
+  color: var(--accent-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.map-mapper {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.map-link {
+  background: var(--accent-secondary);
+  color: var(--text-primary);
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  clip-path: polygon(15px 0, 100% 0, 100% 100%, 0 100%);
+  transition: background 0.2s ease;
+}
+
+.map-link:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+/* Empty state */
+.maps-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
 @media (max-width: 768px) {
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .maps-page {
+    padding: 1.5rem;
   }
 
-  th, td {
-    white-space: nowrap;
-    font-size: 0.75rem;
-    padding: 0.5rem 0.4rem;
+  .maps-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .maps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .map-card {
+    flex-direction: column;
+  }
+
+  .map-index {
+    min-width: unset;
+    padding: 0.5rem;
+  }
+
+  .map-link {
+    clip-path: none;
+    padding: 0.8rem;
   }
 }

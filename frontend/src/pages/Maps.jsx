@@ -16,37 +16,35 @@ export default function Maps() {
   if (loading) return <div className="loading">Cargando...</div>;
 
   return (
-    <div className="page">
-      <h2>Pool de Mapas</h2>
-      <p>Total de Mapas: {maps.length}</p>
+    <div className="maps-page">
+      <div className="maps-header">
+        <h2>Mappool</h2>
+        <div className="maps-count">{maps.length} MAPS</div>
+      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Mapa</th>
-            <th>Dificultad</th>
-            <th>Mapeador</th>
-            <th>Enlace</th>
-          </tr>
-        </thead>
-        <tbody>
-          {maps.map(map => (
-            <tr key={map.id}>
-              <td><strong>{map.map_name}</strong></td>
-              <td>{map.difficulty_name}</td>
-              <td>{map.mapper_name}</td>
-              <td>
-                <a href={map.map_url} target="_blank" rel="noopener noreferrer">
-                  osu! →
-                </a>
-              </td>
-            </tr>
+      {maps.length === 0 ? (
+        <p className="maps-empty">Aún no hay mapas en el pool.</p>
+      ) : (
+        <div className="maps-grid">
+          {maps.map((map, index) => (
+            <div key={map.id} className="map-card">
+              <div className="map-index">#{index + 1}</div>
+              <div className="map-info">
+                <div className="map-name">{map.map_name}</div>
+                <div className="map-difficulty">[{map.difficulty_name}]</div>
+                <div className="map-mapper">mapped by {map.mapper_name}</div>
+              </div>
+              <a
+                href={map.map_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="map-link"
+              >
+                osu!
+              </a>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-      {maps.length === 0 && (
-        <p>Aún no hay mapas en el pool.</p>
+        </div>
       )}
     </div>
   );

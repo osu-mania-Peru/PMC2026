@@ -1,13 +1,144 @@
+.players-page {
+  background: var(--bg-primary);
+  flex: 1;
+  margin: 0;
+  min-height: 0;
+  padding: 3rem;
+}
+
+.players-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.players-header h2 {
+  margin-bottom: 0;
+}
+
+.players-count {
+  background: var(--accent-secondary);
+  color: var(--text-primary);
+  padding: 0.5rem 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  transform: skewX(-10deg);
+}
+
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.player-card {
+  background: var(--bg-tertiary);
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.player-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent-secondary);
+  transform: scaleY(0);
+  transition: transform 0.2s ease;
+}
+
+.player-card:hover::before {
+  transform: scaleY(1);
+}
+
+.player-card:hover {
+  background: var(--bg-secondary);
+  transform: translateX(4px);
+}
+
+.player-seed {
+  background: var(--bg-primary);
+  color: var(--accent-secondary);
+  font-size: 1.2rem;
+  font-weight: 900;
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: skewX(-10deg);
+}
+
+.player-seed.unranked {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.player-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.player-name:hover {
+  color: var(--accent-secondary);
+}
+
+.player-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.player-flag {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.player-osu-id {
+  font-family: monospace;
+}
+
+/* Empty state */
+.players-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
 @media (max-width: 768px) {
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .players-page {
+    padding: 1.5rem;
   }
 
-  th, td {
-    white-space: nowrap;
-    font-size: 0.75rem;
-    padding: 0.5rem 0.4rem;
+  .players-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .players-grid {
+    grid-template-columns: 1fr;
   }
 }

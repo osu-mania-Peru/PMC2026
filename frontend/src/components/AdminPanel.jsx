@@ -58,7 +58,7 @@ export default function AdminPanel() {
         setError('Contraseña inválida');
         setPassword('');
       }
-    } catch (err) {
+    } catch {
       setError('Error al verificar contraseña');
     }
   };

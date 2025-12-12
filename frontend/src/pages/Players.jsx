@@ -15,44 +15,41 @@ export default function Players() {
 
   if (loading) return <div className="loading">Cargando...</div>;
 
+  const sortedPlayers = players.sort((a, b) => (a.seed_number || 999) - (b.seed_number || 999));
+
   return (
-    <div className="page">
-      <h2>Jugadores Registrados</h2>
-      <p>Total: {players.length}/32</p>
+    <div className="players-page">
+      <div className="players-header">
+        <h2>Jugadores</h2>
+        <div className="players-count">{players.length}/32</div>
+      </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Seed</th>
-            <th>Usuario</th>
-            <th>País</th>
-            <th>ID de osu!</th>
-          </tr>
-        </thead>
-        <tbody>
-          {players
-            .sort((a, b) => (a.seed_number || 999) - (b.seed_number || 999))
-            .map(player => (
-              <tr key={player.id}>
-                <td>{player.seed_number || '-'}</td>
-                <td>
-                  <a
-                    href={`https://osu.ppy.sh/users/${player.osu_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {player.username}
-                  </a>
-                </td>
-                <td>{player.flag_code}</td>
-                <td>{player.osu_id}</td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-
-      {players.length === 0 && (
-        <p>Aún no hay jugadores registrados.</p>
+      {players.length === 0 ? (
+        <p className="players-empty">Aún no hay jugadores registrados.</p>
+      ) : (
+        <div className="players-grid">
+          {sortedPlayers.map(player => (
+            <div key={player.id} className="player-card">
+              <div className={`player-seed ${!player.seed_number ? 'unranked' : ''}`}>
+                {player.seed_number || '—'}
+              </div>
+              <div className="player-info">
+                <a
+                  href={`https://osu.ppy.sh/users/${player.osu_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="player-name"
+                >
+                  {player.username}
+                </a>
+                <div className="player-meta">
+                  <span className="player-flag">{player.flag_code}</span>
+                  <span className="player-osu-id">#{player.osu_id}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

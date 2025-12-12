@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { SingleEliminationBracket, SVGViewer, createTheme } from '@g-loot/react-tournament-brackets';
+import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
 import './BracketTree.css';
 
 // Custom Match component with proper styling
@@ -45,19 +45,20 @@ const StyledMatch = ({ match, onMatchClick, onPartyClick }) => {
 };
 
 export default function BracketTree({ bracketId, api, defaultBracket }) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Initialize with default bracket if no bracketId provided
+  const [data, setData] = useState(() => {
+    if (!bracketId) {
+      return { bracket: defaultBracket, matches: [] };
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(() => !!bracketId);
   const [dimensions, setDimensions] = useState({ width: 1400, height: 800 });
   const containerRef = useRef(null);
 
   useEffect(() => {
     if (!bracketId) {
-      // No bracket in database, use default skeleton
-      setData({
-        bracket: defaultBracket,
-        matches: []
-      });
-      setLoading(false);
+      // Already initialized with default bracket in useState
       return;
     }
 
@@ -65,7 +66,7 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [bracketId, defaultBracket]);
+  }, [bracketId, api]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -92,12 +93,12 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
 
   // Transform API data to @g-loot/react-tournament-brackets format
   const transformMatches = (matches, bracketSize) => {
-    const totalMatches = bracketSize - 1;
     const numRounds = Math.log2(bracketSize);
+    const totalMatchCount = bracketSize - 1;
 
     // Calculate nextMatchId for a given match index
     const getNextMatchId = (matchIndex) => {
-      if (matchIndex === totalMatches - 1) return null; // Final match
+      if (matchIndex === totalMatchCount - 1) return null; // Final match
 
       // Calculate which round this match is in and its position
       let matchCount = 0;
@@ -118,7 +119,7 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
       // Generate empty bracket structure
       const emptyMatches = [];
 
-      for (let i = 0; i < totalMatches; i++) {
+      for (let i = 0; i < totalMatchCount; i++) {
         emptyMatches.push({
           id: i,
           name: `Partida ${i + 1}`,
@@ -176,7 +177,6 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
   };
 
   const getRoundText = (matchIndex, bracketSize) => {
-    const totalMatches = bracketSize - 1;
     const numRounds = Math.log2(bracketSize);
 
     // Calculate which round this match belongs to

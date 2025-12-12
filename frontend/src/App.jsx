@@ -18,16 +18,18 @@ import AdminPanel from './components/AdminPanel';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Initialize loading based on whether we have a token
+    return !!api.getToken() || !!new URLSearchParams(window.location.search).get('token');
+  });
 
-  // () => {}, [] means this will get run after the component is rendered 
   useEffect(() => {
     // Check for token in URL (from auth callback)
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const error = params.get('error');
 
-    if (token) { // get token from URL and set to the api to log in
+    if (token) {
       api.setToken(token);
       window.history.replaceState({}, '', '/');
     }
@@ -46,8 +48,6 @@ function App() {
           api.logout();
         })
         .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
   }, []);
 
