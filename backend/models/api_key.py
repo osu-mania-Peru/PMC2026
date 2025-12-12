@@ -1,3 +1,4 @@
+"""API Key model for third-party integrations."""
 from datetime import datetime
 from typing import Optional
 
@@ -9,6 +10,20 @@ from models.base import Base
 
 
 class APIKey(Base):
+    """
+    API key for programmatic access.
+
+    Attributes:
+        id: Key ID.
+        key_hash: SHA-256 hash of the raw key.
+        key_prefix: First 12 chars for identification (e.g., 'pmc_abc12345').
+        name: Description of key purpose.
+        created_by_id: Staff user who created the key.
+        is_active: Whether key is valid for use.
+        last_used_at: Last successful authentication.
+        expires_at: Optional expiration timestamp.
+        created_at: Creation timestamp.
+    """
     __tablename__ = "api_keys"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

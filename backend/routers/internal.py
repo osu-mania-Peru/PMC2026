@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException, Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
-from typing import List, Optional
 import random
 
 from utils.database import get_db
@@ -258,7 +257,7 @@ async def get_tournament_state(
 
     brackets = db.query(Bracket).all()
     matches = db.query(Match).all()
-    players = db.query(User).filter(User.is_registered == True).all()
+    players = db.query(User).filter(User.is_registered.is_(True)).all()
 
     bracket_summary = []
     for bracket in brackets:

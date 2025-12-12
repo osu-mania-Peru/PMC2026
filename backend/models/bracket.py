@@ -1,5 +1,5 @@
+"""Bracket model for tournament structure."""
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import String, Boolean, Integer, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -9,6 +9,18 @@ from models.base import Base
 
 
 class Bracket(Base):
+    """
+    Tournament bracket containing matches.
+
+    Attributes:
+        id: Bracket ID.
+        bracket_size: Number of players (32, 16, 8, 4, 2).
+        bracket_name: Display name (e.g., 'Round of 16', 'Semifinals').
+        bracket_type: One of 'winner', 'loser', or 'grandfinals'.
+        bracket_order: Progression order (1=first round).
+        is_completed: Whether all matches in bracket are done.
+        created_at: Creation timestamp.
+    """
     __tablename__ = "brackets"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

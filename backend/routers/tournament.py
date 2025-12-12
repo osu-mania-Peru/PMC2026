@@ -1,11 +1,11 @@
 """
 Endpoints de registro y gestión del torneo
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 
-from utils.auth import get_current_user, get_current_staff_user
+from utils.auth import get_current_user
 from utils.database import get_db
 from models.user import User
 from models.tournament_state import TournamentState
@@ -58,7 +58,7 @@ async def unregister_from_tournament(
 async def get_registration_stats(db: Session = Depends(get_db)):
     """Obtener estadísticas de registro del torneo"""
     tournament_state = db.query(TournamentState).first()
-    registered_users = db.query(User).filter(User.is_registered == True).all()
+    registered_users = db.query(User).filter(User.is_registered.is_(True)).all()
 
     total_registered = len(registered_users)
     max_spots = 32
@@ -83,7 +83,7 @@ async def get_tournament_status(db: Session = Depends(get_db)):
             "total_registered_players": 0
         }
 
-    total_registered = db.query(User).filter(User.is_registered == True).count()
+    total_registered = db.query(User).filter(User.is_registered.is_(True)).count()
 
     result = {
         "status": tournament_state.status,

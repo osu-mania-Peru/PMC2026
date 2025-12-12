@@ -2,11 +2,11 @@
 Peru Mania Cup - Tournament Management System
 FastAPI Backend
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
-from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys
+from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal
 
 # Create FastAPI app
 app = FastAPI(
@@ -48,7 +48,6 @@ app.include_router(notifications.router)
 app.include_router(api_keys.router)
 
 # Internal routers (for inter-service communication)
-from routers import internal
 app.include_router(internal.router)
 
 
@@ -70,8 +69,6 @@ def health_check():
 
 
 # Debug CORS - handle OPTIONS explicitly
-from fastapi import Response
-
 @app.options("/{rest_of_path:path}")
 async def preflight_handler(rest_of_path: str, response: Response):
     """Manejar preflight de CORS"""

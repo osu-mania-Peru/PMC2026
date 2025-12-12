@@ -3,7 +3,7 @@ Endpoints de autenticación
 NOTA: El flujo OAuth es manejado por el microservicio auth-service
 Esto solo provee endpoints de validación de tokens
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from utils.auth import get_current_user
 from models.user import User

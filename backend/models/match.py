@@ -1,3 +1,4 @@
+"""Match model for tournament matches."""
 from datetime import datetime
 from typing import Optional
 
@@ -9,6 +10,27 @@ from models.base import Base
 
 
 class Match(Base):
+    """
+    Tournament match between two players.
+
+    Attributes:
+        id: Match ID.
+        bracket_id: Foreign key to containing bracket.
+        player1_id: First player's user ID.
+        player2_id: Second player's user ID.
+        map_id: Map being played.
+        player1_score: Player 1's final score.
+        player2_score: Player 2's final score.
+        winner_id: Winner's user ID.
+        scheduled_time: Scheduled start time.
+        actual_start_time: Actual start time.
+        match_status: One of 'scheduled', 'in_progress', 'completed', 'cancelled', 'forfeit'.
+        is_completed: Whether match has finished.
+        round_name: Display name (e.g., 'Quarterfinals').
+        next_match_id: Match winner advances to.
+        loser_next_match_id: Match loser goes to (double elimination).
+        is_grandfinals_reset: True if this is a bracket reset match.
+    """
     __tablename__ = "matches"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

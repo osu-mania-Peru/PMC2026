@@ -6,11 +6,22 @@ and Grand Finals with bracket reset.
 """
 from sqlalchemy.orm import Session
 from models.match import Match
-from models.user import User
 
 
 class BracketProgressionService:
-    """Handles match progression in double elimination tournament"""
+    """
+    Service for managing match progression in double elimination tournaments.
+
+    Handles automatic player advancement through winner/loser brackets
+    and Grand Finals bracket reset logic.
+
+    Args:
+        db: SQLAlchemy database session.
+
+    Example:
+        >>> service = BracketProgressionService(db)
+        >>> result = service.progress_match(completed_match)
+    """
 
     def __init__(self, db: Session):
         self.db = db
@@ -19,10 +30,18 @@ class BracketProgressionService:
         """
         Progress players after a match is completed.
 
-        Returns dict with:
-        - winner_advanced_to: Match ID where winner was placed (or None)
-        - loser_advanced_to: Match ID where loser was placed (or None)
-        - grandfinals_reset_created: Bool indicating if reset match was created
+        Args:
+            match: Completed :class:`~models.match.Match` with winner set.
+
+        Returns:
+            dict: Progression result with keys:
+                - ``winner_advanced_to``: Match ID where winner placed, or None.
+                - ``loser_advanced_to``: Match ID where loser placed, or None.
+                - ``grandfinals_reset_created``: Whether bracket reset was created.
+                - ``bracket_reset_match_id``: Reset match ID if created.
+
+        Raises:
+            ValueError: If match is not completed or has no winner.
         """
         if not match.is_completed or not match.winner_id:
             raise ValueError("Match must be completed with a winner")
@@ -62,8 +81,17 @@ class BracketProgressionService:
         self.db.commit()
         return result
 
-    def _assign_player_to_match(self, match: Match, player_id: int):
-        """Assign a player to the next available slot in a match"""
+    def _assign_player_to_match(self, match: Match, player_id: int) -> None:
+        """
+        Assign a player to the next available slot in a match.
+
+        Args:
+            match: Target match to assign player to.
+            player_id: User ID to assign.
+
+        Raises:
+            ValueError: If both player slots are already filled.
+        """
         if not match.player1_id:
             match.player1_id = player_id
         elif not match.player2_id:
@@ -72,17 +100,49 @@ class BracketProgressionService:
             raise ValueError(f"Match {match.id} already has both players assigned")
 
     def _is_grandfinals_match(self, match: Match) -> bool:
-        """Check if this is a Grand Finals match"""
+        """
+        Check if match is a Grand Finals match (not reset).
+
+        Args:
+            match: Match to check.
+
+        Returns:
+            True if match is in grandfinals bracket and not a reset match.
+        """
         from models.bracket import Bracket
         bracket = self.db.query(Bracket).filter(Bracket.id == match.bracket_id).first()
-        return bracket and bracket.bracket_type == 'grandfinals' and not match.is_grandfinals_reset
+        if not bracket:
+            return False
+        return bracket.bracket_type == 'grandfinals' and not match.is_grandfinals_reset
 
     def _did_loser_bracket_champion_win(self, grandfinals_match: Match) -> bool:
-        """Determine if the loser bracket champion won the first Grand Finals match"""
+        """
+        Check if loser bracket champion won first Grand Finals.
+
+        Args:
+            grandfinals_match: The Grand Finals match.
+
+        Returns:
+            True if bracket reset is needed (loser bracket champion won).
+
+        Note:
+            Currently returns True always - needs implementation.
+        """
         return True
 
     def _create_bracket_reset_match(self, original_grandfinals: Match) -> Match:
-        """Create the bracket reset match (Grand Finals Game 2)"""
+        """
+        Create the bracket reset match (Grand Finals Game 2).
+
+        Args:
+            original_grandfinals: The first Grand Finals match.
+
+        Returns:
+            Newly created reset :class:`~models.match.Match`.
+
+        Raises:
+            ValueError: If Grand Finals bracket not found.
+        """
         from models.bracket import Bracket
 
         bracket = self.db.query(Bracket).filter(

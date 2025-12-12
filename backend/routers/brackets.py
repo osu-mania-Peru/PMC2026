@@ -1,9 +1,8 @@
 """
 Endpoints de gestión de llaves
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
 from utils.auth import get_current_staff_user
 from utils.database import get_db
@@ -24,7 +23,7 @@ async def get_all_brackets(db: Session = Depends(get_db)):
         total_matches = db.query(Match).filter(Match.bracket_id == bracket.id).count()
         completed_matches = db.query(Match).filter(
             Match.bracket_id == bracket.id,
-            Match.is_completed == True
+            Match.is_completed.is_(True)
         ).count()
 
         result.append({

@@ -65,8 +65,9 @@ db.sqlite3-journal
 # Scrapy stuff
 .scrapy
 
-# Sphinx documentation
+# Documentation builds
 docs/_build/
+docs/api/
 
 # PyBuilder
 .pybuilder/
@@ -255,3 +256,8 @@ credentials.json
 uploads/
 media/
 static/uploads/
+
+# Test scripts
+test_api_key.sh
+test_api_key.ps1
+API_KEY_USAGE.md

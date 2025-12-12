@@ -1,11 +1,10 @@
 """
 Endpoints de gestión de usuarios
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
 
-from utils.auth import get_current_user, get_current_staff_user, get_user_or_api_key
+from utils.auth import get_current_staff_user, get_user_or_api_key
 from utils.database import get_db
 from models.user import User
 from schemas.auth import UserResponse
@@ -32,7 +31,7 @@ async def get_registered_players(
     _auth = Depends(get_user_or_api_key)
 ):
     """Obtener todos los jugadores registrados (requiere autenticación o API key)"""
-    users = db.query(User).filter(User.is_registered == True).all()
+    users = db.query(User).filter(User.is_registered.is_(True)).all()
     return {
         "users": users,
         "total": len(users)

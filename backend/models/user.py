@@ -1,3 +1,4 @@
+"""User model for tournament participants and staff."""
 from datetime import datetime
 from typing import Optional
 
@@ -9,6 +10,21 @@ from models.base import Base
 
 
 class User(Base):
+    """
+    Tournament user representing an osu! player.
+
+    Attributes:
+        id: Internal database ID.
+        osu_id: osu! user ID from OAuth.
+        username: osu! username.
+        flag_code: ISO 3166-1 alpha-2 country code.
+        is_staff: Whether user has staff privileges.
+        is_registered: Whether user is registered for tournament.
+        registered_at: Timestamp of tournament registration.
+        seed_number: Player seeding for bracket placement.
+        created_at: Account creation timestamp.
+        updated_at: Last update timestamp.
+    """
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)

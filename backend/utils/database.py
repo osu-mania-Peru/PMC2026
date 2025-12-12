@@ -1,6 +1,8 @@
 """
 Database session management
 """
+from typing import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from config import Config
@@ -17,8 +19,18 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def get_db() -> Session:
-    """Dependency to get database session"""
+def get_db() -> Generator[Session, None, None]:
+    """
+    FastAPI dependency providing database session.
+
+    Yields:
+        SQLAlchemy Session that auto-closes after request.
+
+    Example:
+        >>> @app.get("/users")
+        >>> def get_users(db: Session = Depends(get_db)):
+        >>>     return db.query(User).all()
+    """
     db = SessionLocal()
     try:
         yield db

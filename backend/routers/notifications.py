@@ -3,7 +3,6 @@ Endpoints de gestión de notificaciones
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
 
 from utils.auth import get_current_user
 from utils.database import get_db
@@ -23,12 +22,12 @@ async def get_notifications(
     query = db.query(Notification).filter(Notification.user_id == current_user.id)
 
     if unread_only:
-        query = query.filter(Notification.is_read == False)
+        query = query.filter(Notification.is_read.is_(False))
 
     notifications = query.order_by(Notification.created_at.desc()).all()
     unread_count = db.query(Notification).filter(
         Notification.user_id == current_user.id,
-        Notification.is_read == False
+        Notification.is_read.is_(False)
     ).count()
 
     return {

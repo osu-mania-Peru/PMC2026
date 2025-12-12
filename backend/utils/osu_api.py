@@ -8,7 +8,17 @@ from config import Config
 
 
 class OsuAPI:
-    """Handle osu! OAuth and API interactions"""
+    """
+    Client for osu! OAuth2 and API v2 interactions.
+
+    Provides methods for OAuth authorization flow and user data retrieval.
+    All methods are static as no instance state is required.
+
+    Attributes:
+        OSU_OAUTH_URL: OAuth authorization endpoint.
+        OSU_TOKEN_URL: OAuth token exchange endpoint.
+        OSU_API_BASE: API v2 base URL.
+    """
 
     OSU_OAUTH_URL = "https://osu.ppy.sh/oauth/authorize"
     OSU_TOKEN_URL = "https://osu.ppy.sh/oauth/token"
@@ -16,7 +26,15 @@ class OsuAPI:
 
     @staticmethod
     def get_auth_url(state: Optional[str] = None) -> str:
-        """Generate osu! OAuth authorization URL"""
+        """
+        Generate osu! OAuth authorization URL.
+
+        Args:
+            state: Optional CSRF state parameter.
+
+        Returns:
+            Full authorization URL for redirect.
+        """
         params = {
             "client_id": Config.OSU_CLIENT_ID,
             "redirect_uri": Config.OSU_REDIRECT_URI,
@@ -32,7 +50,15 @@ class OsuAPI:
 
     @staticmethod
     async def exchange_code_for_token(code: str) -> Optional[str]:
-        """Exchange authorization code for access token"""
+        """
+        Exchange OAuth authorization code for access token.
+
+        Args:
+            code: Authorization code from OAuth callback.
+
+        Returns:
+            Access token string if successful, ``None`` on failure.
+        """
         data = {
             "client_id": Config.OSU_CLIENT_ID,
             "client_secret": Config.OSU_CLIENT_SECRET,
@@ -68,7 +94,16 @@ class OsuAPI:
 
     @staticmethod
     async def get_user_info(access_token: str) -> Optional[Dict[str, Any]]:
-        """Get user information from osu! API using access token"""
+        """
+        Fetch user profile from osu! API.
+
+        Args:
+            access_token: Valid OAuth access token.
+
+        Returns:
+            User data dict with keys like ``id``, ``username``, ``country_code``,
+            or ``None`` on failure.
+        """
         headers = {
             "Authorization": f"Bearer {access_token}",
             "User-Agent": "PMC2025-Tournament/1.0",
