@@ -113,12 +113,10 @@ async def seed_database(
     test_map = db.query(Map).first()
     if not test_map:
         test_map = Map(
-            beatmap_id=1,
-            artist="Test Artist",
-            title="Test Song",
-            difficulty="Test Diff",
-            mod_combination="NM",
-            star_rating=5.0
+            map_url="https://osu.ppy.sh/beatmaps/1",
+            map_name="Test Song",
+            difficulty_name="Test Diff",
+            mapper_name="Test Mapper"
         )
         db.add(test_map)
         db.commit()
@@ -321,12 +319,10 @@ async def generate_brackets(
     default_map = db.query(Map).first()
     if not default_map:
         default_map = Map(
-            beatmap_id=1,
-            artist="TBD",
-            title="TBD",
-            difficulty="TBD",
-            mod_combination="NM",
-            star_rating=0.0
+            map_url="https://osu.ppy.sh/beatmaps/0",
+            map_name="TBD",
+            difficulty_name="TBD",
+            mapper_name="TBD"
         )
         db.add(default_map)
         db.commit()
