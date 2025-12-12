@@ -278,3 +278,255 @@ async def get_tournament_state(
         "completed_matches": sum(1 for m in matches if m.is_completed),
         "registered_players": len(players)
     }
+
+
+class GenerateBracketRequest(BaseModel):
+    bracket_size: int = 32  # 32, 16, 8
+
+
+@router.post("/admin/generate-brackets")
+async def generate_brackets(
+    request: GenerateBracketRequest,
+    db: Session = Depends(get_db),
+    _: bool = Depends(verify_admin_password)
+):
+    """
+    Generate full double elimination bracket structure with registered players.
+    Creates winner bracket, loser bracket, and grand finals.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+
+    # Get registered players ordered by seed
+    players = db.query(User).filter(
+        User.is_registered.is_(True)
+    ).order_by(User.seed_number.asc().nullslast()).all()
+
+    if len(players) < 2:
+        raise HTTPException(status_code=400, detail="Need at least 2 registered players")
+
+    bracket_size = request.bracket_size
+    if bracket_size not in [4, 8, 16, 32]:
+        raise HTTPException(status_code=400, detail="Bracket size must be 4, 8, 16, or 32")
+
+    if len(players) > bracket_size:
+        players = players[:bracket_size]  # Take top seeds
+
+    # Clear existing brackets and matches
+    db.query(Match).delete()
+    db.query(Bracket).delete()
+    db.commit()
+
+    # Get or create default map
+    default_map = db.query(Map).first()
+    if not default_map:
+        default_map = Map(
+            beatmap_id=1,
+            artist="TBD",
+            title="TBD",
+            difficulty="TBD",
+            mod_combination="NM",
+            star_rating=0.0
+        )
+        db.add(default_map)
+        db.commit()
+
+    # Create Winner Bracket
+    winner_bracket = Bracket(
+        bracket_size=bracket_size,
+        bracket_name="Winner Bracket",
+        bracket_type="winner",
+        bracket_order=1
+    )
+    db.add(winner_bracket)
+
+    # Create Loser Bracket
+    loser_bracket = Bracket(
+        bracket_size=bracket_size,
+        bracket_name="Loser Bracket",
+        bracket_type="loser",
+        bracket_order=2
+    )
+    db.add(loser_bracket)
+
+    # Create Grand Finals
+    gf_bracket = Bracket(
+        bracket_size=2,
+        bracket_name="Grand Finals",
+        bracket_type="grandfinals",
+        bracket_order=3
+    )
+    db.add(gf_bracket)
+    db.commit()
+
+    # Generate seeding matchups (1v32, 2v31, etc. or standard bracket seeding)
+    def get_seeded_matchups(num_players):
+        """Generate standard tournament seeding matchups."""
+        if num_players <= 1:
+            return []
+
+        # Standard seeding: 1v16, 8v9, 5v12, 4v13, 3v14, 6v11, 7v10, 2v15 for 16 players
+        matchups = []
+        half = num_players // 2
+        for i in range(half):
+            seed1 = i
+            seed2 = num_players - 1 - i
+            matchups.append((seed1, seed2))
+        return matchups
+
+    # Create Winner Bracket Round 1 matches
+    matchups = get_seeded_matchups(bracket_size)
+
+    winner_matches = []
+    for i, (seed1_idx, seed2_idx) in enumerate(matchups):
+        player1 = players[seed1_idx] if seed1_idx < len(players) else None
+        player2 = players[seed2_idx] if seed2_idx < len(players) else None
+
+        match = Match(
+            bracket_id=winner_bracket.id,
+            player1_id=player1.id if player1 else players[0].id,  # Placeholder
+            player2_id=player2.id if player2 else players[0].id,
+            map_id=default_map.id,
+            round_name=f"Round of {bracket_size}",
+            match_status="scheduled"
+        )
+        db.add(match)
+        winner_matches.append(match)
+
+    db.commit()
+
+    # Create subsequent winner bracket rounds
+    current_round_matches = winner_matches
+
+    while len(current_round_matches) > 1:
+        next_round_matches = []
+        matches_in_round = len(current_round_matches) // 2
+
+        round_name = "Finals" if matches_in_round == 1 else \
+                     "Semifinals" if matches_in_round == 2 else \
+                     "Quarterfinals" if matches_in_round == 4 else \
+                     f"Round of {matches_in_round * 2}"
+
+        for i in range(matches_in_round):
+            match = Match(
+                bracket_id=winner_bracket.id,
+                player1_id=players[0].id,  # Placeholder - will be filled by progression
+                player2_id=players[0].id,
+                map_id=default_map.id,
+                round_name=round_name,
+                match_status="scheduled"
+            )
+            db.add(match)
+            next_round_matches.append(match)
+
+        db.commit()
+
+        # Link previous round to this round
+        for i, prev_match in enumerate(current_round_matches):
+            prev_match.next_match_id = next_round_matches[i // 2].id
+
+        db.commit()
+        current_round_matches = next_round_matches
+
+    # Create Grand Finals match
+    gf_match = Match(
+        bracket_id=gf_bracket.id,
+        player1_id=players[0].id,
+        player2_id=players[0].id,
+        map_id=default_map.id,
+        round_name="Grand Finals",
+        match_status="scheduled"
+    )
+    db.add(gf_match)
+    db.commit()
+
+    # Link winner bracket finals to grand finals
+    if current_round_matches:
+        current_round_matches[0].next_match_id = gf_match.id
+        db.commit()
+
+    total_matches = db.query(Match).count()
+
+    logger.info(f"[BRACKET] Generated {total_matches} matches for {len(players)} players")
+
+    return {
+        "message": "Brackets generated successfully",
+        "bracket_size": bracket_size,
+        "players_seeded": len(players),
+        "total_matches": total_matches,
+        "brackets": {
+            "winner": winner_bracket.id,
+            "loser": loser_bracket.id,
+            "grandfinals": gf_bracket.id
+        }
+    }
+
+
+@router.patch("/admin/match/{match_id}/score")
+async def admin_update_score(
+    match_id: int,
+    player1_score: int,
+    player2_score: int,
+    db: Session = Depends(get_db),
+    _: bool = Depends(verify_admin_password)
+):
+    """Admin endpoint to set match score and determine winner."""
+    from services.bracket_progression import BracketProgressionService
+
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    match.player1_score = player1_score
+    match.player2_score = player2_score
+    match.winner_id = match.player1_id if player1_score > player2_score else match.player2_id
+    match.is_completed = True
+    match.match_status = "completed"
+    db.commit()
+
+    # Progress bracket
+    try:
+        progression_service = BracketProgressionService(db)
+        progression_result = progression_service.progress_match(match)
+    except Exception as e:
+        progression_result = {"error": str(e)}
+
+    return {
+        "match_id": match.id,
+        "player1_score": player1_score,
+        "player2_score": player2_score,
+        "winner_id": match.winner_id,
+        "progression": progression_result
+    }
+
+
+@router.get("/admin/matches")
+async def admin_get_all_matches(
+    db: Session = Depends(get_db),
+    _: bool = Depends(verify_admin_password)
+):
+    """Get all matches with player details for admin."""
+    matches = db.query(Match).order_by(Match.bracket_id, Match.id).all()
+
+    result = []
+    for match in matches:
+        player1 = db.query(User).filter(User.id == match.player1_id).first()
+        player2 = db.query(User).filter(User.id == match.player2_id).first()
+        bracket = db.query(Bracket).filter(Bracket.id == match.bracket_id).first()
+
+        result.append({
+            "id": match.id,
+            "bracket_id": match.bracket_id,
+            "bracket_name": bracket.bracket_name if bracket else None,
+            "bracket_type": bracket.bracket_type if bracket else None,
+            "round_name": match.round_name,
+            "player1": {"id": player1.id, "username": player1.username} if player1 else None,
+            "player2": {"id": player2.id, "username": player2.username} if player2 else None,
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "winner_id": match.winner_id,
+            "is_completed": match.is_completed,
+            "match_status": match.match_status
+        })
+
+    return {"matches": result, "total": len(result)}

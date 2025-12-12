@@ -1,19 +1,20 @@
 .admin-panel-toggle {
   position: fixed;
-  bottom: 0;
-  right: 0;
-  width: 8px;
-  height: 8px;
-  background: transparent;
+  bottom: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  background: #ff0844;
   border: none;
   cursor: pointer;
   z-index: 9998;
-  opacity: 0;
+  opacity: 0.3;
+  border-radius: 4px;
 }
 
 .admin-panel-toggle:hover {
-  opacity: 0.1;
-  background: #222;
+  opacity: 1;
+  background: #ff0844;
 }
 
 .admin-panel-overlay {
@@ -22,12 +23,16 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   padding: 20px;
+  pointer-events: none;
+}
+
+.admin-panel-overlay .admin-panel {
+  pointer-events: auto;
 }
 
 .admin-panel {
@@ -39,6 +44,20 @@
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  user-select: none;
+}
+
+.admin-panel.dragging {
+  cursor: grabbing;
+  opacity: 0.9;
+}
+
+.admin-panel input,
+.admin-panel select,
+.admin-panel button,
+.admin-panel pre {
+  cursor: auto;
 }
 
 .admin-panel-header {
@@ -178,6 +197,139 @@
   overflow-x: auto;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.admin-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.admin-select {
+  padding: 0.75rem;
+  background: #222;
+  border: 2px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.admin-select:focus {
+  outline: none;
+  border-color: #ff0844;
+}
+
+.admin-modal {
+  background: #222;
+  border: 2px solid #ff0844;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.admin-modal h4 {
+  color: #ff0844;
+  margin: 0 0 0.5rem 0;
+}
+
+.admin-modal p {
+  color: #ccc;
+  margin: 0 0 1rem 0;
+}
+
+.score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.score-inputs span {
+  color: #fff;
+  font-size: 1.5rem;
+}
+
+.admin-input.score {
+  width: 80px;
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.admin-matches {
+  margin-top: 1rem;
+  background: #111;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.admin-matches h4 {
+  color: #fff;
+  margin: 0 0 1rem 0;
+}
+
+.matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.match-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: #1a1a1a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.match-item:hover {
+  background: #252525;
+}
+
+.match-item.completed {
+  border-left: 3px solid #00ff00;
+}
+
+.match-bracket {
+  background: #333;
+  color: #ff0844;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.match-round {
+  color: #888;
+  font-size: 0.85rem;
+  min-width: 100px;
+}
+
+.match-players {
+  flex: 1;
+  color: #fff;
+}
+
+.match-score {
+  background: #00ff00;
+  color: #000;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {
