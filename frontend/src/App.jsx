@@ -124,7 +124,7 @@ function App() {
 
         <footer className="footer">
           <div className="footer-content">
-            <p>PMC2025</p>
+            <p>PMC2026</p>
             <a href="https://discord.gg/placeholder" target="_blank" rel="noopener noreferrer" className="discord-link">
               <FaDiscord size={20} />
               <span>Únete a nuestro Discord</span>
