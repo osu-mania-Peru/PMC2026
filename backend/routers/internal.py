@@ -371,114 +371,168 @@ async def generate_brackets(
             matchups.append((seed1, seed2))
         return matchups
 
-    # Create Winner Bracket Round 1 matches
+    # ===== WINNER BRACKET =====
+    num_winner_rounds = int(math.log2(bracket_size))
+    placeholder = players[0]
+
+    # Generate seeded matchups for Round 1
     matchups = get_seeded_matchups(bracket_size)
 
-    winner_matches = []
-    for i, (seed1_idx, seed2_idx) in enumerate(matchups):
-        player1 = players[seed1_idx] if seed1_idx < len(players) else None
-        player2 = players[seed2_idx] if seed2_idx < len(players) else None
+    # Store all winner rounds for linking to loser bracket
+    winner_rounds = []  # winner_rounds[i] = list of matches in round i
+
+    # WR1: First round with seeded players
+    wr1 = []
+    for seed1_idx, seed2_idx in matchups:
+        p1 = players[seed1_idx] if seed1_idx < len(players) else placeholder
+        p2 = players[seed2_idx] if seed2_idx < len(players) else placeholder
 
         match = Match(
             bracket_id=winner_bracket.id,
-            player1_id=player1.id if player1 else players[0].id,  # Placeholder
-            player2_id=player2.id if player2 else players[0].id,
+            player1_id=p1.id,
+            player2_id=p2.id,
             map_id=default_map.id,
             round_name=f"Round of {bracket_size}",
             match_status="scheduled"
         )
         db.add(match)
-        winner_matches.append(match)
-
+        wr1.append(match)
     db.commit()
+    winner_rounds.append(wr1)
 
-    # Create subsequent winner bracket rounds
-    current_round_matches = winner_matches
+    # Subsequent winner rounds
+    for round_idx in range(1, num_winner_rounds):
+        prev_round = winner_rounds[-1]
+        matches_in_round = len(prev_round) // 2
 
-    while len(current_round_matches) > 1:
-        next_round_matches = []
-        matches_in_round = len(current_round_matches) // 2
+        round_name = ("Winner Finals" if matches_in_round == 1 else
+                      "Winner Semifinals" if matches_in_round == 2 else
+                      "Winner Quarterfinals" if matches_in_round == 4 else
+                      f"Winner Round {round_idx + 1}")
 
-        round_name = "Finals" if matches_in_round == 1 else \
-                     "Semifinals" if matches_in_round == 2 else \
-                     "Quarterfinals" if matches_in_round == 4 else \
-                     f"Round of {matches_in_round * 2}"
-
-        for i in range(matches_in_round):
-            match = Match(
-                bracket_id=winner_bracket.id,
-                player1_id=players[0].id,  # Placeholder - will be filled by progression
-                player2_id=players[0].id,
-                map_id=default_map.id,
-                round_name=round_name,
-                match_status="scheduled"
-            )
-            db.add(match)
-            next_round_matches.append(match)
-
-        db.commit()
-
-        # Link previous round to this round
-        for i, prev_match in enumerate(current_round_matches):
-            prev_match.next_match_id = next_round_matches[i // 2].id
-
-        db.commit()
-        current_round_matches = next_round_matches
-
-    # Create Loser Bracket matches
-    # Double elimination loser bracket has (2 * num_rounds - 1) rounds
-    # For bracket_size=4: 2 rounds in winner = 3 loser rounds
-    # For bracket_size=8: 3 rounds in winner = 5 loser rounds
-    num_winner_rounds = int(math.log2(bracket_size))
-    num_loser_rounds = 2 * num_winner_rounds - 1
-
-    loser_matches = []
-    loser_round_matches = []
-
-    for loser_round in range(num_loser_rounds):
-        # Odd rounds (1,3,5...) have same matches as previous
-        # Even rounds (0,2,4...) have half the matches (players from winner bracket drop in)
-        if loser_round == 0:
-            matches_in_round = bracket_size // 4  # First loser round
-        elif loser_round % 2 == 1:
-            matches_in_round = len(loser_round_matches) if loser_round_matches else bracket_size // 4
-        else:
-            matches_in_round = max(1, len(loser_round_matches) // 2) if loser_round_matches else bracket_size // 4
-
-        round_name = f"Loser Round {loser_round + 1}"
-        if matches_in_round == 1:
-            round_name = "Loser Finals"
-
-        round_matches = []
+        curr_round = []
         for _ in range(matches_in_round):
             match = Match(
-                bracket_id=loser_bracket.id,
-                player1_id=players[0].id,  # Placeholder
-                player2_id=players[0].id,
+                bracket_id=winner_bracket.id,
+                player1_id=placeholder.id,
+                player2_id=placeholder.id,
                 map_id=default_map.id,
                 round_name=round_name,
                 match_status="scheduled"
             )
             db.add(match)
-            round_matches.append(match)
-            loser_matches.append(match)
-
+            curr_round.append(match)
         db.commit()
 
-        # Link previous loser round to this round
-        if loser_round_matches and len(loser_round_matches) >= 2:
-            for i, prev_match in enumerate(loser_round_matches):
-                if i // 2 < len(round_matches):
-                    prev_match.next_match_id = round_matches[i // 2].id
+        # Link previous round winners to this round
+        for i, prev_match in enumerate(prev_round):
+            prev_match.next_match_id = curr_round[i // 2].id
+        db.commit()
+
+        winner_rounds.append(curr_round)
+
+    # ===== LOSER BRACKET =====
+    # Structure: LR1 (consolidation), then alternating merge/consolidation rounds
+    # For 8 players: LR1(2), LR2(2), LR3(1), LR4(1) = 6 matches
+    # For 16 players: LR1(4), LR2(4), LR3(2), LR4(2), LR5(1), LR6(1) = 14 matches
+
+    loser_rounds = []
+
+    # LR1: WR1 losers paired together (consolidation)
+    wr1 = winner_rounds[0]
+    lr1_count = len(wr1) // 2
+    lr1 = []
+    for i in range(lr1_count):
+        match = Match(
+            bracket_id=loser_bracket.id,
+            player1_id=placeholder.id,
+            player2_id=placeholder.id,
+            map_id=default_map.id,
+            round_name="Loser Round 1",
+            match_status="scheduled"
+        )
+        db.add(match)
+        lr1.append(match)
+    db.commit()
+
+    # Link WR1 losers to LR1 (2:1 mapping - two WR1 losers per LR1 match)
+    for i, wr_match in enumerate(wr1):
+        wr_match.loser_next_match_id = lr1[i // 2].id
+    db.commit()
+    loser_rounds.append(lr1)
+
+    # Process remaining winner rounds - each creates a merge round, possibly followed by consolidation
+    for wr_idx in range(1, num_winner_rounds):
+        wr = winner_rounds[wr_idx]
+        prev_lr = loser_rounds[-1]
+        is_winner_finals = (wr_idx == num_winner_rounds - 1)
+
+        # Merge round: Previous LR survivors meet current WR losers
+        merge_count = len(prev_lr)  # Should equal len(wr)
+        loser_round_num = len(loser_rounds) + 1
+
+        if is_winner_finals:
+            round_name = "Loser Finals"
+        else:
+            round_name = f"Loser Round {loser_round_num}"
+
+        merge_round = []
+        for _ in range(merge_count):
+            match = Match(
+                bracket_id=loser_bracket.id,
+                player1_id=placeholder.id,
+                player2_id=placeholder.id,
+                map_id=default_map.id,
+                round_name=round_name,
+                match_status="scheduled"
+            )
+            db.add(match)
+            merge_round.append(match)
+        db.commit()
+
+        # Link previous LR winners to merge round (1:1)
+        for i, prev_match in enumerate(prev_lr):
+            prev_match.next_match_id = merge_round[i].id
+
+        # Link current WR losers to merge round (1:1)
+        for i, wr_match in enumerate(wr):
+            if i < len(merge_round):
+                wr_match.loser_next_match_id = merge_round[i].id
+        db.commit()
+
+        loser_rounds.append(merge_round)
+
+        # Consolidation round after merge (if not loser finals and more than 1 match)
+        if not is_winner_finals and merge_count > 1:
+            consol_count = merge_count // 2
+            loser_round_num = len(loser_rounds) + 1
+
+            consol_round = []
+            for _ in range(consol_count):
+                match = Match(
+                    bracket_id=loser_bracket.id,
+                    player1_id=placeholder.id,
+                    player2_id=placeholder.id,
+                    map_id=default_map.id,
+                    round_name=f"Loser Round {loser_round_num}",
+                    match_status="scheduled"
+                )
+                db.add(match)
+                consol_round.append(match)
             db.commit()
 
-        loser_round_matches = round_matches
+            # Link merge round winners to consolidation (2:1)
+            for i, merge_match in enumerate(merge_round):
+                merge_match.next_match_id = consol_round[i // 2].id
+            db.commit()
 
-    # Create Grand Finals match
+            loser_rounds.append(consol_round)
+
+    # ===== GRAND FINALS =====
     gf_match = Match(
         bracket_id=gf_bracket.id,
-        player1_id=players[0].id,
-        player2_id=players[0].id,
+        player1_id=placeholder.id,
+        player2_id=placeholder.id,
         map_id=default_map.id,
         round_name="Grand Finals",
         match_status="scheduled"
@@ -486,15 +540,12 @@ async def generate_brackets(
     db.add(gf_match)
     db.commit()
 
-    # Link winner bracket finals to grand finals
-    if current_round_matches:
-        current_round_matches[0].next_match_id = gf_match.id
-        db.commit()
+    # Link Winner Finals winner to Grand Finals
+    winner_rounds[-1][0].next_match_id = gf_match.id
 
-    # Link loser bracket finals to grand finals
-    if loser_round_matches:
-        loser_round_matches[0].next_match_id = gf_match.id
-        db.commit()
+    # Link Loser Finals winner to Grand Finals
+    loser_rounds[-1][0].next_match_id = gf_match.id
+    db.commit()
 
     total_matches = db.query(Match).count()
 
