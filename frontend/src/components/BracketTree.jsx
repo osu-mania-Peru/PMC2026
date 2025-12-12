@@ -149,31 +149,42 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
       return emptyMatches;
     }
 
+    // Get all match IDs in this bracket to validate nextMatchId links
+    const matchIds = new Set(matches.map(m => m.id));
+
     // Transform actual match data
-    return matches.map((match, index) => ({
-      id: match.id || index,
-      name: `Partida ${index + 1}`,
-      nextMatchId: match.next_match_id !== undefined ? match.next_match_id : getNextMatchId(index),
-      tournamentRoundText: match.round_name || getRoundText(index, bracketSize),
-      startTime: match.scheduled_time || new Date().toISOString(),
-      state: match.winner_id ? 'DONE' : 'SCHEDULED',
-      participants: [
-        {
-          id: match.player1_id || `${index}-p1`,
-          resultText: match.player1_score !== null ? String(match.player1_score) : null,
-          isWinner: match.winner_id === match.player1_id,
-          status: match.winner_id === match.player1_id ? 'PLAYED' : null,
-          name: match.player1_username || 'POR DEFINIR'
-        },
-        {
-          id: match.player2_id || `${index}-p2`,
-          resultText: match.player2_score !== null ? String(match.player2_score) : null,
-          isWinner: match.winner_id === match.player2_id,
-          status: match.winner_id === match.player2_id ? 'PLAYED' : null,
-          name: match.player2_username || 'POR DEFINIR'
-        }
-      ]
-    }));
+    return matches.map((match, index) => {
+      // Only use nextMatchId if it points to a match within this bracket
+      let nextMatchId = null;
+      if (match.next_match_id !== undefined && match.next_match_id !== null) {
+        nextMatchId = matchIds.has(match.next_match_id) ? match.next_match_id : null;
+      }
+
+      return {
+        id: match.id || index,
+        name: `Partida ${index + 1}`,
+        nextMatchId,
+        tournamentRoundText: match.round_name || getRoundText(index, bracketSize),
+        startTime: match.scheduled_time || new Date().toISOString(),
+        state: match.winner_id ? 'DONE' : 'SCHEDULED',
+        participants: [
+          {
+            id: match.player1_id || `${index}-p1`,
+            resultText: match.player1_score !== null ? String(match.player1_score) : null,
+            isWinner: match.winner_id === match.player1_id,
+            status: match.winner_id === match.player1_id ? 'PLAYED' : null,
+            name: match.player1_username || 'POR DEFINIR'
+          },
+          {
+            id: match.player2_id || `${index}-p2`,
+            resultText: match.player2_score !== null ? String(match.player2_score) : null,
+            isWinner: match.winner_id === match.player2_id,
+            status: match.winner_id === match.player2_id ? 'PLAYED' : null,
+            name: match.player2_username || 'POR DEFINIR'
+          }
+        ]
+      };
+    });
   };
 
   const getRoundText = (matchIndex, bracketSize) => {
@@ -193,9 +204,25 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     return 'Finals';
   };
 
-  const bracketSize = data.bracket.size || data.bracket.bracket_size || 32;
-  const transformedMatches = transformMatches(data.matches, bracketSize);
-  const bracketType = data.bracket.type || 'winner';
+  const bracketSize = data.bracket?.size || data.bracket?.bracket_size || 32;
+  const bracketType = data.bracket?.type || data.bracket?.bracket_type || 'winner';
+
+  // Guard against invalid bracket sizes
+  if (bracketSize < 2 || !Number.isFinite(bracketSize)) {
+    return (
+      <div className="bracket-tree" ref={containerRef}>
+        <div className="bracket-section">
+          <h2 className="bracket-section-title">Bracket no disponible</h2>
+          <div className="no-matches">Configuración de bracket inválida</div>
+        </div>
+      </div>
+    );
+  }
+
+  const transformedMatches = transformMatches(data.matches, bracketSize) || [];
+
+  // SingleEliminationBracket can't handle brackets with < 2 matches
+  const canRenderBracket = Array.isArray(transformedMatches) && transformedMatches.length >= 2;
 
   const getBracketTitle = () => {
     switch (bracketType) {
@@ -215,6 +242,37 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     if (bracketType === 'grandfinals') return 'grandfinals';
     return '';
   };
+
+  // Render simple view for single-match brackets (like Grand Finals)
+  if (!canRenderBracket) {
+    const match = transformedMatches?.[0];
+    return (
+      <div className="bracket-tree" ref={containerRef}>
+        <div className="bracket-section">
+          <h2 className={`bracket-section-title ${getTitleClass()}`}>
+            {getBracketTitle()}
+          </h2>
+          <div className="single-match-view">
+            {match ? (
+              <div className="styled-match single">
+                <div className="match-round-text">{match.tournamentRoundText}</div>
+                <div className={`match-team ${match.participants?.[0]?.isWinner ? 'winner' : ''}`}>
+                  <span className="team-name">{match.participants?.[0]?.name || 'TBD'}</span>
+                  <span className="team-score">{match.participants?.[0]?.resultText || ''}</span>
+                </div>
+                <div className={`match-team ${match.participants?.[1]?.isWinner ? 'winner' : ''}`}>
+                  <span className="team-name">{match.participants?.[1]?.name || 'TBD'}</span>
+                  <span className="team-score">{match.participants?.[1]?.resultText || ''}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="no-matches">No hay partidas programadas</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bracket-tree" ref={containerRef}>

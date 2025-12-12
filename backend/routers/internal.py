@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime
 import random
+import math
 
 from utils.database import get_db
 from models.user import User
@@ -424,6 +425,55 @@ async def generate_brackets(
         db.commit()
         current_round_matches = next_round_matches
 
+    # Create Loser Bracket matches
+    # Double elimination loser bracket has (2 * num_rounds - 1) rounds
+    # For bracket_size=4: 2 rounds in winner = 3 loser rounds
+    # For bracket_size=8: 3 rounds in winner = 5 loser rounds
+    num_winner_rounds = int(math.log2(bracket_size))
+    num_loser_rounds = 2 * num_winner_rounds - 1
+
+    loser_matches = []
+    loser_round_matches = []
+
+    for loser_round in range(num_loser_rounds):
+        # Odd rounds (1,3,5...) have same matches as previous
+        # Even rounds (0,2,4...) have half the matches (players from winner bracket drop in)
+        if loser_round == 0:
+            matches_in_round = bracket_size // 4  # First loser round
+        elif loser_round % 2 == 1:
+            matches_in_round = len(loser_round_matches) if loser_round_matches else bracket_size // 4
+        else:
+            matches_in_round = max(1, len(loser_round_matches) // 2) if loser_round_matches else bracket_size // 4
+
+        round_name = f"Loser Round {loser_round + 1}"
+        if matches_in_round == 1:
+            round_name = "Loser Finals"
+
+        round_matches = []
+        for _ in range(matches_in_round):
+            match = Match(
+                bracket_id=loser_bracket.id,
+                player1_id=players[0].id,  # Placeholder
+                player2_id=players[0].id,
+                map_id=default_map.id,
+                round_name=round_name,
+                match_status="scheduled"
+            )
+            db.add(match)
+            round_matches.append(match)
+            loser_matches.append(match)
+
+        db.commit()
+
+        # Link previous loser round to this round
+        if loser_round_matches and len(loser_round_matches) >= 2:
+            for i, prev_match in enumerate(loser_round_matches):
+                if i // 2 < len(round_matches):
+                    prev_match.next_match_id = round_matches[i // 2].id
+            db.commit()
+
+        loser_round_matches = round_matches
+
     # Create Grand Finals match
     gf_match = Match(
         bracket_id=gf_bracket.id,
@@ -439,6 +489,11 @@ async def generate_brackets(
     # Link winner bracket finals to grand finals
     if current_round_matches:
         current_round_matches[0].next_match_id = gf_match.id
+        db.commit()
+
+    # Link loser bracket finals to grand finals
+    if loser_round_matches:
+        loser_round_matches[0].next_match_id = gf_match.id
         db.commit()
 
     total_matches = db.query(Match).count()
