@@ -7,7 +7,8 @@ export default function Players() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getRegisteredPlayers()
+    // TODO: Change back to getRegisteredPlayers for production
+    api.getAllUsers()
       .then(data => setPlayers(data.users))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -30,6 +31,11 @@ export default function Players() {
         <div className="players-grid">
           {sortedPlayers.map(player => (
             <div key={player.id} className="player-card">
+              <img
+                src={`https://a.ppy.sh/${player.osu_id}`}
+                alt={player.username}
+                className="player-avatar"
+              />
               <div className={`player-seed ${!player.seed_number ? 'unranked' : ''}`}>
                 {player.seed_number || '—'}
               </div>

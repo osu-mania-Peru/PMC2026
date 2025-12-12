@@ -36,17 +36,28 @@ export default function Home({ user }) {
           </p>
           <div className="hero-cta">
             {!user ? (
-              <button onClick={api.login} className="cta-button">
-                Iniciar Sesión
-              </button>
+              <>
+                <button onClick={api.login} className="cta-button">
+                  Inscribirse
+                </button>
+                <Link to="/brackets" className="cta-button secondary">
+                  Ver Brackets
+                </Link>
+              </>
             ) : !user.is_registered && status?.registration_open ? (
-              <Link to="/register" className="cta-button">
-                Inscribirse
+              <>
+                <Link to="/register" className="cta-button">
+                  Inscribirse
+                </Link>
+                <Link to="/brackets" className="cta-button secondary">
+                  Ver Brackets
+                </Link>
+              </>
+            ) : (
+              <Link to="/brackets" className="cta-button">
+                Ver Brackets
               </Link>
-            ) : null}
-            <Link to="/brackets" className="cta-button secondary">
-              Ver Brackets
-            </Link>
+            )}
           </div>
 
           {/* Stats inline */}

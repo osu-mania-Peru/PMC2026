@@ -64,6 +64,7 @@ export const api = {
 
   // Users
   getRegisteredPlayers: () => api.fetch('/users/registered'),
+  getAllUsers: () => api.fetch('/users/all'),
 
   // Maps
   getMaps: () => api.fetch('/maps'),
