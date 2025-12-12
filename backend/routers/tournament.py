@@ -1,6 +1,7 @@
 """
 Endpoints de registro y gestión del torneo
 """
+import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -9,6 +10,8 @@ from utils.auth import get_current_user
 from utils.database import get_db
 from models.user import User
 from models.tournament_state import TournamentState
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/tournament", tags=["Tournament"])
 
@@ -19,18 +22,24 @@ async def register_for_tournament(
     current_user: User = Depends(get_current_user)
 ):
     """Registrar al usuario actual en el torneo"""
+    logger.info(f"[REGISTER] User {current_user.username} (id={current_user.id}) attempting to register")
+
     # Check if tournament registration is open
     tournament_state = db.query(TournamentState).first()
     if tournament_state and not tournament_state.registration_open:
+        logger.warning(f"[REGISTER] Registration closed - user {current_user.username} denied")
         raise HTTPException(status_code=400, detail="Registration is closed")
 
     if current_user.is_registered:
+        logger.warning(f"[REGISTER] User {current_user.username} already registered")
         raise HTTPException(status_code=409, detail="Already registered for tournament")
 
     current_user.is_registered = True
     current_user.registered_at = datetime.utcnow()
     db.commit()
     db.refresh(current_user)
+
+    logger.info(f"[REGISTER] User {current_user.username} successfully registered at {current_user.registered_at}")
 
     return {
         "message": "Successfully registered for tournament",
@@ -44,12 +53,17 @@ async def unregister_from_tournament(
     current_user: User = Depends(get_current_user)
 ):
     """Cancelar registro del usuario actual del torneo"""
+    logger.info(f"[UNREGISTER] User {current_user.username} (id={current_user.id}) attempting to unregister")
+
     if not current_user.is_registered:
+        logger.warning(f"[UNREGISTER] User {current_user.username} not registered")
         raise HTTPException(status_code=400, detail="Not registered for tournament")
 
     current_user.is_registered = False
     current_user.registered_at = None
     db.commit()
+
+    logger.info(f"[UNREGISTER] User {current_user.username} successfully unregistered")
 
     return {"message": "Successfully unregistered from tournament"}
 

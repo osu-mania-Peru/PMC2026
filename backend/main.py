@@ -2,11 +2,18 @@
 Peru Mania Cup - Tournament Management System
 FastAPI Backend
 """
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
 from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 # Create FastAPI app
 app = FastAPI(
