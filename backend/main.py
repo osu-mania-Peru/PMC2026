@@ -2,7 +2,7 @@
 Peru Mania Cup - Tournament Management System
 FastAPI Backend
 """
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
@@ -66,17 +66,6 @@ def read_root():
 def health_check():
     """Verificación de estado"""
     return {"status": "healthy"}
-
-
-# Debug CORS - handle OPTIONS explicitly
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(rest_of_path: str, response: Response):
-    """Manejar preflight de CORS"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, X-Admin-Password, X-API-Key"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    return {"message": "OK"}
 
 
 if __name__ == "__main__":
