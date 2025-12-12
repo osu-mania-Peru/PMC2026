@@ -25,12 +25,23 @@ async def get_all_users(
     }
 
 
-@router.get("/all", response_model=dict)
+@router.get("/all")
 async def get_all_users_public(db: Session = Depends(get_db)):
     """Obtener todos los usuarios (público - solo para testing)"""
     users = db.query(User).all()
     return {
-        "users": users,
+        "users": [
+            {
+                "id": u.id,
+                "osu_id": u.osu_id,
+                "username": u.username,
+                "flag_code": u.flag_code,
+                "is_staff": u.is_staff,
+                "is_registered": u.is_registered,
+                "seed_number": u.seed_number,
+            }
+            for u in users
+        ],
         "total": len(users)
     }
 
