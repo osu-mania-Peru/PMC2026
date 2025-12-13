@@ -1313,7 +1313,7 @@
 <body>
     <!-- Loading Screen (pitch black) -->
     <div id="loading" style="background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s ease-out; pointer-events: auto;">
-        <span style="font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif; font-size: 3vh; color: #fff; opacity: 0.8;">Haz click</span>
+        <span id="loadingText" style="font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif; font-size: 3vh; color: #fff; opacity: 0.8;">Cargando...</span>
     </div>
 
     <!-- Game Canvas -->
@@ -1403,6 +1403,7 @@
         const API_BASE = 'https://api.perumaniacup.info';
 
         async function loadPlayers() {
+            const loadingText = document.getElementById('loadingText');
             try {
                 const response = await fetch(`${API_BASE}/users/all`);
                 const data = await response.json();
@@ -1421,13 +1422,14 @@
                         colorIndex: index % 8,
                         avatarUrl: player.osu_id ? `https://a.ppy.sh/${player.osu_id}` : null
                     }));
+                    loadingText.textContent = 'Haz click';
+                } else {
+                    loadingText.textContent = '(Inicia sesion primero)';
                 }
             } catch (error) {
                 console.error('Failed to load players:', error);
-                // Game will use default horses if no players loaded
+                loadingText.textContent = '(Inicia sesion primero)';
             }
-
-            document.getElementById('loading').classList.add('hidden');
         }
 
         // Load scripts sequentially (they have dependencies)
