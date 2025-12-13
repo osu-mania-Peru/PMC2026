@@ -7,6 +7,12 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
 
+        @font-face {
+            font-family: 'Noto Sans SC';
+            src: url('umamusume-ui/packages/assets/NotoSansSC-Bold.otf') format('opentype');
+            font-weight: bold;
+        }
+
         :root {
             /* Umamusume Authentic Color Palette */
             --uma-green: #57cd24;
@@ -684,6 +690,168 @@
             display: none;
         }
 
+        /* ===== PRE-RACE PARTICIPANT SCREEN ===== */
+        .prerace-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+
+        .prerace-screen.hidden {
+            display: none;
+        }
+
+        .prerace-title {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #593b00;
+            background: #fff;
+            padding: 10px 40px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 4px #000;
+            -webkit-text-stroke: 0.5px #593b00;
+        }
+
+        .prerace-participants {
+            display: flex;
+            gap: 8px;
+            padding: 20px;
+            max-width: 95vw;
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .prerace-card {
+            flex-shrink: 0;
+            width: 110px;
+            height: 320px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 4px #000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .prerace-card-header {
+            height: 100%;
+            display: flex;
+            position: relative;
+        }
+
+        .prerace-card-color {
+            width: 12px;
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .prerace-card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            position: relative;
+        }
+
+        .prerace-card-number {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 10px;
+            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+        }
+
+        .prerace-card-name {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #593b00;
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            -webkit-text-stroke: 0.3px #593b00;
+            max-height: 160px;
+            overflow: hidden;
+        }
+
+        .prerace-card-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: auto;
+            background: #eee;
+        }
+
+        .prerace-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .prerace-card-avatar .fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .prerace-button {
+            margin-top: 20px;
+            padding: 16px 80px;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-image: url('umamusume-ui/packages/assets/images/umbtn_bg.png'), linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 2px solid #005e00;
+            border-radius: 16px;
+            box-shadow: 0 4px 0 rgba(56, 56, 56, 0.54);
+            cursor: pointer;
+            transition: all 0.05s linear;
+            -webkit-text-stroke: 1px #fff;
+            pointer-events: auto;
+        }
+
+        .prerace-button:hover {
+            transform: scale(0.95);
+        }
+
+        .prerace-button:active {
+            transform: scale(0.9);
+            box-shadow: 0 2px 0 rgba(56, 56, 56, 0.54);
+        }
+
         /* ===== RACE PROGRESS BAR ===== */
         .race-progress {
             position: fixed;
@@ -691,9 +859,8 @@
             left: 50%;
             transform: translateX(-50%);
             display: none;
-            align-items: flex-end;
+            align-items: center;
             gap: 0;
-            padding-bottom: 8px;
         }
 
         .race-progress.show {
@@ -701,18 +868,22 @@
         }
 
         .race-progress-label {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
             font-size: 18px;
             font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+            letter-spacing: 1px;
             padding: 0 12px;
-            margin-bottom: 2px;
+            -webkit-text-stroke: 2px #fff;
+            paint-order: stroke fill;
             text-shadow:
-                1px 1px 0 #fff,
-                -1px -1px 0 #fff,
-                1px -1px 0 #fff,
-                -1px 1px 0 #fff,
-                0 2px 4px rgba(0,0,0,0.3);
+                2px 2px 0 #fff,
+                -2px -2px 0 #fff,
+                2px -2px 0 #fff,
+                -2px 2px 0 #fff,
+                0 2px 0 #fff,
+                2px 0 0 #fff,
+                0 -2px 0 #fff,
+                -2px 0 0 #fff;
         }
 
         .race-progress-label.finish {
@@ -739,10 +910,10 @@
 
         .race-progress-markers {
             position: absolute;
-            top: 0;
+            bottom: 100%;
             left: 0;
             right: 0;
-            height: 0;
+            height: 60px;
         }
 
         .race-progress-horse {
@@ -847,6 +1018,13 @@
 
     <!-- Game Canvas -->
     <canvas id="gameCanvas"></canvas>
+
+    <!-- Pre-Race Participant Screen -->
+    <div class="prerace-screen" id="preraceScreen">
+        <div class="prerace-title">Peru Mania Cup 2026</div>
+        <div class="prerace-participants" id="preraceParticipants"></div>
+        <button class="prerace-button" id="preraceButton">Empezar!</button>
+    </div>
 
     <!-- Race Countdown -->
     <div class="race-countdown" id="raceCountdown"></div>

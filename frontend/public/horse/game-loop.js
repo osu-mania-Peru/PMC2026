@@ -30,6 +30,10 @@ class Game {
         // Setup controls
         this.setupControls();
         this.setupSpeedButtons();
+        this.setupPreraceScreen();
+
+        // Hide instructions initially (prerace screen has the button)
+        document.getElementById('instructions').style.display = 'none';
 
         // Start loop
         this.gameLoop();
@@ -38,6 +42,75 @@ class Game {
         window.game = this;
 
         console.log('Game initialized');
+    }
+
+    setupPreraceScreen() {
+        const container = document.getElementById('preraceParticipants');
+        const button = document.getElementById('preraceButton');
+
+        if (!container || !button) return;
+
+        // Wait for horses to be loaded
+        const checkHorses = () => {
+            if (this.race.horses.length > 0) {
+                this.populatePreraceCards();
+            } else {
+                setTimeout(checkHorses, 100);
+            }
+        };
+        checkHorses();
+
+        // Button click starts countdown
+        button.addEventListener('click', () => {
+            document.getElementById('preraceScreen').classList.add('hidden');
+            this.startCountdown();
+        });
+    }
+
+    populatePreraceCards() {
+        const container = document.getElementById('preraceParticipants');
+        if (!container) return;
+
+        // Horse colors for the card backgrounds
+        const cardColors = [
+            '#ffd700', // gold/yellow
+            '#ffeb3b', // yellow
+            '#2196f3', // blue
+            '#4caf50', // green
+            '#f44336', // red
+            '#9c27b0', // purple
+            '#ff9800', // orange
+            '#795548', // brown
+            '#607d8b', // blue-grey
+            '#e91e63', // pink
+            '#00bcd4', // cyan
+            '#8bc34a', // light green
+        ];
+
+        container.innerHTML = this.race.horses.map((horse, i) => {
+            const color = `rgb(${horse.color[0]}, ${horse.color[1]}, ${horse.color[2]})`;
+            const cardColor = cardColors[i % cardColors.length];
+            const name = horse.playerName || `Caballo ${horse.number}`;
+            const hasAvatar = horse.avatarUrl;
+            const avatarContent = hasAvatar
+                ? `<img src="${horse.avatarUrl}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fallback" style="display:none">${horse.number}</div>`
+                : `<div class="fallback">${horse.number}</div>`;
+
+            return `
+                <div class="prerace-card">
+                    <div class="prerace-card-header">
+                        <div class="prerace-card-color" style="background: ${color}"></div>
+                        <div class="prerace-card-content">
+                            <div class="prerace-card-number" style="background: ${cardColor}">${horse.number}</div>
+                            <div class="prerace-card-name">${name}</div>
+                            <div class="prerace-card-avatar">
+                                ${avatarContent}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     resizeCanvas() {
@@ -70,13 +143,6 @@ class Game {
     setupControls() {
         document.addEventListener('keydown', (e) => {
             switch (e.code) {
-                case 'Space':
-                    e.preventDefault();
-                    if (!this.race.raceStarted && !this.countdownActive) {
-                        this.startCountdown();
-                    }
-                    break;
-
                 case 'Digit1': this.timeScale = 0.25; this.updateSpeedButtons(); break;
                 case 'Digit2': this.timeScale = 0.5; this.updateSpeedButtons(); break;
                 case 'Digit3': this.timeScale = 1.0; this.updateSpeedButtons(); break;
@@ -103,7 +169,6 @@ class Game {
 
     startCountdown() {
         this.countdownActive = true;
-        document.getElementById('instructions').style.display = 'none';
 
         const countdownEl = document.getElementById('raceCountdown');
         const startTextEl = document.getElementById('raceStartText');
