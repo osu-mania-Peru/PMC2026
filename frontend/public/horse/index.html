@@ -741,11 +741,11 @@
         @keyframes prerace-card-in {
             0% {
                 opacity: 0;
-                transform: translateX(30px);
+                transform: translateY(30px);
             }
             100% {
                 opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
 
@@ -829,7 +829,7 @@
             z-index: 1;
             /* Initial state for animation */
             opacity: 0;
-            transform: translateX(30px);
+            transform: translateY(30px);
         }
 
         .prerace-card::after {
@@ -1220,7 +1220,9 @@
 </head>
 <body>
     <!-- Loading Screen (pitch black) -->
-    <div id="loading" style="background: #000;"></div>
+    <div id="loading" style="background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s ease-out;">
+        <span style="font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif; font-size: 3vh; color: #fff; opacity: 0.8;">Haz click</span>
+    </div>
 
     <!-- Game Canvas -->
     <canvas id="gameCanvas"></canvas>

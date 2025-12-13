@@ -58,11 +58,27 @@ class Game {
             }
         }, { passive: false });
 
-        // Wait for horses to be loaded
+        // Setup pre-race music
+        this.preraceMusic = new Audio('assets/entry-table.mp3');
+        this.preraceMusic.loop = true;
+        this.preraceMusic.volume = 0.7;
+
+        // Wait for horses to be loaded first, then wait for click to start
         const checkHorses = () => {
             if (this.race.horses.length > 0) {
                 this.populatePreraceCards();
-                this.animatePreraceCards();
+                // Wait for user click to start everything
+                const loadingScreen = document.getElementById('loading');
+                const startExperience = () => {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.classList.add('hidden');
+                    }, 500);
+                    this.preraceMusic.play().catch(e => console.log('Audio error:', e));
+                    this.animatePreraceCards();
+                    loadingScreen.removeEventListener('click', startExperience);
+                };
+                loadingScreen.addEventListener('click', startExperience);
             } else {
                 setTimeout(checkHorses, 100);
             }
@@ -71,6 +87,10 @@ class Game {
 
         // Button click starts countdown
         button.addEventListener('click', () => {
+            // Stop pre-race music
+            this.preraceMusic.pause();
+            this.preraceMusic.currentTime = 0;
+
             document.getElementById('preraceScreen').classList.add('hidden');
             this.startCountdown();
         });
@@ -159,6 +179,7 @@ class Game {
                 const remainingCards = reversedCards.slice(4);
                 const scrollDuration = remainingCards.length * cardDelay + 500;
 
+                // First scroll to left
                 this.smoothScrollTo(container, 0, scrollDuration);
 
                 // Continue with remaining cards - fade dictates scroll pace
@@ -167,6 +188,19 @@ class Game {
                         card.classList.add('animate-in');
                     }, index * cardDelay);
                 });
+
+                // After scrolling to left, scroll to center card
+                setTimeout(() => {
+                    const centerIndex = Math.floor(cards.length / 2);
+                    const centerCard = cards[centerIndex];
+                    if (centerCard) {
+                        const cardLeft = centerCard.offsetLeft;
+                        const cardWidth = centerCard.offsetWidth;
+                        const containerWidth = container.clientWidth;
+                        const centerScroll = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+                        this.smoothScrollTo(container, centerScroll, 800);
+                    }
+                }, scrollDuration + 200);
             }, 4 * cardDelay);
         }, 600);
     }
