@@ -216,6 +216,32 @@ export default function AdminPanel() {
     }
   };
 
+  const handleProgressMatch = async (matchId, e) => {
+    e.stopPropagation(); // Prevent opening the edit modal
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(
+        `${API_BASE}/internal/admin/match/${matchId}/progress`,
+        {
+          method: 'POST',
+          headers: { 'X-Admin-Password': password }
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(JSON.stringify(data, null, 2));
+        handleGetMatches(); // Refresh matches
+      } else {
+        setError(data.detail || 'Failed to progress match');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) {
     return (
       <button
@@ -352,6 +378,16 @@ export default function AdminPanel() {
                       </span>
                       {match.is_completed && (
                         <span className="match-score">{match.player1_score}-{match.player2_score}</span>
+                      )}
+                      {match.is_completed && (
+                        <button
+                          className="admin-btn small"
+                          onClick={(e) => handleProgressMatch(match.id, e)}
+                          disabled={loading}
+                          title="Progress winner/loser to next matches"
+                        >
+                          Progress
+                        </button>
                       )}
                     </div>
                   ))}

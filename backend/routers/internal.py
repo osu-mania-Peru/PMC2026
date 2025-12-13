@@ -602,6 +602,32 @@ async def admin_update_score(
     }
 
 
+@router.post("/admin/match/{match_id}/progress")
+async def admin_progress_match(
+    match_id: int,
+    db: Session = Depends(get_db),
+    _: bool = Depends(verify_admin_password)
+):
+    """Manually trigger bracket progression for a completed match."""
+    from services.bracket_progression import BracketProgressionService
+
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    if not match.is_completed or not match.winner_id:
+        raise HTTPException(status_code=400, detail="Match must be completed with a winner to progress")
+
+    progression_service = BracketProgressionService(db)
+    result = progression_service.progress_match(match)
+
+    return {
+        "match_id": match.id,
+        "winner_id": match.winner_id,
+        "progression": result
+    }
+
+
 @router.get("/admin/matches")
 async def admin_get_all_matches(
     db: Session = Depends(get_db),
