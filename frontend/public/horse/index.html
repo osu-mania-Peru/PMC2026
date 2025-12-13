@@ -189,7 +189,7 @@
             <div class="leaderboard-entries" id="leaderboardEntries"></div>
         </div>
         <div class="instructions" id="instructions">
-            SPACE: Iniciar Carrera | TAB: Debug
+            SPACE: Start | 1-5: Speed | P: Pause | V: Visual Debug
         </div>
     </div>
 
@@ -239,8 +239,11 @@
         }
 
         // Load players then start game
+        // horse-layers.js adds modular features (running styles, stamina, drafting, etc.)
+        // horse-core.js is the clean minimal horse implementation
+        // horse-debug.js provides event logging for debugging
         loadPlayers().then(() => {
-            const scripts = ['config.js', 'vector2.js', 'particlePool.js', 'horse.js', 'race.js', 'umasim.js', 'main.js'];
+            const scripts = ['config.js', 'vector2.js', 'particlePool.js', 'horse-layers.js', 'horse-core.js', 'horse-debug.js', 'horse-debug-visual.js', 'race.js', 'umasim.js', 'main.js'];
             loadScriptsInOrder(scripts);
         });
     </script>

@@ -507,9 +507,20 @@ class Race {
             height: this.trackHeight
         };
 
-        // Update horses
+        // Calculate race progress (0-1) based on lead horse or time
+        // Estimate race duration ~60 seconds, adjust based on actual progress
+        const estimatedRaceDuration = 60;
+        let raceProgress = Math.min(1, this.race_time / estimatedRaceDuration);
+
+        // Update horses with layered features
         for (const horse of this.horses) {
-            horse.update(dt, cornerData, trackBounds, this.sprintFences, this.sprintZones, this.checkpoints);
+            horse.updateAwareness(this.horses);
+            horse.update(dt, cornerData, trackBounds, this.sprintFences, this.sprintZones, this.horses, raceProgress);
+        }
+
+        // Debug event detection
+        if (typeof HorseDebug !== 'undefined') {
+            HorseDebug.update(this.horses, trackBounds);
         }
 
         // Check goal collisions
@@ -1065,6 +1076,12 @@ class Race {
                     this.ctx.globalAlpha = 1.0;
                 }
             }
+        }
+
+        // Visual debug overlay
+        if (typeof VisualDebug !== 'undefined') {
+            const trackBounds = { width: this.trackWidth, height: this.trackHeight };
+            VisualDebug.render(this.ctx, this.horses, trackBounds, cameraOffset, zoom);
         }
 
         this.ctx.restore();

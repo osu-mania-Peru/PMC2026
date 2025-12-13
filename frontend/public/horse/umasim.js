@@ -35,8 +35,29 @@ class UmaSim {
         this.finalStretchActivated = false;
         this.leaderHorse = null;
 
+        // Time control
+        this.timeScale = 1.0;
+        this.paused = false;
+
+        // Expose for debugging
+        window.game = this;
+        window.setTimeScale = (scale) => { this.timeScale = scale; console.log(`Time scale: ${scale}x`); };
+        window.pause = () => { this.paused = true; console.log('Paused'); };
+        window.resume = () => { this.paused = false; console.log('Resumed'); };
+        window.step = () => { if (this.paused) this.stepFrame(); };
+
         this.setupEventListeners();
         this.gameLoop();
+    }
+
+    stepFrame() {
+        // Run one frame at 60fps equivalent
+        const dt = (1/60) * this.timeScale;
+        this.race.update(dt);
+        this.updateCameraMode(dt);
+        this.updateCamera();
+        this.race.render(this.debugMode, this.cameraOffset, this.cameraZoom);
+        this.updateUI();
     }
 
     resizeCanvas() {
@@ -61,6 +82,27 @@ class UmaSim {
                 }
                 const status = this.race.horses[0].enable_inner_fence_hugging ? 'enabled' : 'disabled';
                 console.log(`Inner fence hugging: ${status}`);
+            }
+            // Time controls: 1-5 for speed, P for pause, . for step
+            else if (e.code === 'Digit1') { this.timeScale = 0.25; console.log('Speed: 0.25x'); }
+            else if (e.code === 'Digit2') { this.timeScale = 0.5; console.log('Speed: 0.5x'); }
+            else if (e.code === 'Digit3') { this.timeScale = 1.0; console.log('Speed: 1x'); }
+            else if (e.code === 'Digit4') { this.timeScale = 2.0; console.log('Speed: 2x'); }
+            else if (e.code === 'Digit5') { this.timeScale = 4.0; console.log('Speed: 4x'); }
+            else if (e.code === 'KeyP') {
+                this.paused = !this.paused;
+                console.log(this.paused ? 'Paused' : 'Resumed');
+            }
+            else if (e.code === 'Period' && this.paused) {
+                this.stepFrame();
+                console.log('Step');
+            }
+            // Debug: S for snapshot, D for dump
+            else if (e.code === 'KeyS' && !e.ctrlKey) {
+                if (typeof HorseDebug !== 'undefined') HorseDebug.snapshot();
+            }
+            else if (e.code === 'KeyD' && !e.ctrlKey) {
+                if (typeof HorseDebug !== 'undefined') HorseDebug.dump();
             }
         });
 
@@ -539,11 +581,15 @@ class UmaSim {
 
     gameLoop() {
         const currentTime = performance.now();
-        const dt = Math.min((currentTime - this.lastTime) / 1000, 0.1); // Cap at 100ms
+        const rawDt = Math.min((currentTime - this.lastTime) / 1000, 0.1); // Cap at 100ms
         this.lastTime = currentTime;
 
-        this.race.update(dt);
-        this.updateCameraMode(dt);
+        if (!this.paused) {
+            const dt = rawDt * this.timeScale;
+            this.race.update(dt);
+            this.updateCameraMode(dt);
+        }
+
         this.updateCamera();
         this.race.render(this.debugMode, this.cameraOffset, this.cameraZoom);
         this.updateUI();
