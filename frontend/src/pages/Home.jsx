@@ -68,7 +68,7 @@ export default function Home({ user }) {
                 <div className="stat-label">Jugadores</div>
               </div>
               <div className="stat-block">
-                <div className="stat-number">/32</div>
+                <div className="stat-number">32</div>
                 <div className="stat-label">Cupos</div>
               </div>
               <div className="stat-block">
@@ -80,27 +80,32 @@ export default function Home({ user }) {
             </div>
           )}
         </div>
+
+        {/* Hero Logo */}
+        <div className="hero-logo">
+          <img src="/logo.svg" alt="PMC 2026" />
+        </div>
       </div>
 
       {/* Quick Links */}
       <div className="quick-links">
         <Link to="/maps" className="quick-link">
           <div className="quick-link-text">
-            <h3>mappool qualifiers</h3>
+            <h3>MAPPOOL QUALIFIERS</h3>
             <p>Descarga y estadísticas del mappool</p>
           </div>
           <span className="quick-link-arrow">→</span>
         </Link>
         <Link to="/players" className="quick-link">
           <div className="quick-link-text">
-            <h3>jugadores inscritos</h3>
+            <h3>JUGADORES INSCRITOS</h3>
             <p>Lista completa de participantes</p>
           </div>
           <span className="quick-link-arrow">→</span>
         </Link>
         <Link to="/matches" className="quick-link">
           <div className="quick-link-text">
-            <h3>partidas</h3>
+            <h3>PARTIDAS</h3>
             <p>Resultados y próximos enfrentamientos</p>
           </div>
           <span className="quick-link-arrow">→</span>
@@ -130,32 +135,6 @@ export default function Home({ user }) {
         </div>
       </div>
 
-      {/* User Status */}
-      {user && (
-        <div className={`user-status ${user.is_registered ? 'registered' : ''}`}>
-          <div className="user-status-left">
-            {user.is_registered ? (
-              <>
-                <h3>Estás inscrito</h3>
-                <p>Buena suerte en el torneo, {user.username}</p>
-              </>
-            ) : (
-              <>
-                <h3>Hola, {user.username}</h3>
-                <p>Aún no estás inscrito en el torneo</p>
-              </>
-            )}
-          </div>
-          {user.is_registered && user.seed_number && (
-            <div className="seed-badge">#{user.seed_number}</div>
-          )}
-          {!user.is_registered && status?.registration_open && (
-            <Link to="/register" className="cta-button">
-              Inscribirse
-            </Link>
-          )}
-        </div>
-      )}
     </div>
   );
 }

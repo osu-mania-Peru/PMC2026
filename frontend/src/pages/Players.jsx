@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import Spinner from '../components/Spinner';
 import './Players.css';
 
 export default function Players() {
@@ -14,7 +15,7 @@ export default function Players() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
 
   const sortedPlayers = players.sort((a, b) => (a.seed_number || 999) - (b.seed_number || 999));
 

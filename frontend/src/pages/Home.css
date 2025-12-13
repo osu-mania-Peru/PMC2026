@@ -9,14 +9,24 @@
 /* Hero Section */
 .home-hero {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 4rem;
+  align-items: center;
+  gap: 2rem;
   margin-bottom: 3rem;
 }
 
 .hero-left {
-  flex: 1;
+  flex: 0 1 auto;
+  max-width: 550px;
+}
+
+/* Hero Logo - Right side */
+.hero-logo {
+  flex-shrink: 0;
+}
+
+.hero-logo img {
+  width: 480px;
+  height: auto;
 }
 
 .hero-title {
@@ -119,26 +129,22 @@
 
 .quick-link {
   flex: 1;
-  background: var(--bg-tertiary);
-  padding: 1.5rem 2rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 0.5rem;
   text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-.quick-link:hover {
-  background: var(--bg-secondary);
-  transform: translateX(4px);
+  border-radius: 8px;
 }
 
 .quick-link-text h3 {
   color: var(--accent-secondary);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  text-transform: lowercase;
-  margin: 0 0 0.25rem 0;
+  text-transform: uppercase;
+  margin: 0;
 }
 
 .quick-link-text p {
@@ -148,14 +154,7 @@
 }
 
 .quick-link-arrow {
-  color: var(--text-muted);
-  font-size: 1.5rem;
-  transition: transform 0.2s ease;
-}
-
-.quick-link:hover .quick-link-arrow {
-  transform: translateX(4px);
-  color: var(--accent-secondary);
+  display: none;
 }
 
 /* Timeline Section */
@@ -198,7 +197,7 @@
 }
 
 .timeline-track::-webkit-scrollbar {
-  height: 4px;
+  height: 6px;
 }
 
 .timeline-track::-webkit-scrollbar-track {
@@ -214,26 +213,26 @@
   top: 1rem;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 3px;
   background: var(--border);
-  transform: translateY(4px);
+  transform: translateY(6px);
 }
 
 .timeline-event {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 100px;
+  min-width: 120px;
   flex: 1;
   position: relative;
   padding: 0 0.5rem;
 }
 
 .timeline-dot {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   background: var(--bg-tertiary);
-  border: 2px solid var(--border);
+  border: 3px solid var(--border);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
@@ -253,7 +252,7 @@
 }
 
 .timeline-event-title {
-  font-size: 0.7rem;
+  font-size: 0.5rem;
   font-weight: 700;
   color: var(--text-primary);
   text-transform: uppercase;
@@ -266,7 +265,7 @@
 }
 
 .timeline-event-date {
-  font-size: 0.65rem;
+  font-size: 0.45rem;
   color: var(--text-muted);
   font-family: monospace;
   white-space: nowrap;
@@ -274,28 +273,26 @@
 
 /* User Status Card */
 .user-status {
-  background: var(--bg-tertiary);
-  padding: 2rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .user-status-left h3 {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   color: var(--text-primary);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.35rem 0;
   text-transform: uppercase;
 }
 
 .user-status-left p {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   margin: 0;
-}
-
-.user-status.registered {
-  border-left: 3px solid var(--accent-secondary);
 }
 
 .user-status.registered h3 {
@@ -355,7 +352,7 @@
   }
 
   .stat-block {
-    min-width: 100px;
+    min-width: 150px;
   }
 
   .stat-number {

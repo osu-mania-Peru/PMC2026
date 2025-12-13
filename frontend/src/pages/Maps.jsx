@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import Spinner from '../components/Spinner';
 import './Maps.css';
 
 export default function Maps() {
@@ -13,7 +14,7 @@ export default function Maps() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="loading">Cargando...</div>;
+  if (loading) return <Spinner size="large" text="Cargando mapas..." />;
 
   return (
     <div className="maps-page">

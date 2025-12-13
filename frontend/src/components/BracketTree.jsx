@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { SingleEliminationBracket, SVGViewer } from '@g-loot/react-tournament-brackets';
+import Spinner from './Spinner';
 import './BracketTree.css';
 
 // Custom Match component with proper styling
@@ -44,7 +45,7 @@ const StyledMatch = ({ match, onMatchClick, onPartyClick }) => {
   );
 };
 
-export default function BracketTree({ bracketId, api, defaultBracket }) {
+export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false }) {
   // Initialize with default bracket if no bracketId provided
   const [data, setData] = useState(() => {
     if (!bracketId) {
@@ -58,15 +59,19 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
 
   useEffect(() => {
     if (!bracketId) {
-      // Already initialized with default bracket in useState
+      // Use default bracket
+      setData({ bracket: defaultBracket, matches: [] });
+      setLoading(false);
       return;
     }
 
+    // Show spinner when switching brackets
+    setLoading(true);
     api.getBracketMatches(bracketId)
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [bracketId, api]);
+  }, [bracketId, api, defaultBracket]);
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -86,7 +91,7 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     return () => window.removeEventListener('resize', updateDimensions);
   }, [data]);
 
-  if (loading) return <div className="bracket-tree" ref={containerRef}><div className="loading">Cargando brackets...</div></div>;
+  if (loading) return <div className="bracket-tree" ref={containerRef}><Spinner size="large" text="Cargando partidas..." /></div>;
   if (!data) {
     return <div className="bracket-tree" ref={containerRef}><div className="no-data">Error al cargar brackets.</div></div>;
   }
@@ -249,9 +254,11 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
     return (
       <div className="bracket-tree" ref={containerRef}>
         <div className="bracket-section">
-          <h2 className={`bracket-section-title ${getTitleClass()}`}>
-            {getBracketTitle()}
-          </h2>
+          {!hideTitle && (
+            <h2 className={`bracket-section-title ${getTitleClass()}`}>
+              {getBracketTitle()}
+            </h2>
+          )}
           <div className="single-match-view">
             {match ? (
               <div className="styled-match single">
@@ -277,9 +284,11 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
   return (
     <div className="bracket-tree" ref={containerRef}>
       <div className="bracket-section">
-        <h2 className={`bracket-section-title ${getTitleClass()}`}>
-          {getBracketTitle()}
-        </h2>
+        {!hideTitle && (
+          <h2 className={`bracket-section-title ${getTitleClass()}`}>
+            {getBracketTitle()}
+          </h2>
+        )}
         <SingleEliminationBracket
           matches={transformedMatches}
           matchComponent={StyledMatch}
@@ -297,11 +306,18 @@ export default function BracketTree({ bracketId, api, defaultBracket }) {
                 fontSize: 14,
                 fontFamily: 'system-ui, -apple-system, sans-serif',
                 roundTextGenerator: (currentRoundNumber, roundsTotalNumber) => {
+                  if (bracketType === 'loser') {
+                    // Last loser round is always Loser Finals
+                    if (currentRoundNumber === roundsTotalNumber) return 'Loser Finals';
+                    return `Loser Round ${currentRoundNumber}`;
+                  }
+                  // Winner bracket naming (from end)
                   const roundFromEnd = roundsTotalNumber - currentRoundNumber + 1;
                   if (roundFromEnd === 1) return 'Finals';
                   if (roundFromEnd === 2) return 'Semifinals';
                   if (roundFromEnd === 3) return 'Quarterfinals';
                   if (roundFromEnd === 4) return 'Round of 16';
+                  if (roundFromEnd === 5) return 'Round of 32';
                   return `Round ${currentRoundNumber}`;
                 },
               },

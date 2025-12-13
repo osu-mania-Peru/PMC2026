@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import Spinner from '../components/Spinner';
 import './Register.css';
 
 export default function Register({ user, setUser }) {
@@ -42,7 +43,7 @@ export default function Register({ user, setUser }) {
     }
   };
 
-  if (!status) return <div className="loading">Cargando...</div>;
+  if (!status) return <Spinner size="large" text="Cargando estado del torneo..." />;
 
   return (
     <div className="page">
