@@ -199,7 +199,7 @@ class Game {
         // Start card fade-ins
         setTimeout(() => {
             const reversedCards = Array.from(cards).reverse();
-            const cardDelay = 120; // ms between each card
+            const cardDelay = 80; // ms between each card
 
             // Show first 4 cards before scrolling
             for (let i = 0; i < Math.min(4, reversedCards.length); i++) {
@@ -208,22 +208,23 @@ class Game {
                 }, i * cardDelay);
             }
 
-            // After 4 cards start appearing, begin scroll synced with remaining cards
+            // After 4 cards start appearing, smooth scroll synced with card appearances
             setTimeout(() => {
                 const remainingCards = reversedCards.slice(4);
-                const scrollDuration = remainingCards.length * cardDelay + 500;
+                // Total time for all remaining cards to appear
+                const totalDuration = remainingCards.length * cardDelay;
 
-                // First scroll to left
-                this.smoothScrollTo(container, 0, scrollDuration);
+                // Smooth linear scroll to 0 over exactly the same duration as cards appearing
+                this.smoothScrollTo(container, 0, totalDuration, true);
 
-                // Continue with remaining cards - fade dictates scroll pace
+                // Cards appear at the same rate as scroll
                 remainingCards.forEach((card, index) => {
                     setTimeout(() => {
                         card.classList.add('animate-in');
                     }, index * cardDelay);
                 });
 
-                // After scrolling to left, scroll to center card
+                // After all cards appear, wait then scroll to center card
                 setTimeout(() => {
                     const centerIndex = Math.floor(cards.length / 2);
                     const centerCard = cards[centerIndex];
@@ -232,25 +233,33 @@ class Game {
                         const cardWidth = centerCard.offsetWidth;
                         const containerWidth = container.clientWidth;
                         const centerScroll = cardLeft - (containerWidth / 2) + (cardWidth / 2);
-                        this.smoothScrollTo(container, centerScroll, 800);
+                        this.smoothScrollTo(container, centerScroll, 800, false, 'easeInOutCubic');
                     }
-                }, scrollDuration + 200);
+                }, totalDuration + 500);
             }, 4 * cardDelay);
         }, 600);
     }
 
-    smoothScrollTo(element, target, duration) {
+    smoothScrollTo(element, target, duration, linear = false, easingName = 'easeOutCubic') {
         const start = element.scrollLeft;
         const change = target - start;
         const startTime = performance.now();
 
-        const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+        const easings = {
+            linear: (t) => t,
+            easeOutCubic: (t) => 1 - Math.pow(1 - t, 3),
+            easeInOutCubic: (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+            easeOutQuart: (t) => 1 - Math.pow(1 - t, 4),
+            easeInOutQuart: (t) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2
+        };
+
+        const ease = linear ? easings.linear : (easings[easingName] || easings.easeOutCubic);
 
         const animateScroll = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
-            element.scrollLeft = start + (change * easeOutCubic(progress));
+            element.scrollLeft = start + (change * ease(progress));
 
             if (progress < 1) {
                 requestAnimationFrame(animateScroll);

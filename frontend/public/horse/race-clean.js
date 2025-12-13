@@ -43,7 +43,7 @@ class Race {
   spawnHorses() {
     const externalHorses = window.HORSE_DATA || [];
     const numHorses =
-      externalHorses.length > 0 ? Math.min(externalHorses.length, 12) : 8;
+      externalHorses.length > 0 ? Math.min(externalHorses.length, 40) : 8;
 
     // Get spawn positions from geometry
     const spawns = TrackGeometry.getSpawnPositions(numHorses);
