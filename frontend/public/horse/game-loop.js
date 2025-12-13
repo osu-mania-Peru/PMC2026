@@ -96,12 +96,25 @@ class Game {
                 ? `<img src="${horse.avatarUrl}" alt="${name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="fallback" style="display:none">${horse.number}</div>`
                 : `<div class="fallback">${horse.number}</div>`;
 
+            // Running styles
+            const styles = ['Late', 'Pace', 'Front', 'End'];
+            const style = styles[Math.floor(Math.random() * styles.length)];
+
             return `
                 <div class="prerace-card">
                     <div class="prerace-card-color" style="background: ${color}"></div>
                     <div class="prerace-card-content">
                         <div class="prerace-card-number" style="background: ${cardColor}">${horse.number}</div>
                         <div class="prerace-card-name">${name}</div>
+                        <div class="prerace-card-info">
+                            <div class="prerace-card-info-symbols">
+                                <div class="symbol-triangle"></div>
+                                <div class="symbol-circle"></div>
+                                <div class="symbol-triangle"></div>
+                            </div>
+                            <div class="prerace-card-info-fav">No. ${horse.number} Fav</div>
+                            <div class="prerace-card-info-style">${style}</div>
+                        </div>
                         <div class="prerace-card-avatar">
                             ${avatarContent}
                         </div>
