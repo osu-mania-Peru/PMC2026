@@ -414,8 +414,8 @@ async def generate_brackets(
         for _ in range(matches_in_round):
             match = Match(
                 bracket_id=winner_bracket.id,
-                player1_id=placeholder.id,
-                player2_id=placeholder.id,
+                player1_id=None,  # Will be filled by progression
+                player2_id=None,  # Will be filled by progression
                 map_id=default_map.id,
                 round_name=round_name,
                 match_status="scheduled"
@@ -445,8 +445,8 @@ async def generate_brackets(
     for i in range(lr1_count):
         match = Match(
             bracket_id=loser_bracket.id,
-            player1_id=placeholder.id,
-            player2_id=placeholder.id,
+            player1_id=None,  # Will be filled by progression
+            player2_id=None,  # Will be filled by progression
             map_id=default_map.id,
             round_name="Loser Round 1",
             match_status="scheduled"
@@ -480,8 +480,8 @@ async def generate_brackets(
         for _ in range(merge_count):
             match = Match(
                 bracket_id=loser_bracket.id,
-                player1_id=placeholder.id,
-                player2_id=placeholder.id,
+                player1_id=None,  # Will be filled by progression
+                player2_id=None,  # Will be filled by progression
                 map_id=default_map.id,
                 round_name=round_name,
                 match_status="scheduled"
@@ -511,8 +511,8 @@ async def generate_brackets(
             for _ in range(consol_count):
                 match = Match(
                     bracket_id=loser_bracket.id,
-                    player1_id=placeholder.id,
-                    player2_id=placeholder.id,
+                    player1_id=None,  # Will be filled by progression
+                    player2_id=None,  # Will be filled by progression
                     map_id=default_map.id,
                     round_name=f"Loser Round {loser_round_num}",
                     match_status="scheduled"
@@ -531,8 +531,8 @@ async def generate_brackets(
     # ===== GRAND FINALS =====
     gf_match = Match(
         bracket_id=gf_bracket.id,
-        player1_id=placeholder.id,
-        player2_id=placeholder.id,
+        player1_id=None,  # Will be filled by winner bracket champion
+        player2_id=None,  # Will be filled by loser bracket champion
         map_id=default_map.id,
         round_name="Grand Finals",
         match_status="scheduled"

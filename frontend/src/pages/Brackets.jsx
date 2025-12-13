@@ -85,7 +85,7 @@ export default function Brackets() {
       {loading ? (
         <Spinner size="large" text="Cargando brackets..." />
       ) : (
-        <div className='bracket-container'>
+        <div className='bracket-container' data-bracket-type={bracketType || 'winner'}>
           <BracketTree
             bracketId={currentBracket.bracket?.id || null}
             api={api}

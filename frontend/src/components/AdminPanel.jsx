@@ -169,8 +169,8 @@ export default function AdminPanel() {
     }
   };
 
-  const handleGetMatches = async () => {
-    setLoading(true);
+  const fetchMatches = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await fetch(`${API_BASE}/internal/admin/matches`, {
         headers: { 'X-Admin-Password': password }
@@ -178,16 +178,31 @@ export default function AdminPanel() {
       const data = await response.json();
       if (response.ok) {
         setMatches(data.matches);
-        setShowMatches(true);
+        return true;
       } else {
-        setError(data.detail || 'Failed to get matches');
+        if (showLoading) setError(data.detail || 'Failed to get matches');
+        return false;
       }
     } catch (err) {
-      setError(err.message);
+      if (showLoading) setError(err.message);
+      return false;
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
+
+  const handleGetMatches = async () => {
+    const success = await fetchMatches(true);
+    if (success) setShowMatches(true);
+  };
+
+  // Auto-refresh matches when panel is open and matches are shown
+  useEffect(() => {
+    if (!isUnlocked || !showMatches) return;
+
+    const interval = setInterval(() => fetchMatches(false), 2000);
+    return () => clearInterval(interval);
+  }, [isUnlocked, showMatches, password]);
 
   const handleUpdateScore = async () => {
     if (!editingMatch) return;

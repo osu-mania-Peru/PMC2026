@@ -23,30 +23,7 @@
 }
 
 .bracket-section-title {
-  color: #000000;
-  background: #ffffff;
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 1.5rem;
-  text-align: left;
-  width: fit-content;
-  padding: 1rem 3rem 1rem 2rem;
-  margin-left: -2rem;
-  margin-top: -2rem;
-  margin-bottom: 1.5rem;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
-}
-
-.bracket-section-title.loser {
-  background: #666666;
-  color: #ffffff;
-}
-
-.bracket-section-title.grandfinals {
-  background: #ff0844;
-  color: #ffffff;
+  display: none;
 }
 
 .bracket-title {
@@ -76,103 +53,11 @@
   font-style: italic;
 }
 
-/* Override library styles */
-:where(.bracket-tree) svg {
-  background: transparent !important;
-}
-
-/* Reduce vertical spacing between matches */
-:where(.bracket-tree) g[transform] {
-  transform-origin: center !important;
-}
-
-/* Connector lines */
-:where(.bracket-tree) svg line,
-:where(.bracket-tree) svg path {
-  stroke: #333333 !important;
-  stroke-width: 2px !important;
-}
-
-/* Make the SVG viewer container match background and fill space */
+/* Use library default styles - just ensure SVG fills container */
+.bracket-section > svg,
 .bracket-section > div {
   width: 100% !important;
-  background: transparent !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  flex: 1 !important;
-}
-
-.bracket-section > div > div {
-  background: transparent !important;
-}
-
-/* Custom Styled Match Component */
-.styled-match {
-  background: var(--bg-tertiary);
-  overflow: hidden;
-  transition: all 0.2s ease;
-  height: auto !important;
-}
-
-.styled-match:hover {
-  background: var(--bg-secondary);
-}
-
-.match-round-text {
-  display: none; /* Hide since we have round headers */
-}
-
-.match-team {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--bg-primary);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  min-height: 28px;
-}
-
-.match-team:last-child {
-  border-bottom: none;
-}
-
-.match-team:hover {
-  background: var(--bg-secondary);
-}
-
-.match-team.winner {
-  background: rgba(255, 8, 68, 0.15);
-  border-left: 3px solid var(--accent-secondary);
-}
-
-.team-name {
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 0.5rem;
-}
-
-.match-team.winner .team-name {
-  color: var(--accent-secondary);
-  font-weight: 700;
-}
-
-.team-score {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-  font-weight: 700;
-  min-width: 20px;
-  text-align: right;
-}
-
-.match-team.winner .team-score {
-  color: var(--accent-secondary);
+  min-width: 100% !important;
 }
 
 /* Single match view (for Grand Finals or small brackets) */
