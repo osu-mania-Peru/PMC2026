@@ -50,6 +50,14 @@ class Game {
 
         if (!container || !button) return;
 
+        // Enable horizontal scrolling with mouse wheel
+        container.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                container.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+
         // Wait for horses to be loaded
         const checkHorses = () => {
             if (this.race.horses.length > 0) {
