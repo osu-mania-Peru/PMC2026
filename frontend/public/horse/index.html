@@ -203,11 +203,8 @@
                 const data = await response.json();
 
                 if (data.users && data.users.length > 0) {
-                    // Filter only registered players
-                    const registered = data.users.filter(u => u.is_registered);
-
                     // Shuffle players for random lane assignment
-                    const shuffled = registered.sort(() => Math.random() - 0.5);
+                    const shuffled = data.users.sort(() => Math.random() - 0.5);
 
                     // Take up to 12 players
                     const players = shuffled.slice(0, 12);
