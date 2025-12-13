@@ -205,7 +205,10 @@ class Game {
 
         const totalLength = TrackGeometry.getTotalTrackLength();
 
-        markers.innerHTML = sorted.map((horse) => {
+        // Reverse so leaders render on top (last in DOM = highest z-index)
+        const reversed = [...sorted].reverse();
+
+        markers.innerHTML = reversed.map((horse, i) => {
             const color = `rgb(${horse.color[0]}, ${horse.color[1]}, ${horse.color[2]})`;
             const distance = TrackGeometry.getTrackDistance(horse.position.x, horse.position.y);
             // Progress goes from right (START/0%) to left (FINISH/100%)
@@ -219,8 +222,11 @@ class Game {
                 : `<span class="fallback">${horse.number}</span>`;
 
             return `
-                <div class="race-progress-horse" style="left: ${leftPercent}%; background: ${color};">
-                    ${avatarContent}
+                <div class="race-progress-horse" style="left: ${leftPercent}%; z-index: ${i + 1};">
+                    <div class="bubble" style="background: ${color}; color: ${color};">
+                        ${avatarContent}
+                    </div>
+                    <div class="number">${horse.number}</div>
                 </div>
             `;
         }).join('');
