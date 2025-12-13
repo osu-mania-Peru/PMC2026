@@ -696,7 +696,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(4px);
             display: flex;
@@ -704,6 +704,7 @@
             align-items: center;
             justify-content: center;
             z-index: 150;
+            overflow: hidden;
         }
 
         .prerace-screen.hidden {
@@ -712,31 +713,33 @@
 
         .prerace-title {
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
-            font-size: 24px;
+            font-size: 2.5vh;
             font-weight: 700;
             color: #593b00;
             background: #fff;
-            padding: 12px 40px;
-            padding-left: 70px;
-            border-radius: 20px;
+            padding: 1.2vh 4vw;
+            padding-left: 6vw;
+            border-radius: 2vh;
             box-shadow: 0 0 4px #000;
             -webkit-text-stroke: 0.5px #593b00;
             text-align: center;
-            margin-bottom: 20px;
-            position: relative;
+            position: absolute;
+            top: 2vh;
+            left: 2vw;
+            right: 2vw;
         }
 
         .prerace-title-badge {
             position: absolute;
-            left: 12px;
+            left: 1vw;
             top: 50%;
             transform: translateY(-50%);
             background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
             color: #fff;
-            font-size: 14px;
+            font-size: 1.5vh;
             font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 12px;
+            padding: 0.5vh 1.2vw;
+            border-radius: 1.2vh;
             border: 2px solid #16a34a;
             -webkit-text-stroke: 0.5px #fff;
             box-shadow: 0 2px 0 rgba(0,0,0,0.2);
@@ -744,7 +747,7 @@
 
         .prerace-participants {
             display: flex;
-            gap: 8px;
+            gap: 1.5vw;
             padding: 10px;
             max-width: 95vw;
             overflow-x: auto;
@@ -753,10 +756,12 @@
 
         .prerace-card {
             flex-shrink: 0;
-            width: 110px;
-            height: 300px;
+            width: 10vw;
+            min-width: 100px;
+            /* Title ~8vh, button ~12vh, so cards get 75vh */
+            height: 75vh;
             background: #fff;
-            border-radius: 8px;
+            border-radius: 1.5vw;
             box-shadow: 0 0 4px #000;
             overflow: hidden;
             display: flex;
@@ -768,7 +773,7 @@
 
         .prerace-card-color {
             width: 100%;
-            height: 10px;
+            height: 12px;
             flex-shrink: 0;
         }
 
@@ -777,30 +782,30 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 8px;
+            padding: 10px;
             position: relative;
         }
 
         .prerace-card-number {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
+            width: 6vh;
+            height: 6vh;
+            border-radius: 1vh;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
-            font-size: 20px;
+            font-size: 3.5vh;
             font-weight: 700;
             color: #000;
-            margin-bottom: 10px;
-            box-shadow: inset 0 -2px 0 rgba(0,0,0,0.1);
+            margin-bottom: 1.5vh;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
         }
 
         .prerace-card-name {
             writing-mode: vertical-rl;
             text-orientation: mixed;
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
-            font-size: 14px;
+            font-size: 2.5vh;
             font-weight: 700;
             color: #593b00;
             flex: 1;
@@ -808,14 +813,16 @@
             align-items: flex-start;
             justify-content: center;
             -webkit-text-stroke: 0.3px #593b00;
-            max-height: 140px;
+            max-height: 40vh;
             overflow: hidden;
         }
 
         .prerace-card-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
+            width: 8vw;
+            min-width: 80px;
+            height: 8vw;
+            min-height: 80px;
+            border-radius: 10px;
             overflow: hidden;
             margin-top: auto;
             background: #eee;
@@ -841,10 +848,10 @@
         }
 
         .prerace-button {
-            margin-top: 20px;
-            padding: 16px 80px;
+            margin-top: 2vh;
+            padding: 1.5vh 8vw;
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
-            font-size: 28px;
+            font-size: 3vh;
             font-weight: 700;
             color: #fff;
             background: linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
@@ -852,7 +859,7 @@
             background-size: 100% 100%;
             background-repeat: no-repeat;
             border: 2px solid #005e00;
-            border-radius: 16px;
+            border-radius: 1.5vh;
             box-shadow: 0 4px 0 rgba(56, 56, 56, 0.54);
             cursor: pointer;
             transition: all 0.05s linear;
