@@ -26,3 +26,12 @@ Never commit or expose:
 - `.env` files (use `.env.example` as template)
 - `*.db` database files
 - API keys or secrets
+
+## Known Issues
+
+### Horse Racing Game (`/frontend/public/horse/`)
+The horse racing mini-game at `/horse` route needs significant fixes:
+- Camera/zoom behavior is broken
+- Horse positioning and avatar overlay sync issues
+- General game logic needs debugging
+- Originally ported from `../umasim` project
