@@ -160,83 +160,6 @@
             -webkit-text-stroke: 0.5px #fff;
         }
 
-        /* ===== POSITION INDICATOR (Umamusume Balloon Style) ===== */
-        .position-indicator {
-            position: fixed;
-            bottom: 85px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            align-items: flex-end;
-            padding: 8px 14px;
-            background: rgba(30, 50, 35, 0.75);
-            border-radius: 12px;
-            backdrop-filter: blur(4px);
-        }
-
-        .position-indicator.show {
-            display: flex;
-        }
-
-        .position-balloon {
-            position: relative;
-            width: 50px;
-            height: 58px;
-            margin-right: -8px;
-        }
-
-        .position-balloon:last-child {
-            margin-right: 0;
-        }
-
-        .position-balloon .balloon {
-            width: 50px;
-            height: 58px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50% 50% 45% 45% / 50% 50% 40% 40%;
-            border: 3px solid rgba(255, 255, 255, 0.95);
-            box-shadow:
-                0 3px 6px rgba(0, 0, 0, 0.3),
-                inset 0 -5px 10px rgba(0, 0, 0, 0.15);
-            overflow: hidden;
-        }
-
-        .position-balloon .balloon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .position-balloon .balloon .fallback {
-            font-size: 20px;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-        }
-
-        .position-balloon .number {
-            position: absolute;
-            right: -2px;
-            bottom: 2px;
-            min-width: 22px;
-            height: 22px;
-            padding: 0 4px;
-            border-radius: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 700;
-            color: #fff;
-            border: 2px solid rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-            z-index: 2;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-        }
-
         /* ===== LEADERBOARD (Card Style) ===== */
         .leaderboard {
             position: absolute;
@@ -931,9 +854,6 @@
             </div>
             <div class="leaderboard-entries" id="leaderboardEntries"></div>
         </div>
-
-        <!-- Position Indicator -->
-        <div class="position-indicator" id="positionIndicator"></div>
 
         <!-- Race Progress Bar -->
         <div class="race-progress" id="raceProgress">

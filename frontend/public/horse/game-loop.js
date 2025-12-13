@@ -127,10 +127,7 @@ class Game {
                 // Start the race
                 this.race.startRace();
 
-                // Show position indicator and progress bar
-                const posIndicator = document.getElementById('positionIndicator');
-                if (posIndicator) posIndicator.classList.add('show');
-
+                // Show progress bar
                 const progressBar = document.getElementById('raceProgress');
                 if (progressBar) progressBar.classList.add('show');
 
@@ -193,9 +190,6 @@ class Game {
             `;
         }).join('');
 
-        // Position Indicator
-        this.updatePositionIndicator(sorted);
-
         // Progress Bar
         this.updateProgressBar(sorted);
 
@@ -203,28 +197,6 @@ class Game {
         if (this.race.raceComplete && !this.raceFinishShown) {
             this.showFinishOverlay();
         }
-    }
-
-    updatePositionIndicator(sorted) {
-        const indicator = document.getElementById('positionIndicator');
-        if (!indicator) return;
-
-        indicator.innerHTML = sorted.map((horse, i) => {
-            const color = `rgb(${horse.color[0]}, ${horse.color[1]}, ${horse.color[2]})`;
-            const hasAvatar = horse.avatarUrl;
-            const avatarContent = hasAvatar
-                ? `<img src="${horse.avatarUrl}" alt="${horse.number}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="fallback" style="display:none">${horse.number}</span>`
-                : `<span class="fallback">${horse.number}</span>`;
-
-            return `
-                <div class="position-balloon">
-                    <div class="balloon" style="background: ${color}; color: ${color}">
-                        ${avatarContent}
-                    </div>
-                    <div class="number" style="background: ${color}">${horse.number}</div>
-                </div>
-            `;
-        }).join('');
     }
 
     updateProgressBar(sorted) {
