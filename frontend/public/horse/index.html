@@ -194,8 +194,13 @@
     </div>
 
     <script>
-        // Fetch players from API - use staging
-        const API_BASE = 'https://api-staging.perumaniacup.info';
+        // Fetch players from API - detect environment from hostname
+        const hostname = window.location.hostname;
+        const API_BASE = hostname.includes('staging')
+            ? 'https://api-staging.perumaniacup.info'
+            : hostname === 'localhost' || hostname === '127.0.0.1'
+                ? 'http://localhost:8000'
+                : 'https://api.perumaniacup.info';
 
         async function loadPlayers() {
             try {
