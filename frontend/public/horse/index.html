@@ -726,6 +726,7 @@
         .prerace-button {
             opacity: 0;
             animation: prerace-fade-in 0.8s ease-out 0.5s forwards;
+            margin-top: 6vh;
         }
 
         @keyframes prerace-fade-in {
@@ -790,7 +791,7 @@
 
         .prerace-participants {
             display: flex;
-            gap: 1.5vw;
+            gap: 1vw;
             padding: 10px;
             padding-left: 4vw;
             padding-right: 4vw;
@@ -815,11 +816,11 @@
 
         .prerace-card {
             flex-shrink: 0;
-            width: 10vw;
-            min-width: 100px;
+            width: 8vw;
+            min-width: 80px;
             height: 68vh;
             background: #fff;
-            border-radius: 1.5vw;
+            border-radius: 1.3vw;
             box-shadow: 0 0 4px #000;
             overflow: hidden;
             display: flex;
@@ -905,9 +906,9 @@
         .prerace-card-info-symbols {
             display: flex;
             justify-content: space-between;
-            width: 8vw;
-            min-width: 80px;
-            padding: 0 1vw;
+            width: 6.6vw;
+            min-width: 66px;
+            padding: 0 0.5vw;
             box-sizing: border-box;
             margin-bottom: 0.8vh;
         }
@@ -937,8 +938,8 @@
         }
 
         .prerace-card-info-symbols .symbol-circle {
-            width: 3.0vh;
-            height: 3.0vh;
+            width: 2.7vh;
+            height: 2.7vh;
             border: 0.55vh solid #8b7355;
             border-radius: 50%;
         }
@@ -975,8 +976,8 @@
             font-weight: 700;
             color: #593b00;
             background: #f5efe6;
-            width: 8vw;
-            min-width: 80px;
+            width: 6.6vw;
+            min-width: 66px;
             padding: 0.5vh 0;
             border-radius: 0.8vh;
             margin-bottom: 0.5vh;
@@ -989,19 +990,19 @@
             font-weight: 700;
             color: #593b00;
             background: #f5efe6;
-            width: 8vw;
-            min-width: 80px;
+            width: 6.6vw;
+            min-width: 66px;
             padding: 0.5vh 0;
             border-radius: 0.8vh;
             text-align: center;
         }
 
         .prerace-card-avatar {
-            width: 8vw;
-            min-width: 80px;
-            height: 8vw;
-            min-height: 80px;
-            border-radius: 1.5vw;
+            width: 6vw;
+            min-width: 60px;
+            height: 6vw;
+            min-height: 60px;
+            border-radius: 1.3vw;
             overflow: hidden;
             margin-top: 1vh;
             background: #eee;
@@ -1027,7 +1028,7 @@
         }
 
         .prerace-button {
-            margin-top: 2vh;
+            margin-top: 6vh;
             padding: 1.5vh 8vw;
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
             font-size: 3vh;
@@ -1302,7 +1303,7 @@
 
     <script>
         // Always use production API for real player data
-        const API_BASE = 'https://api-staging.perumaniacup.info';
+        const API_BASE = 'https://api.perumaniacup.info';
 
         async function loadPlayers() {
             try {
