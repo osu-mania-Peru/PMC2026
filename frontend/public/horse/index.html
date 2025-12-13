@@ -703,7 +703,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 50;
+            z-index: 150;
         }
 
         .prerace-screen.hidden {
@@ -712,21 +712,40 @@
 
         .prerace-title {
             font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             color: #593b00;
             background: #fff;
-            padding: 10px 40px;
+            padding: 12px 40px;
+            padding-left: 70px;
             border-radius: 20px;
-            margin-bottom: 20px;
             box-shadow: 0 0 4px #000;
             -webkit-text-stroke: 0.5px #593b00;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .prerace-title-badge {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            border: 2px solid #16a34a;
+            -webkit-text-stroke: 0.5px #fff;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
         }
 
         .prerace-participants {
             display: flex;
             gap: 8px;
-            padding: 20px;
+            padding: 10px;
             max-width: 95vw;
             overflow-x: auto;
             overflow-y: visible;
@@ -735,7 +754,7 @@
         .prerace-card {
             flex-shrink: 0;
             width: 110px;
-            height: 320px;
+            height: 300px;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 0 4px #000;
@@ -743,17 +762,13 @@
             display: flex;
             flex-direction: column;
             position: relative;
-        }
-
-        .prerace-card-header {
-            height: 100%;
-            display: flex;
-            position: relative;
+            isolation: isolate;
+            z-index: 1;
         }
 
         .prerace-card-color {
-            width: 12px;
-            height: 100%;
+            width: 100%;
+            height: 10px;
             flex-shrink: 0;
         }
 
@@ -793,7 +808,7 @@
             align-items: flex-start;
             justify-content: center;
             -webkit-text-stroke: 0.3px #593b00;
-            max-height: 160px;
+            max-height: 140px;
             overflow: hidden;
         }
 
@@ -804,6 +819,8 @@
             overflow: hidden;
             margin-top: auto;
             background: #eee;
+            position: relative;
+            z-index: 0;
         }
 
         .prerace-card-avatar img {
@@ -1021,7 +1038,7 @@
 
     <!-- Pre-Race Participant Screen -->
     <div class="prerace-screen" id="preraceScreen">
-        <div class="prerace-title">Peru Mania Cup 2026</div>
+        <div class="prerace-title"><span class="prerace-title-badge">PE</span>Peru Mania Cup 2026</div>
         <div class="prerace-participants" id="preraceParticipants"></div>
         <button class="prerace-button" id="preraceButton">Empezar!</button>
     </div>
