@@ -62,6 +62,7 @@ class Game {
         const checkHorses = () => {
             if (this.race.horses.length > 0) {
                 this.populatePreraceCards();
+                this.animatePreraceCards();
             } else {
                 setTimeout(checkHorses, 100);
             }
@@ -130,6 +131,65 @@ class Game {
                 </div>
             `;
         }).join('');
+    }
+
+    animatePreraceCards() {
+        const container = document.getElementById('preraceParticipants');
+        const cards = container.querySelectorAll('.prerace-card');
+
+        if (cards.length === 0) return;
+
+        // Start scrolled to the right
+        container.scrollLeft = container.scrollWidth;
+
+        // Start card fade-ins
+        setTimeout(() => {
+            const reversedCards = Array.from(cards).reverse();
+            const cardDelay = 120; // ms between each card
+
+            // Show first 4 cards before scrolling
+            for (let i = 0; i < Math.min(4, reversedCards.length); i++) {
+                setTimeout(() => {
+                    reversedCards[i]?.classList.add('animate-in');
+                }, i * cardDelay);
+            }
+
+            // After 4 cards start appearing, begin scroll synced with remaining cards
+            setTimeout(() => {
+                const remainingCards = reversedCards.slice(4);
+                const scrollDuration = remainingCards.length * cardDelay + 500;
+
+                this.smoothScrollTo(container, 0, scrollDuration);
+
+                // Continue with remaining cards - fade dictates scroll pace
+                remainingCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('animate-in');
+                    }, index * cardDelay);
+                });
+            }, 4 * cardDelay);
+        }, 600);
+    }
+
+    smoothScrollTo(element, target, duration) {
+        const start = element.scrollLeft;
+        const change = target - start;
+        const startTime = performance.now();
+
+        const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+        const animateScroll = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            element.scrollLeft = start + (change * easeOutCubic(progress));
+
+            if (progress < 1) {
+                requestAnimationFrame(animateScroll);
+            }
+        };
+
+        requestAnimationFrame(animateScroll);
     }
 
     resizeCanvas() {

@@ -698,7 +698,7 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 1);
             backdrop-filter: blur(4px);
             display: flex;
             flex-direction: column;
@@ -706,10 +706,47 @@
             justify-content: center;
             z-index: 150;
             overflow: hidden;
+            animation: prerace-bg-fade 1.5s ease-out forwards;
+        }
+
+        @keyframes prerace-bg-fade {
+            0% { background: rgba(0, 0, 0, 1); }
+            100% { background: rgba(0, 0, 0, 0.3); }
         }
 
         .prerace-screen.hidden {
             display: none;
+        }
+
+        .prerace-title {
+            opacity: 0;
+            animation: prerace-fade-in 0.8s ease-out 0.3s forwards;
+        }
+
+        .prerace-button {
+            opacity: 0;
+            animation: prerace-fade-in 0.8s ease-out 0.5s forwards;
+        }
+
+        @keyframes prerace-fade-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card staggered fade-in animation */
+        .prerace-card.animate-in {
+            animation: prerace-card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes prerace-card-in {
+            0% {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .prerace-title {
@@ -780,8 +817,7 @@
             flex-shrink: 0;
             width: 10vw;
             min-width: 100px;
-            /* Title ~9vh, button ~9vh, gaps ~10vh = 28vh used, cards get 72vh */
-            height: 72vh;
+            height: 68vh;
             background: #fff;
             border-radius: 1.5vw;
             box-shadow: 0 0 4px #000;
@@ -791,6 +827,9 @@
             position: relative;
             isolation: isolate;
             z-index: 1;
+            /* Initial state for animation */
+            opacity: 0;
+            transform: translateX(30px);
         }
 
         .prerace-card::after {
@@ -1180,15 +1219,8 @@
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading">
-        <div class="loading-card">
-            <div class="pmc-title">PMC 2026</div>
-            <div class="pmc-subtitle">Carrera de Caballos</div>
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Cargando jugadores...</div>
-        </div>
-    </div>
+    <!-- Loading Screen (pitch black) -->
+    <div id="loading" style="background: #000;"></div>
 
     <!-- Game Canvas -->
     <canvas id="gameCanvas"></canvas>
