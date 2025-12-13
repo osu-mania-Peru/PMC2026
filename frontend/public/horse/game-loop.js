@@ -102,7 +102,7 @@ class Game {
 
             return `
                 <div class="prerace-card">
-                    <div class="prerace-card-color" style="background: ${color}"></div>
+                    <div class="prerace-card-color" style="background-color: ${cardColor}"></div>
                     <div class="prerace-card-content">
                         <div class="prerace-card-number" style="background: ${cardColor}">${horse.number}</div>
                         <div class="prerace-card-name">${name}</div>

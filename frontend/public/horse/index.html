@@ -788,6 +788,9 @@
             width: 100%;
             height: 18px;
             flex-shrink: 0;
+            background-image: url('umamusume-ui/packages/assets/images/umbtn_bg.png');
+            background-size: cover;
+            background-blend-mode: overlay;
         }
 
         .prerace-card-content {
@@ -1130,6 +1133,27 @@
         }
 
         /* ===== SCROLLBAR STYLING ===== */
+        .prerace-participants::-webkit-scrollbar {
+            height: 0.8vh;
+        }
+
+        .prerace-participants::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .prerace-participants::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 0.4vh;
+        }
+
+        .prerace-participants::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 1);
+        }
+
+        .prerace-participants::-webkit-scrollbar-button {
+            display: none;
+        }
+
         .leaderboard-entries::-webkit-scrollbar {
             width: 6px;
         }
@@ -1232,7 +1256,7 @@
 
     <script>
         // Always use production API for real player data
-        const API_BASE = 'https://api.perumaniacup.info';
+        const API_BASE = 'https://api-staging.perumaniacup.info';
 
         async function loadPlayers() {
             try {
