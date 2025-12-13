@@ -67,59 +67,38 @@ const VisualDebug = {
     },
 
     drawSections(ctx, trackW, trackH, cornerSize, centerY) {
-        // Get actual track geometry from race
-        const race = window.game?.race;
-        if (!race) return;
+        // Use Track API if available
+        if (typeof Track === 'undefined' || !Track.initialized) return;
 
+        const sections = Track.sections;
         ctx.globalAlpha = 0.2;
 
-        // Top sprint (actual racing area)
-        const topSprint = race.top_sprint;
-        const topFenceTop = race.top_sprint_top_fence;
-        const topFenceBot = race.top_sprint_bottom_fence;
-        if (topSprint && topFenceTop && topFenceBot) {
+        // Top straight (racing lane)
+        if (sections.TOP_STRAIGHT) {
+            const s = sections.TOP_STRAIGHT;
             ctx.fillStyle = '#0000ff';
-            ctx.fillRect(
-                topSprint.x,
-                topFenceTop.y + topFenceTop.height,
-                topSprint.width,
-                topFenceBot.y - (topFenceTop.y + topFenceTop.height)
-            );
+            ctx.fillRect(s.xMin, s.laneOuterY, s.xMax - s.xMin, s.laneInnerY - s.laneOuterY);
         }
 
-        // Bottom sprint (actual racing area)
-        const botSprint = race.bottom_sprint;
-        const botFenceTop = race.bottom_sprint_top_fence;
-        const botFenceBot = race.bottom_sprint_bottom_fence;
-        if (botSprint && botFenceTop && botFenceBot) {
+        // Bottom straight (racing lane)
+        if (sections.BOTTOM_STRAIGHT) {
+            const s = sections.BOTTOM_STRAIGHT;
             ctx.fillStyle = '#ffff00';
-            ctx.fillRect(
-                botSprint.x,
-                botFenceTop.y + botFenceTop.height,
-                botSprint.width,
-                botFenceBot.y - (botFenceTop.y + botFenceTop.height)
-            );
+            ctx.fillRect(s.xMin, s.laneInnerY, s.xMax - s.xMin, s.laneOuterY - s.laneInnerY);
         }
 
-        // Corner zones (full rectangles)
-        ctx.fillStyle = '#ff0000';
-        if (race.topright_corner) {
-            ctx.fillRect(race.topright_corner.x, race.topright_corner.y,
-                         race.topright_corner.width, race.topright_corner.height);
-        }
-        if (race.bottomright_corner) {
-            ctx.fillRect(race.bottomright_corner.x, race.bottomright_corner.y,
-                         race.bottomright_corner.width, race.bottomright_corner.height);
+        // Right curve zone
+        if (sections.RIGHT_CURVE) {
+            const s = sections.RIGHT_CURVE;
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(s.xMin, s.yMin, s.xMax - s.xMin, s.yMax - s.yMin);
         }
 
-        ctx.fillStyle = '#00ff00';
-        if (race.topleft_corner) {
-            ctx.fillRect(race.topleft_corner.x, race.topleft_corner.y,
-                         race.topleft_corner.width, race.topleft_corner.height);
-        }
-        if (race.bottomleft_corner) {
-            ctx.fillRect(race.bottomleft_corner.x, race.bottomleft_corner.y,
-                         race.bottomleft_corner.width, race.bottomleft_corner.height);
+        // Left curve zone
+        if (sections.LEFT_CURVE) {
+            const s = sections.LEFT_CURVE;
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(s.xMin, s.yMin, s.xMax - s.xMin, s.yMax - s.yMin);
         }
 
         ctx.globalAlpha = 1.0;
@@ -133,10 +112,10 @@ const VisualDebug = {
         ctx.textBaseline = 'middle';
 
         const labels = [
-            { text: 'RIGHT', x: trackW - cornerSize / 2, y: centerY },
-            { text: 'LEFT', x: cornerSize / 2, y: centerY },
-            { text: 'TOP', x: trackW / 2, y: topSprint ? topSprint.y + topSprint.height / 2 : 200 },
-            { text: 'BOTTOM', x: trackW / 2, y: botSprint ? botSprint.y + botSprint.height / 2 : trackH - 200 },
+            { text: 'RIGHT', x: (sections.RIGHT_CURVE.xMin + sections.RIGHT_CURVE.xMax) / 2, y: centerY },
+            { text: 'LEFT', x: (sections.LEFT_CURVE.xMin + sections.LEFT_CURVE.xMax) / 2, y: centerY },
+            { text: 'TOP', x: trackW / 2, y: sections.TOP_STRAIGHT?.racingLineY || 200 },
+            { text: 'BOTTOM', x: trackW / 2, y: sections.BOTTOM_STRAIGHT?.racingLineY || trackH - 200 },
         ];
 
         for (const label of labels) {
@@ -286,12 +265,17 @@ const VisualDebug = {
         const x = horse.position.x;
         const y = horse.position.y;
 
-        // Determine section
+        // Determine section using Track API
         let section = '?';
-        if (x > trackW - cornerSize) section = 'R';
-        else if (x < cornerSize) section = 'L';
-        else if (y < centerY) section = 'T';
-        else section = 'B';
+        if (typeof Track !== 'undefined' && Track.initialized) {
+            const sectionName = Track.getSectionName(x, y);
+            section = sectionName.charAt(0); // T, B, L, R
+        } else {
+            if (x > trackW - cornerSize) section = 'R';
+            else if (x < cornerSize) section = 'L';
+            else if (y < centerY) section = 'T';
+            else section = 'B';
+        }
 
         // Build stats text
         const vel = horse.velocity?.toFixed(0) || '?';

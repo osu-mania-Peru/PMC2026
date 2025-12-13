@@ -71,11 +71,13 @@ class Game {
                 const loadingScreen = document.getElementById('loading');
                 const startExperience = () => {
                     loadingScreen.style.opacity = '0';
+                    loadingScreen.style.pointerEvents = 'none';
                     setTimeout(() => {
                         loadingScreen.classList.add('hidden');
                     }, 500);
                     this.preraceMusic.play().catch(e => console.log('Audio error:', e));
                     this.animatePreraceCards();
+                    this.startBgSlideshow();
                     loadingScreen.removeEventListener('click', startExperience);
                 };
                 loadingScreen.addEventListener('click', startExperience);
@@ -85,15 +87,16 @@ class Game {
         };
         checkHorses();
 
-        // Button click starts countdown
-        button.addEventListener('click', () => {
-            // Stop pre-race music
-            this.preraceMusic.pause();
-            this.preraceMusic.currentTime = 0;
+        // Button click disabled for now
+        // button.addEventListener('click', () => {
+        //     // Stop pre-race music and slideshow
+        //     this.preraceMusic.pause();
+        //     this.preraceMusic.currentTime = 0;
+        //     this.stopBgSlideshow();
 
-            document.getElementById('preraceScreen').classList.add('hidden');
-            this.startCountdown();
-        });
+        //     document.getElementById('preraceScreen').classList.add('hidden');
+        //     this.startCountdown();
+        // });
     }
 
     populatePreraceCards() {
@@ -151,6 +154,37 @@ class Game {
                 </div>
             `;
         }).join('');
+    }
+
+    startBgSlideshow() {
+        const images = document.querySelectorAll('#preraceBgSlideshow img');
+        if (images.length === 0) return;
+
+        // Use CSS transition for smooth movement
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 8;
+        const targetX = Math.cos(angle) * distance;
+        const targetY = Math.sin(angle) * distance;
+
+        images.forEach(img => {
+            img.style.transition = 'transform 60s linear, opacity 1.5s ease-in-out';
+            img.style.transform = `translate(${targetX}%, ${targetY}%) scale(1.15)`;
+        });
+
+        // Cycle images
+        let currentIndex = 0;
+        this.bgSlideshowInterval = setInterval(() => {
+            images[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % images.length;
+            images[currentIndex].classList.add('active');
+        }, 3000);
+    }
+
+    stopBgSlideshow() {
+        if (this.bgSlideshowInterval) {
+            clearInterval(this.bgSlideshowInterval);
+            this.bgSlideshowInterval = null;
+        }
     }
 
     animatePreraceCards() {
@@ -282,6 +316,13 @@ class Game {
 
     startCountdown() {
         this.countdownActive = true;
+
+        // Show race UI elements
+        document.getElementById('gameCanvas')?.classList.add('show');
+        document.querySelector('.timer')?.classList.add('show');
+        document.querySelector('.leaderboard')?.classList.add('show');
+        document.querySelector('.speed-control')?.classList.add('show');
+        document.querySelector('.race-banner')?.classList.add('show');
 
         const countdownEl = document.getElementById('raceCountdown');
         const startTextEl = document.getElementById('raceStartText');

@@ -68,8 +68,19 @@ class Race {
         const gateX = this.trackWidth / 2 + 1500;  // Start gate 1500px to the right
         const externalHorses = window.HORSE_DATA || [];
         const numHorses = externalHorses.length > 0 ? Math.min(externalHorses.length, 16) : 10;
-        const spacing = 60;  // Scaled 4x from 25
-        const startY = 160;   // Scaled 4x from 50
+
+        // Calculate valid spawn area within racing lane (between fences)
+        // Fence values: top fence at y=80 with thickness 40, bottom fence at y=760 with thickness 40
+        const topFenceBottom = 80 + 40;   // Bottom edge of top fence = 120
+        const bottomFenceTop = 800 - 40;  // Top edge of bottom fence = 760
+        const laneHeight = bottomFenceTop - topFenceBottom;  // 640px
+        const lanePadding = 20;  // Keep horses away from fence edges
+
+        // Distribute horses evenly within the valid lane area
+        const availableHeight = laneHeight - (lanePadding * 2);  // 600px
+        const spacing = Math.min(60, availableHeight / (numHorses - 1 || 1));
+        const totalSpan = spacing * (numHorses - 1);
+        const startY = topFenceBottom + lanePadding + (availableHeight - totalSpan) / 2;
 
         const horseNumbers = [];
         while (horseNumbers.length < numHorses) {
@@ -875,16 +886,27 @@ class Race {
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(horse.number.toString(), markerX, markerY);
 
-            // Update avatar HTML element position
+            // Update avatar HTML element position (only show after race starts)
             if (horse.avatarElement) {
-                // Convert world position to screen position
-                const screenX = (markerX + 20) * zoom + cameraOffset.x;
-                const screenY = markerY * zoom + cameraOffset.y;
+                if (this.raceStarted) {
+                    // Convert world position to screen position
+                    // Correct transform: screenPos = worldPos * zoom + cameraOffset
+                    // Avatar offset (+20x, 0y) is applied AFTER zoom to stay fixed in screen space
+                    const screenX = markerX * zoom + cameraOffset.x + 20;
+                    const screenY = markerY * zoom + cameraOffset.y;
 
-                horse.avatarElement.style.left = `${screenX - 16}px`;
-                horse.avatarElement.style.top = `${screenY - 16}px`;
-                horse.avatarElement.style.display = 'block';
-                horse.avatarElement.style.transform = `scale(${Math.min(zoom, 1.5)})`;
+                    // Center the 32px avatar on the calculated position
+                    horse.avatarElement.style.left = `${screenX - 16}px`;
+                    horse.avatarElement.style.top = `${screenY - 16}px`;
+                    horse.avatarElement.style.display = 'block';
+
+                    // Scale avatar with zoom but cap it to avoid giant avatars
+                    const avatarScale = Math.max(0.5, Math.min(zoom, 1.5));
+                    horse.avatarElement.style.transform = `scale(${avatarScale})`;
+                    horse.avatarElement.style.transformOrigin = 'center center';
+                } else {
+                    horse.avatarElement.style.display = 'none';
+                }
             }
 
             if (debugMode) {

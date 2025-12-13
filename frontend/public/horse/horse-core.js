@@ -26,7 +26,7 @@ class Horse {
         this.steer_angle = 0;
         this.vector = new Vector2(-1, 0);
         this.target_angle = 0;
-        this.steering_smoothness = 0.1;
+        this.steering_smoothness = 0.15; // Higher = smoother, more gradual turns
 
         // State
         this.is_running = false;
@@ -170,88 +170,123 @@ class Horse {
         if (!this.is_running || this.race_time < 0.3) return;
         if (!trackBounds) return;
 
+        // Use Track API if available
+        if (typeof Track !== 'undefined' && Track.initialized) {
+            this.thinkWithTrack();
+            return;
+        }
+
+        // Fallback to old logic if Track not ready
         const currentDir = this.getVecRotated();
         const x = this.position.x;
         const y = this.position.y;
-
-        // Get actual track geometry
-        const race = window.game?.race;
-        if (!race) return;
-
         const trackW = trackBounds.width;
         const trackH = trackBounds.height;
+        const cornerSize = trackH / 2;
+        const centerY = trackH / 2;
 
-        // Use actual corner positions
-        const leftCornerRight = race.topleft_corner ? race.topleft_corner.x + race.topleft_corner.width : trackH / 2;
-        const rightCornerLeft = race.topright_corner ? race.topright_corner.x : trackW - trackH / 2;
-
-        // Use actual sprint fence positions for center line
-        const topSprintBottom = race.top_sprint_bottom_fence ? race.top_sprint_bottom_fence.y : trackH * 0.4;
-        const botSprintTop = race.bottom_sprint_top_fence ? race.bottom_sprint_top_fence.y + race.bottom_sprint_top_fence.height : trackH * 0.6;
-        const centerY = (topSprintBottom + botSprintTop) / 2;
-
-        // === DETERMINE TRACK SECTION & TARGET DIRECTION ===
-        let targetAngle = 0; // degrees, 0 = right, 90 = down, 180 = left, -90 = up
-
-        // Right side (corners) - curving
-        if (x > rightCornerLeft) {
-            const cornerCenterX = rightCornerLeft;
-            const cornerCenterY = centerY;
-            const toCenter = new Vector2(cornerCenterX - x, cornerCenterY - y);
-            // Tangent to circle (perpendicular to radius, clockwise)
+        let targetAngle = 0;
+        if (x > trackW - cornerSize) {
+            const toCenter = new Vector2(trackW - cornerSize - x, centerY - y);
             targetAngle = Math.atan2(toCenter.x, -toCenter.y) * (180 / Math.PI);
-        }
-        // Left side (corners) - curving
-        else if (x < leftCornerRight) {
-            const cornerCenterX = leftCornerRight;
-            const cornerCenterY = centerY;
-            const toCenter = new Vector2(cornerCenterX - x, cornerCenterY - y);
-            // Tangent to circle (perpendicular to radius, clockwise)
+        } else if (x < cornerSize) {
+            const toCenter = new Vector2(cornerSize - x, centerY - y);
             targetAngle = Math.atan2(toCenter.x, -toCenter.y) * (180 / Math.PI);
-        }
-        // Top straight - go left
-        else if (y < centerY) {
+        } else if (y < centerY) {
             targetAngle = 180;
-        }
-        // Bottom straight - go right
-        else {
+        } else {
             targetAngle = 0;
         }
 
-        // Current heading
         const currentAngle = Math.atan2(currentDir.y, currentDir.x) * (180 / Math.PI);
-
-        // Calculate angle difference
         let angleDiff = targetAngle - currentAngle;
         while (angleDiff > 180) angleDiff -= 360;
         while (angleDiff < -180) angleDiff += 360;
 
-        // Steer toward target direction
         const steerStrength = Math.min(Math.abs(angleDiff) * 0.12, 6);
         this.target_angle = this.steer_angle + Math.sign(angleDiff) * steerStrength;
 
-        // === WALL AVOIDANCE ===
-        const lookDistances = [50, 100, 150];
+        const steerDiff = this.target_angle - this.steer_angle;
+        this.steer_angle += steerDiff * this.steering_smoothness;
+    }
+
+    // Navigation using Track API
+    thinkWithTrack() {
+        const x = this.position.x;
+        const y = this.position.y;
+        const currentDir = this.getVecRotated();
+        const speed = this.velocity || 150;
+
+        // === LOOK AHEAD FOR UPCOMING SECTION ===
+        // Project where we'll be in ~0.5 seconds to anticipate curves
+        const lookAheadTime = 0.5;
+        const lookAheadDist = speed * lookAheadTime;
+        const futureX = x + currentDir.x * lookAheadDist;
+        const futureY = y + currentDir.y * lookAheadDist;
+
+        // Get target angle based on where we're GOING, not where we ARE
+        const currentSection = Track.getSection(x, y);
+        const futureSection = Track.getSection(futureX, futureY);
+
+        let targetAngle;
+
+        // If approaching a different section, blend toward it
+        if (futureSection && currentSection && futureSection.name !== currentSection.name) {
+            // Approaching a curve - start turning early
+            const currentTarget = Track.getTargetAngle(x, y);
+            const futureTarget = Track.getTargetAngle(futureX, futureY);
+
+            // Calculate how far into the transition we are
+            let transitionProgress = 0;
+            if (currentSection.name === 'TOP_STRAIGHT' || currentSection.name === 'BOTTOM_STRAIGHT') {
+                // In straight, approaching curve
+                const distToCurve = currentSection.name === 'TOP_STRAIGHT'
+                    ? (currentDir.x < 0 ? x - Track.sections.LEFT_CURVE.xMax : Track.sections.RIGHT_CURVE.xMin - x)
+                    : (currentDir.x > 0 ? Track.sections.RIGHT_CURVE.xMin - x : x - Track.sections.LEFT_CURVE.xMax);
+                transitionProgress = Math.max(0, 1 - distToCurve / lookAheadDist);
+            }
+
+            // Blend between current and future target
+            targetAngle = currentTarget + (futureTarget - currentTarget) * transitionProgress * 0.5;
+        } else {
+            targetAngle = Track.getTargetAngle(x, y);
+        }
+
+        const currentAngle = Math.atan2(currentDir.y, currentDir.x) * (180 / Math.PI);
+
+        let angleDiff = targetAngle - currentAngle;
+        while (angleDiff > 180) angleDiff -= 360;
+        while (angleDiff < -180) angleDiff += 360;
+
+        // Smoother steering - less aggressive
+        const steerStrength = Math.min(Math.abs(angleDiff) * 0.1, 5);
+        this.target_angle = this.steer_angle + Math.sign(angleDiff) * steerStrength;
+
+        // === WALL AVOIDANCE (backup only) ===
+        // Primary navigation should keep us on track - this is emergency correction
+        const lookDistances = [40, 80, 120];
         let wallAvoidance = 0;
 
         for (const lookAhead of lookDistances) {
-            const aheadPoint = this.position.add(currentDir.multiply(lookAhead));
+            const aheadX = x + currentDir.x * lookAhead;
+            const aheadY = y + currentDir.y * lookAhead;
 
-            if (cornerData && this.isPointInFence(aheadPoint, cornerData, trackBounds)) {
-                const leftDir = this.vector.rotate(this.steer_angle + 35).normalize();
-                const rightDir = this.vector.rotate(this.steer_angle - 35).normalize();
-                const leftClear = !this.isPointInFence(this.position.add(leftDir.multiply(lookAhead)), cornerData, trackBounds);
-                const rightClear = !this.isPointInFence(this.position.add(rightDir.multiply(lookAhead)), cornerData, trackBounds);
+            if (Track.isColliding(aheadX, aheadY)) {
+                const leftDir = this.vector.rotate(this.steer_angle + 40).normalize();
+                const rightDir = this.vector.rotate(this.steer_angle - 40).normalize();
+                const leftClear = !Track.isColliding(x + leftDir.x * lookAhead, y + leftDir.y * lookAhead);
+                const rightClear = !Track.isColliding(x + rightDir.x * lookAhead, y + rightDir.y * lookAhead);
 
-                const urgency = (180 - lookAhead) / 40;
+                // Gentler correction - trust the main navigation more
+                const urgency = (150 - lookAhead) / 60;
 
                 if (leftClear && !rightClear) {
-                    wallAvoidance += 5 * urgency;
+                    wallAvoidance += 3 * urgency;
                 } else if (rightClear && !leftClear) {
-                    wallAvoidance -= 5 * urgency;
+                    wallAvoidance -= 3 * urgency;
                 } else if (!leftClear && !rightClear) {
-                    // Emergency - turn hard
-                    wallAvoidance += 10 * urgency;
+                    // Emergency only
+                    wallAvoidance += 6 * urgency;
                 }
                 break;
             }
@@ -260,50 +295,35 @@ class Horse {
         this.target_angle += wallAvoidance;
 
         // === LANE SEEKING ===
-        // Calculate ideal lane position and steer toward it
-        const laneOffset = (this.lanePreference - 0.5) * this.laneWidth;
-
-        // Perpendicular to current direction (positive = left of travel)
-        const perpLeft = new Vector2(-currentDir.y, currentDir.x);
-
-        // In corners, "inner" means toward corner center
-        // In straights, we use perpendicular offset
+        const section = Track.getSection(x, y);
         let laneSteer = 0;
 
-        if (x > rightCornerLeft || x < leftCornerRight) {
-            // In corner - inner = toward center of oval
-            const ovalCenterY = centerY;
-            const toCenter = ovalCenterY - y;
-            const desiredOffset = laneOffset;
+        if (section) {
+            // Get current lane position (-1 to 1, negative=inner, positive=outer)
+            const currentLanePos = Track.getLaneOffset(x, y);
+            const desiredLanePos = (this.lanePreference - 0.5) * 2; // Convert to -1 to 1
 
-            // If we're not at our preferred lane, steer toward it
-            const currentOffset = -toCenter;
-            const laneDiff = (desiredOffset - currentOffset) * 0.01;
-            laneSteer = Math.max(-2, Math.min(2, laneDiff));
-        } else {
-            // In straight - calculate perpendicular offset from racing line
-            // Use actual fence positions for racing line center
-            let racingLineY;
-            if (y < centerY) {
-                // Top sprint - center between fences
-                const topFenceBottom = race.top_sprint_top_fence ?
-                    race.top_sprint_top_fence.y + race.top_sprint_top_fence.height : trackH * 0.1;
-                const botFenceTop = race.top_sprint_bottom_fence ?
-                    race.top_sprint_bottom_fence.y : trackH * 0.4;
-                racingLineY = (topFenceBottom + botFenceTop) / 2;
-            } else {
-                // Bottom sprint - center between fences
-                const topFenceBottom = race.bottom_sprint_top_fence ?
-                    race.bottom_sprint_top_fence.y + race.bottom_sprint_top_fence.height : trackH * 0.6;
-                const botFenceTop = race.bottom_sprint_bottom_fence ?
-                    race.bottom_sprint_bottom_fence.y : trackH * 0.9;
-                racingLineY = (topFenceBottom + botFenceTop) / 2;
-            }
+            const laneDiff = desiredLanePos - currentLanePos;
 
-            const currentOffset = y - racingLineY;
-            const desiredOffset = laneOffset;
-            const laneDiff = (desiredOffset - currentOffset) * 0.02;
-            laneSteer = Math.max(-1.5, Math.min(1.5, laneDiff));
+            // Direction-aware steering correction:
+            // Positive steer_angle = tighter curve/turn = moves toward INNER edge
+            // Negative steer_angle = wider curve/turn = moves toward OUTER edge
+            //
+            // So if horse wants outer (positive desiredLanePos) but is inner (negative currentLanePos):
+            //   laneDiff = positive, we need NEGATIVE steer to go wider/outer
+            // Therefore multiplier should be -1 for all sections
+            //
+            // Exception: In straights, the effect depends on travel direction
+            // - Bottom straight (going right): positive steer = turn down = toward outer, so multiplier = 1
+            // - Top straight (going left): positive steer = turn up = toward outer, so multiplier = 1
+            // But wait, "outer" in straights is different Y directions...
+            // Let's just use -1 for curves where it matters most
+
+            const isCurve = section.name === 'LEFT_CURVE' || section.name === 'RIGHT_CURVE';
+            const multiplier = isCurve ? -1 : 1;
+
+            // Stronger lane seeking to prevent wall hugging
+            laneSteer = Math.max(-2.5, Math.min(2.5, laneDiff * 0.8 * multiplier));
         }
 
         this.target_angle += laneSteer;
@@ -313,18 +333,13 @@ class Horse {
             if (distance < this.proximity_radius * 1.2) {
                 const dot = currentDir.dot(direction);
 
-                // Lateral separation - horses beside us
                 if (Math.abs(dot) < 0.5 && distance < this.proximity_radius) {
-                    // Side by side - spread out
                     const cross = currentDir.x * direction.y - currentDir.y * direction.x;
                     const spreadStrength = (1 - distance / this.proximity_radius) * 3;
                     this.target_angle += cross > 0 ? -spreadStrength : spreadStrength;
-                }
-                // Forward collision - horses ahead
-                else if (dot > 0.2) {
+                } else if (dot > 0.2) {
                     const cross = currentDir.x * direction.y - currentDir.y * direction.x;
                     const avoidStrength = (1 - distance / this.proximity_radius) * 4;
-                    // Move to preferred lane side when overtaking
                     const preferredSide = this.lanePreference > 0.5 ? 1 : -1;
                     this.target_angle += (cross > 0 ? -avoidStrength : avoidStrength) + preferredSide * 0.5;
                 }
@@ -337,6 +352,126 @@ class Horse {
     }
 
     getRelativeRacePosition(trackCenter, startGatePosition = null) {
+        // Use Track API for more accurate distance-based positioning if available
+        if (typeof Track !== 'undefined' && Track.initialized) {
+            return this.getDistanceBasedPosition(trackCenter, startGatePosition);
+        }
+
+        // Fallback to angular position
+        const toHorse = this.position.subtract(trackCenter);
+        let angle = Math.atan2(toHorse.y, toHorse.x);
+        if (angle < 0) angle += Math.PI * 2;
+
+        let startAngle = Math.PI * 1.5;
+        if (startGatePosition) {
+            const toGate = startGatePosition.subtract(trackCenter);
+            startAngle = Math.atan2(toGate.y, toGate.x);
+            if (startAngle < 0) startAngle += Math.PI * 2;
+        }
+
+        let raceAngle = angle - startAngle;
+        if (raceAngle < 0) raceAngle += Math.PI * 2;
+
+        return raceAngle + (this.lap * Math.PI * 2);
+    }
+
+    // More accurate position calculation using track distance
+    getDistanceBasedPosition(trackCenter, startGatePosition) {
+        const x = this.position.x;
+        const y = this.position.y;
+        const section = Track.getSection(x, y);
+        if (!section) return this.lap * 1000;
+
+        // Get the racing path from race object if available
+        const race = window.game?.race;
+        if (!race || !race.racingPath) {
+            // Fallback: use angular method
+            return this.getAngularPosition(trackCenter, startGatePosition);
+        }
+
+        // Find which segment we're in and calculate cumulative distance
+        let distanceAlongTrack = 0;
+
+        for (const segment of race.racingPath) {
+            let inSegment = false;
+            let progressInSegment = 0;
+
+            if (segment.type === 'straight') {
+                // Check if we're in this straight segment
+                const segDx = segment.endX - segment.startX;
+                const segDy = segment.endY - segment.startY;
+                const segLength = Math.sqrt(segDx * segDx + segDy * segDy);
+
+                if (segLength > 0) {
+                    // Project horse position onto segment line
+                    const toHorseX = x - segment.startX;
+                    const toHorseY = y - segment.startY;
+                    const projection = (toHorseX * segDx + toHorseY * segDy) / (segLength * segLength);
+
+                    // Check if projection falls within segment (with some tolerance)
+                    if (projection >= -0.1 && projection <= 1.1) {
+                        // Check perpendicular distance to line
+                        const projX = segment.startX + projection * segDx;
+                        const projY = segment.startY + projection * segDy;
+                        const perpDist = Math.sqrt((x - projX) ** 2 + (y - projY) ** 2);
+
+                        // Lane tolerance (racing lane width)
+                        if (perpDist < 400) {
+                            inSegment = true;
+                            progressInSegment = Math.max(0, Math.min(1, projection));
+                        }
+                    }
+                }
+            } else if (segment.type === 'corner') {
+                // Check if we're in this corner arc
+                const dx = x - segment.centerX;
+                const dy = y - segment.centerY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Check if within arc radius range
+                const innerRadius = segment.radius - 200;
+                const outerRadius = segment.radius + 200;
+
+                if (dist >= innerRadius && dist <= outerRadius) {
+                    // Calculate angle from center
+                    let angle = Math.atan2(dy, dx);
+                    if (angle < 0) angle += Math.PI * 2;
+
+                    // Normalize angles for comparison
+                    let startAngle = segment.startAngle;
+                    let endAngle = segment.endAngle;
+                    if (startAngle < 0) startAngle += Math.PI * 2;
+                    if (endAngle < 0) endAngle += Math.PI * 2;
+
+                    // Handle angle wrapping
+                    let normalizedAngle = angle;
+                    if (endAngle < startAngle) {
+                        // Arc crosses 0/2PI boundary
+                        if (angle < startAngle) normalizedAngle += Math.PI * 2;
+                        endAngle += Math.PI * 2;
+                    }
+
+                    if (normalizedAngle >= startAngle - 0.2 && normalizedAngle <= endAngle + 0.2) {
+                        inSegment = true;
+                        const arcSpan = endAngle - startAngle;
+                        progressInSegment = Math.max(0, Math.min(1, (normalizedAngle - startAngle) / arcSpan));
+                    }
+                }
+            }
+
+            if (inSegment) {
+                distanceAlongTrack = segment.cumulativeStart + progressInSegment * segment.distance;
+                break;
+            }
+        }
+
+        // Add lap distance
+        const totalTrackDist = race.totalTrackDistance || 10000;
+        return distanceAlongTrack + (this.lap * totalTrackDist);
+    }
+
+    // Helper for angular fallback
+    getAngularPosition(trackCenter, startGatePosition) {
         const toHorse = this.position.subtract(trackCenter);
         let angle = Math.atan2(toHorse.y, toHorse.x);
         if (angle < 0) angle += Math.PI * 2;

@@ -42,7 +42,7 @@
         }
 
         body {
-            background: #4a7c4e;
+            background: #000;
             margin: 0;
             padding: 0;
             width: 100%;
@@ -57,6 +57,12 @@
             height: 100%;
             background: #4a7c4e;
             image-rendering: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #gameCanvas.show {
+            opacity: 1;
         }
 
         #ui {
@@ -87,6 +93,14 @@
                 0 0.4vh 0 var(--uma-shadow),
                 0 0 0.5vh rgba(0, 0, 0, 0.3);
             letter-spacing: 0.1vw;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .timer.show {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .timer::before {
@@ -120,6 +134,14 @@
             box-shadow: 0 0.4vh 0.1vh var(--uma-shadow);
             border-radius: 2vh;
             overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .race-banner.show {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .race-banner-segment {
@@ -178,6 +200,14 @@
             padding: 0;
             overflow: hidden;
             box-shadow: 0 0 0.5vh #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaderboard.show {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .leaderboard-header {
@@ -318,6 +348,14 @@
             background: #fff;
             border-radius: 1.2vh;
             box-shadow: 0 0 0.5vh #000, 0 0.4vh 0 var(--uma-shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .speed-control.show {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .speed-control::before {
@@ -430,6 +468,7 @@
 
         #loading.hidden {
             display: none;
+            pointer-events: none;
         }
 
         .loading-card {
@@ -699,7 +738,6 @@
             width: 100%;
             height: 100vh;
             background: rgba(0, 0, 0, 1);
-            backdrop-filter: blur(4px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -707,6 +745,59 @@
             z-index: 150;
             overflow: hidden;
             animation: prerace-bg-fade 1.5s ease-out forwards;
+            pointer-events: auto;
+        }
+
+        .prerace-bg-slideshow {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: -1;
+        }
+
+        .prerace-bg-slideshow img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            animation: none;
+        }
+
+        .prerace-bg-slideshow img.active {
+            opacity: 0.8;
+        }
+
+        @keyframes prerace-bg-pan-1 {
+            0% { transform: translate(0, 0) scale(1.1); }
+            100% { transform: translate(-5%, -5%) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-2 {
+            0% { transform: translate(-5%, 0) scale(1.1); }
+            100% { transform: translate(0, -5%) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-3 {
+            0% { transform: translate(-5%, -5%) scale(1.1); }
+            100% { transform: translate(0, 0) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-4 {
+            0% { transform: translate(0, -5%) scale(1.1); }
+            100% { transform: translate(-5%, 0) scale(1.1); }
+        }
+
+        .prerace-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 0;
         }
 
         @keyframes prerace-bg-fade {
@@ -1221,7 +1312,7 @@
 </head>
 <body>
     <!-- Loading Screen (pitch black) -->
-    <div id="loading" style="background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s ease-out;">
+    <div id="loading" style="background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s ease-out; pointer-events: auto;">
         <span style="font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif; font-size: 3vh; color: #fff; opacity: 0.8;">Haz click</span>
     </div>
 
@@ -1230,6 +1321,12 @@
 
     <!-- Pre-Race Participant Screen -->
     <div class="prerace-screen" id="preraceScreen">
+        <div class="prerace-bg-slideshow" id="preraceBgSlideshow">
+            <img src="assets/bg1.jpg" class="active" alt="">
+            <img src="assets/bg2.jpg" alt="">
+            <img src="assets/bg3.jpg" alt="">
+        </div>
+        <div class="prerace-bg-overlay"></div>
         <div class="prerace-title"><span class="prerace-title-badge">PE</span>Peru Mania Cup 2026</div>
         <div class="prerace-participants-wrapper">
             <div class="prerace-participants" id="preraceParticipants"></div>
@@ -1239,7 +1336,7 @@
 
     <!-- Race Countdown -->
     <div class="race-countdown" id="raceCountdown"></div>
-    <div class="race-start-text" id="raceStartText">ARRANCA!</div>
+    <div class="race-start-text" id="raceStartText">START!</div>
 
     <!-- Main UI Overlay -->
     <div id="ui">
