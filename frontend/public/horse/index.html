@@ -746,13 +746,34 @@
             box-shadow: 0 2px 0 rgba(0,0,0,0.2);
         }
 
+        .prerace-participants-wrapper {
+            position: relative;
+            max-width: 95vw;
+        }
+
         .prerace-participants {
             display: flex;
             gap: 1.5vw;
             padding: 10px;
+            padding-left: 4vw;
+            padding-right: 4vw;
             max-width: 95vw;
             overflow-x: auto;
             overflow-y: visible;
+            -webkit-mask-image: linear-gradient(
+                to right,
+                transparent 0%,
+                black 2%,
+                black 98%,
+                transparent 100%
+            );
+            mask-image: linear-gradient(
+                to right,
+                transparent 0%,
+                black 2%,
+                black 98%,
+                transparent 100%
+            );
         }
 
         .prerace-card {
@@ -1133,31 +1154,13 @@
         }
 
         /* ===== SCROLLBAR STYLING ===== */
-        /* Firefox */
+        /* Firefox - hide scrollbar but keep scroll functionality */
         .prerace-participants {
-            scrollbar-width: auto;
-            scrollbar-color: rgba(255, 255, 255, 0.8) transparent;
+            scrollbar-width: none;
         }
 
-        /* Chrome/Safari/Edge */
+        /* Chrome/Safari/Edge - hide scrollbar but keep scroll functionality */
         .prerace-participants::-webkit-scrollbar {
-            height: 0.8vh;
-        }
-
-        .prerace-participants::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .prerace-participants::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 0.4vh;
-        }
-
-        .prerace-participants::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 1);
-        }
-
-        .prerace-participants::-webkit-scrollbar-button {
             display: none;
         }
 
@@ -1193,7 +1196,9 @@
     <!-- Pre-Race Participant Screen -->
     <div class="prerace-screen" id="preraceScreen">
         <div class="prerace-title"><span class="prerace-title-badge">PE</span>Peru Mania Cup 2026</div>
-        <div class="prerace-participants" id="preraceParticipants"></div>
+        <div class="prerace-participants-wrapper">
+            <div class="prerace-participants" id="preraceParticipants"></div>
+        </div>
         <button class="prerace-button" id="preraceButton">Empezar!</button>
     </div>
 
