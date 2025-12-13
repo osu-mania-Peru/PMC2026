@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PMC 2026 - Horse Race</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+        :root {
+            /* Umamusume Authentic Color Palette */
+            --uma-green: #57cd24;
+            --uma-green-light: #aaff00;
+            --uma-green-dark: #5fcb00;
+            --uma-lime: #aaff00;
+            --uma-lime-glow: #b5ff18;
+            --uma-brown: #593b00;
+            --uma-brown-light: #6a5732;
+            --uma-brown-dark: #4f3700;
+            --uma-cream: #f5f5f5;
+            --uma-gold: #ffcd68;
+            --uma-gold-light: #fff5b4;
+            --uma-gold-dark: #ffb300;
+            --uma-pink: #ff0095;
+            --uma-gray: #686868;
+            --uma-gray-light: #bcbcbc;
+            --uma-shadow: rgba(56, 56, 56, 0.54);
+            --uma-shadow-dark: rgba(61, 61, 61, 0.71);
+            --uma-border-green: #005e00;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,12 +36,12 @@
         }
 
         body {
-            background: #2a2a2a;
+            background: #4a7c4e;
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100vh;
-            font-family: 'Courier New', monospace;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
             overflow: hidden;
         }
 
@@ -25,9 +49,8 @@
             display: block;
             width: 100%;
             height: 100%;
-            background: #808080;
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
+            background: #4a7c4e;
+            image-rendering: auto;
         }
 
         #ui {
@@ -37,128 +60,441 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 10;
         }
 
+        /* ===== UMAMUSUME TIMER ===== */
         .timer {
             position: absolute;
             top: 20px;
             left: 20px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
-            border: 4px solid #333;
-            border-radius: 6px;
-            padding: 12px 20px;
-            color: #ff3333;
-            font-size: 48px;
-            font-weight: bold;
-            font-family: 'Courier New', monospace;
-            text-shadow:
-                0 0 8px rgba(255, 51, 51, 0.8),
-                0 0 3px rgba(255, 51, 51, 1);
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            border: 2px solid var(--uma-gray);
+            border-radius: 15px;
+            padding: 10px 20px;
+            color: var(--uma-brown);
+            font-size: 38px;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            -webkit-text-stroke: 0.5px var(--uma-brown);
             box-shadow:
-                0 4px 6px rgba(0, 0, 0, 0.7),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.5);
-            letter-spacing: 4px;
+                0 3px 0 var(--uma-shadow),
+                0 0 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 1px;
         }
 
-        .keiba-display {
-            position: fixed;
-            top: 20px;
+        .timer::before {
+            content: 'TIEMPO';
+            position: absolute;
+            top: -12px;
             left: 50%;
             transform: translateX(-50%);
-            width: 600px;
-            height: 80px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 14px;
+            border-radius: 10px;
+            border: 1.5px solid var(--uma-border-green);
+            letter-spacing: 2px;
+            box-shadow: 0 2px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
         }
 
+        /* ===== RACE INFO BANNER (Tabs Style) ===== */
+        .race-banner {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0;
+            z-index: 20;
+            box-shadow: 0 3px 1px var(--uma-shadow);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .race-banner-segment {
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            border: 1px solid #dcdee2;
+        }
+
+        .race-banner-left {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fffd;
+            border-radius: 20px 0 0 20px;
+            padding-left: 28px;
+            border: 1px solid var(--uma-green-dark);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        .race-banner-center {
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            color: var(--uma-brown);
+            min-width: 220px;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.2;
+            padding: 8px 24px;
+            -webkit-text-stroke: 0.5px var(--uma-brown);
+        }
+
+        .race-banner-center span:first-child {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .race-banner-right {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fffd;
+            border-radius: 0 20px 20px 0;
+            padding-right: 28px;
+            border: 1px solid var(--uma-green-dark);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== POSITION INDICATOR (Umamusume Balloon Style) ===== */
+        .position-indicator {
+            position: fixed;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: flex-end;
+            padding: 8px 14px;
+            background: rgba(30, 50, 35, 0.75);
+            border-radius: 12px;
+            backdrop-filter: blur(4px);
+        }
+
+        .position-indicator.show {
+            display: flex;
+        }
+
+        .position-balloon {
+            position: relative;
+            width: 50px;
+            height: 58px;
+            margin-right: -8px;
+        }
+
+        .position-balloon:last-child {
+            margin-right: 0;
+        }
+
+        .position-balloon .balloon {
+            width: 50px;
+            height: 58px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50% 50% 45% 45% / 50% 50% 40% 40%;
+            border: 3px solid rgba(255, 255, 255, 0.95);
+            box-shadow:
+                0 3px 6px rgba(0, 0, 0, 0.3),
+                inset 0 -5px 10px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .position-balloon .balloon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .position-balloon .balloon .fallback {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .position-balloon .number {
+            position: absolute;
+            right: -2px;
+            bottom: 2px;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 4px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            z-index: 2;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+        }
+
+        /* ===== LEADERBOARD (Card Style) ===== */
         .leaderboard {
             position: absolute;
             top: 20px;
             right: 20px;
             width: 280px;
-            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 0 4px #000;
         }
 
-        .leaderboard-title {
-            color: gold;
-            text-align: center;
-            font-size: 18px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-        }
-
-        .leaderboard-entries {
-            position: relative;
-            height: 500px;
-        }
-
-        .leaderboard-entry {
-            position: absolute;
-            width: 100%;
-            color: white;
-            font-size: 14px;
-            padding: 6px 8px;
-            border-radius: 4px;
-            transition: top 0.3s ease-out, background-color 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: bold;
-        }
-
-        .leaderboard-entry .position {
-            min-width: 20px;
-            text-align: right;
-            color: gold;
-        }
-
-        .leaderboard-entry .number-badge {
-            min-width: 30px;
-            height: 24px;
-            border-radius: 12px;
+        .leaderboard-header {
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            gap: 10px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .leaderboard-title {
+            color: #f1f1f1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            -webkit-text-stroke: 0.5px #f1f1f1;
+        }
+
+        .leaderboard-icon {
+            font-size: 18px;
+        }
+
+        .leaderboard-entries {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: #eee;
+        }
+
+        .leaderboard-entry {
+            background: #fff;
+            color: var(--uma-brown);
             font-size: 13px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            border: 1px solid #dcdee2;
+            -webkit-text-stroke: 0.3px var(--uma-brown-dark);
         }
 
-        .leaderboard-entry .info {
-            flex: 1;
+        .leaderboard-entry:hover {
+            transform: scale(0.98);
+            background: #f8f8f8;
+        }
+
+        .leaderboard-entry.top-1 {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, #fff 40%);
+            border-color: var(--uma-gold-dark);
+        }
+
+        .leaderboard-entry.top-2 {
+            background: linear-gradient(90deg, #e8e8e8 0%, #fff 40%);
+            border-color: #999;
+        }
+
+        .leaderboard-entry.top-3 {
+            background: linear-gradient(90deg, #ffe8d0 0%, #fff 40%);
+            border-color: #cd7f32;
+        }
+
+        .leaderboard-entry .pos {
+            min-width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 11px;
+            font-weight: 700;
+            background: linear-gradient(180deg, #e5e5e5 0%, #cbcbcb 100%);
+            color: #a8a8a8;
+            border: 1px solid rgba(91, 91, 91, 0.58);
+            box-shadow: 0 2px 2px var(--uma-shadow-dark);
         }
 
+        .leaderboard-entry.top-1 .pos {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 60%, var(--uma-gold-dark) 100%);
+            color: var(--uma-brown);
+            border-color: #ff8800;
+        }
+
+        .leaderboard-entry.top-2 .pos {
+            background: linear-gradient(90deg, #f5f5f5 0%, #d0d0d0 60%, #aaa 100%);
+            color: #555;
+            border-color: #888;
+        }
+
+        .leaderboard-entry.top-3 .pos {
+            background: linear-gradient(90deg, #ffe0c0 0%, #dda060 60%, #b87333 100%);
+            color: #fff;
+            border-color: #8b4513;
+        }
+
+        .leaderboard-entry .badge {
+            min-width: 26px;
+            height: 22px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 10px;
+            border: 1.5px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+            color: #fff;
+            -webkit-text-stroke: 0;
+        }
+
+        .leaderboard-entry .name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        /* ===== SPEED CONTROL (Button Style) ===== */
+        .speed-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 4px #000, 0 3px 0 var(--uma-shadow);
+        }
+
+        .speed-control::before {
+            content: 'VELOCIDAD';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 8px;
+            border: 1.5px solid var(--uma-border-green);
+            letter-spacing: 1px;
+            box-shadow: 0 2px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.3px #fff;
+        }
+
+        .speed-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            border: 1.9px solid var(--uma-gray);
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            color: var(--uma-brown);
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.05s linear;
+            pointer-events: auto;
+            box-shadow: 0 3px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px var(--uma-brown);
+            position: relative;
+        }
+
+        .speed-btn:hover {
+            transform: scale(0.9);
+        }
+
+        .speed-btn.active {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            border-color: var(--uma-border-green);
+            color: #fff;
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== INSTRUCTIONS (Dialog Style) ===== */
         .instructions {
             position: absolute;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid white;
-            padding: 10px 20px;
-            color: white;
-            font-size: 14px;
+            background: var(--uma-cream);
+            border-radius: 20px;
+            padding: 15px 30px;
+            padding-top: 20px;
+            color: var(--uma-brown);
+            font-size: 15px;
             text-align: center;
+            font-weight: 700;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            -webkit-text-stroke: 0.4px var(--uma-brown-light);
+            overflow: hidden;
         }
 
+        .instructions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+        }
+
+        .instructions .key {
+            display: inline-block;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            margin: 0 4px;
+            font-size: 13px;
+            border: 1.9px solid var(--uma-border-green);
+            box-shadow: 0 3px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== LOADING SCREEN (Dialog Style) ===== */
         #loading {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #1a1a1a;
+            background: #4a7c4e;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 24px;
+            color: var(--uma-brown);
+            font-size: 20px;
             z-index: 1000;
         }
 
@@ -166,30 +502,478 @@
             display: none;
         }
 
+        .loading-card {
+            background: var(--uma-cream);
+            border-radius: 20px;
+            padding: 40px 60px;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            text-align: center;
+        }
+
         .pmc-title {
-            font-size: 48px;
-            font-weight: bold;
-            color: #ff0844;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(255, 8, 68, 0.5);
+            font-size: 56px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 50%, var(--uma-gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+            filter: drop-shadow(2px 2px 0 #ff8800);
+        }
+
+        .pmc-subtitle {
+            font-size: 16px;
+            color: var(--uma-brown);
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            -webkit-text-stroke: 0.4px var(--uma-brown);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #eee;
+            border-top-color: var(--uma-green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-weight: 700;
+            color: var(--uma-brown-light);
+            font-size: 16px;
+            animation: loading-pulse 1.5s ease-in-out infinite;
+            -webkit-text-stroke: 0.3px var(--uma-brown-light);
+        }
+
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== RACE START OVERLAY ===== */
+        .race-countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 140px;
+            font-weight: 700;
+            color: var(--uma-brown);
+            background: var(--uma-cream);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            border: 8px solid var(--uma-green);
+            z-index: 100;
+            animation: countdown-pop 0.5s ease-out;
+            -webkit-text-stroke: 2px var(--uma-brown);
+        }
+
+        .race-countdown.show {
+            display: flex;
+        }
+
+        @keyframes countdown-pop {
+            0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .race-start-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: 700;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(3px 3px 0 var(--uma-border-green));
+            z-index: 100;
+            display: none;
+            letter-spacing: 6px;
+        }
+
+        .race-start-text.show {
+            display: block;
+            animation: start-pop 0.8s ease-out;
+        }
+
+        @keyframes start-pop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* ===== FINISH OVERLAY (Dialog Style) ===== */
+        .finish-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(85, 85, 85, 0.3);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .finish-overlay.show {
+            display: flex;
+        }
+
+        .finish-dialog {
+            background: var(--uma-cream);
+            border-radius: 20px;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            overflow: hidden;
+            min-width: 450px;
+        }
+
+        .finish-header {
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+            padding: 15px 30px;
+            text-align: center;
+        }
+
+        .finish-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f1f1f1;
+            -webkit-text-stroke: 0.5px #f1f1f1;
+            letter-spacing: 3px;
+        }
+
+        .finish-results {
+            background: #eee;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 10px;
+        }
+
+        .finish-result-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 12px;
+            background: #fff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #dcdee2;
+        }
+
+        .finish-result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .finish-place {
+            font-size: 22px;
+            font-weight: 700;
+            min-width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--uma-brown);
+            background: linear-gradient(180deg, #e5e5e5 0%, #cbcbcb 100%);
+            border: 1px solid rgba(91, 91, 91, 0.58);
+            box-shadow: 0 2px 2px var(--uma-shadow-dark);
+        }
+
+        .finish-place.gold {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 60%, var(--uma-gold-dark) 100%);
+            border-color: #ff8800;
+        }
+
+        .finish-place.silver {
+            background: linear-gradient(90deg, #f5f5f5 0%, #d0d0d0 60%, #aaa 100%);
+            border-color: #888;
+        }
+
+        .finish-place.bronze {
+            background: linear-gradient(90deg, #ffe0c0 0%, #dda060 60%, #b87333 100%);
+            border-color: #8b4513;
+            color: #fff;
+        }
+
+        .finish-name {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--uma-brown);
+            -webkit-text-stroke: 0.3px var(--uma-brown);
+        }
+
+        .finish-time {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--uma-green-dark);
+            font-family: 'Noto Sans JP', monospace;
+        }
+
+        .finish-footer {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .finish-btn {
+            padding: 12px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            border: 1.9px solid var(--uma-border-green);
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
+            transition: all 0.05s linear;
+            pointer-events: auto;
+        }
+
+        .finish-btn:hover {
+            transform: scale(0.95);
+        }
+
+        /* Hide old keiba display */
+        .keiba-display {
+            display: none;
+        }
+
+        /* ===== RACE PROGRESS BAR ===== */
+        .race-progress {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 0;
+            background: rgba(30, 50, 35, 0.85);
+            border-radius: 12px;
+            padding: 12px 16px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .race-progress.show {
+            display: flex;
+        }
+
+        .race-progress-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+            -webkit-text-stroke: 0.3px #fff;
+        }
+
+        .race-progress-label.finish {
+            background: linear-gradient(180deg, #ff6b6b 0%, #c92a2a 100%);
+            border: 1px solid #a91e1e;
+        }
+
+        .race-progress-label.start {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            border: 1px solid var(--uma-border-green);
+        }
+
+        .race-progress-track {
+            position: relative;
+            width: 400px;
+            height: 28px;
+            background: linear-gradient(180deg, #3a3a3a 0%, #252525 100%);
+            border-radius: 4px;
+            margin: 0 10px;
+            border: 2px solid #555;
+            overflow: visible;
+        }
+
+        .race-progress-track-inner {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            right: 3px;
+            bottom: 3px;
+            background: linear-gradient(180deg, #4a4a4a 0%, #333 100%);
+            border-radius: 2px;
+        }
+
+        .race-progress-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .race-progress-horse {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+            z-index: 1;
+            transition: left 0.1s ease-out;
+        }
+
+        .race-progress-horse img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .race-progress-horse .fallback {
+            font-size: 10px;
+        }
+
+        /* Finish line marker on progress bar */
+        .race-progress-finish-line {
+            position: absolute;
+            left: 0;
+            top: -4px;
+            bottom: -4px;
+            width: 3px;
+            background: repeating-linear-gradient(
+                180deg,
+                #fff 0px,
+                #fff 3px,
+                #222 3px,
+                #222 6px
+            );
+            z-index: 2;
+        }
+
+        /* ===== SCROLLBAR STYLING ===== */
+        .leaderboard-entries::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .leaderboard-entries::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+        }
+
+        .leaderboard-entries::-webkit-scrollbar-thumb {
+            background: var(--uma-gold);
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
     <div id="loading">
-        <div class="pmc-title">PMC 2026</div>
-        <div>Cargando jugadores...</div>
+        <div class="loading-card">
+            <div class="pmc-title">PMC 2026</div>
+            <div class="pmc-subtitle">Carrera de Caballos</div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Cargando jugadores...</div>
+        </div>
     </div>
+
+    <!-- Game Canvas -->
     <canvas id="gameCanvas"></canvas>
+
+    <!-- Race Countdown -->
+    <div class="race-countdown" id="raceCountdown"></div>
+    <div class="race-start-text" id="raceStartText">ARRANCA!</div>
+
+    <!-- Main UI Overlay -->
     <div id="ui">
+        <!-- Timer -->
         <div class="timer" id="timer">00:00.00</div>
-        <div class="keiba-display" id="keibaDisplay"></div>
+
+        <!-- Race Banner (top center) -->
+        <div class="race-banner">
+            <div class="race-banner-segment race-banner-left">Turf</div>
+            <div class="race-banner-segment race-banner-center" id="raceName"><span>2026</span><br><span>PERU MANIA CUP</span></div>
+            <div class="race-banner-segment race-banner-right">2600M</div>
+        </div>
+
+        <!-- Leaderboard -->
         <div class="leaderboard">
-            <div class="leaderboard-title">PMC 2026 RACE</div>
+            <div class="leaderboard-header">
+                <div class="leaderboard-title">Posiciones</div>
+            </div>
             <div class="leaderboard-entries" id="leaderboardEntries"></div>
         </div>
+
+        <!-- Position Indicator -->
+        <div class="position-indicator" id="positionIndicator"></div>
+
+        <!-- Race Progress Bar -->
+        <div class="race-progress" id="raceProgress">
+            <div class="race-progress-label finish">META</div>
+            <div class="race-progress-track">
+                <div class="race-progress-track-inner"></div>
+                <div class="race-progress-finish-line"></div>
+                <div class="race-progress-markers" id="raceProgressMarkers"></div>
+            </div>
+            <div class="race-progress-label start">INICIO</div>
+        </div>
+
+        <!-- Speed Control -->
+        <div class="speed-control" id="speedControl">
+            <button class="speed-btn" data-speed="0.25">¼×</button>
+            <button class="speed-btn" data-speed="0.5">½×</button>
+            <button class="speed-btn active" data-speed="1">1×</button>
+            <button class="speed-btn" data-speed="2">2×</button>
+            <button class="speed-btn" data-speed="4">4×</button>
+        </div>
+
+        <!-- Instructions -->
         <div class="instructions" id="instructions">
-            SPACE: Start | 1-5: Speed | P: Pause | V: Visual Debug
+            Presiona <span class="key">ESPACIO</span> para Iniciar
+        </div>
+
+        <!-- Old keiba display (hidden) -->
+        <div class="keiba-display" id="keibaDisplay"></div>
+    </div>
+
+    <!-- Finish Overlay -->
+    <div class="finish-overlay" id="finishOverlay">
+        <div class="finish-dialog">
+            <div class="finish-header">
+                <div class="finish-title">CARRERA TERMINADA</div>
+            </div>
+            <div class="finish-results" id="finishResults"></div>
+            <div class="finish-footer">
+                <button class="finish-btn" onclick="location.reload()">Correr de Nuevo</button>
+            </div>
         </div>
     </div>
 
@@ -239,11 +1023,16 @@
         }
 
         // Load players then start game
-        // horse-layers.js adds modular features (running styles, stamina, drafting, etc.)
-        // horse-core.js is the clean minimal horse implementation
-        // horse-debug.js provides event logging for debugging
+        // Using CLEAN architecture: geometry first, then gizmos, then horses, then game
         loadPlayers().then(() => {
-            const scripts = ['config.js', 'vector2.js', 'particlePool.js', 'horse-layers.js', 'horse-core.js', 'horse-debug.js', 'horse-debug-visual.js', 'race.js', 'umasim.js', 'main.js'];
+            const scripts = [
+                'vector2.js',           // Math utilities
+                'track-geometry.js',    // Pure track math - defines all boundaries
+                'track-gizmos.js',      // Debug rendering of track
+                'horse-clean.js',       // Clean horse implementation
+                'race-clean.js',        // Clean race management
+                'game-loop.js'          // Main game loop
+            ];
             loadScriptsInOrder(scripts);
         });
     </script>
