@@ -62,9 +62,9 @@ export default function Brackets() {
   const currentBracket = getCurrentBracket();
 
   const tabs = [
-    { id: 'winner', label: 'WINNERS' },
-    { id: 'loser', label: 'LOSERS' },
-    { id: 'grandfinals', label: 'GRAND FINALS' }
+    { id: 'winner', label: 'WINNERS BRACKET' },
+    { id: 'loser', label: 'LOSERS BRACKET' },
+    { id: 'grandfinals', label: 'GRANDFINALS BRACKET' }
   ];
 
   return (

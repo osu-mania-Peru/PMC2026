@@ -72,34 +72,6 @@ body {
   pointer-events: none;
 }
 
-/* Nav colors when on brackets page */
-.nav[data-bracket="winner"] {
-  background: #ffffff;
-}
-
-.nav[data-bracket="winner"] .nav-links a,
-.nav[data-bracket="winner"] .nav-links span {
-  color: #333333;
-}
-
-.nav[data-bracket="winner"] .nav-links button {
-  background: #999999;
-  color: #444444;
-}
-
-.nav[data-bracket="loser"] {
-  background: #666666;
-}
-
-.nav[data-bracket="loser"] .nav-links button {
-  background: #333333;
-  color: #777777;
-}
-
-.nav[data-bracket="grandfinals"] {
-  background: #ff0844;
-}
-
 .nav-content {
   display: flex;
   justify-content: space-between;

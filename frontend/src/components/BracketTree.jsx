@@ -1,7 +1,43 @@
 import { useEffect, useState, useRef } from 'react';
-import { Bracket, BracketGame } from 'react-tournament-bracket';
+import { Bracket } from 'react-tournament-bracket';
 import Spinner from './Spinner';
 import './BracketTree.css';
+
+// Custom game component matching the design
+function CustomGame({ game, x, y, homeOnTop }) {
+  const home = game.sides?.home;
+  const visitor = game.sides?.visitor;
+  const homeTeam = home?.team;
+  const visitorTeam = visitor?.team;
+  const homeScore = home?.score?.score;
+  const visitorScore = visitor?.score?.score;
+
+  // Determine winner
+  const homeWon = homeScore !== undefined && visitorScore !== undefined && homeScore > visitorScore;
+  const visitorWon = homeScore !== undefined && visitorScore !== undefined && visitorScore > homeScore;
+
+  const width = 310;
+  const height = 160;
+
+  return (
+    <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: 'visible' }}>
+      <div xmlns="http://www.w3.org/1999/xhtml" className="custom-match">
+        <div className="bracket-date">{game.scheduled ? new Date(game.scheduled).toLocaleDateString('es-PE') : 'TBD'}</div>
+        <div className="bracket-player-row">
+          <span className="bracket-seed">TBD</span>
+          <span className="bracket-player-name">{homeTeam?.name || 'TBD'}</span>
+          <span className="bracket-indicator"></span>
+        </div>
+        <div className="bracket-player-row">
+          <span className="bracket-seed">TBD</span>
+          <span className="bracket-player-name">{visitorTeam?.name || 'TBD'}</span>
+          <span className="bracket-indicator"></span>
+        </div>
+        <div className="bracket-round-label">{game.name}</div>
+      </div>
+    </foreignObject>
+  );
+}
 
 export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false }) {
   const [data, setData] = useState(() => {
@@ -199,9 +235,10 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       <div className="bracket-section">
         <Bracket
           game={finalGame}
-          gameDimensions={{ width: 200, height: 80 }}
-          roundSeparatorWidth={24}
-          svgPadding={20}
+          GameComponent={CustomGame}
+          gameDimensions={{ width: 310, height: 160 }}
+          roundSeparatorWidth={80}
+          svgPadding={30}
           homeOnTop={true}
         />
       </div>

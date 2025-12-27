@@ -12,48 +12,41 @@
 /* Navigation styled like bracket titles */
 .bracket-nav {
     display: flex;
-    gap: 0;
-    background: #ffffff;
-    padding-top: 0;
-    padding-left: 0;
+    gap: 0.5rem;
+    background: #000000;
+    padding: 1rem 1rem;
     position: relative;
     width: 100%;
     overflow: hidden;
-    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.bracket-nav[data-active="winner"] {
-    background: #999999;
-}
-
-.bracket-nav[data-active="loser"] {
-    background: #333333;
-}
-
-.bracket-nav[data-active="grandfinals"] {
+/* Pink line below tabs */
+.bracket-nav::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
     background: #ff0844;
 }
 
-/* Extend first tab to cover left edge */
-.bracket-nav-item:first-child {
-    margin-left: -20px;
-    padding-left: calc(2rem + 20px);
-}
-
 .bracket-nav-item {
+    flex: 1;
     position: relative;
-    padding: 1rem 3rem 1rem 2rem;
+    padding: 0.75rem 2rem;
     border: none;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 1.5rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    clip-path: polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
-    margin-right: -22px;
-    z-index: 1;
+    text-align: center;
+    transition: background 0.2s ease, color 0.2s ease;
+    clip-path: polygon(20px 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
+    background: #ff0844;
+    color: #ffffff;
 }
 
 /* Z-index for tab layering */
@@ -61,46 +54,10 @@
 .bracket-nav-item[data-type="loser"] { z-index: 2; }
 .bracket-nav-item[data-type="grandfinals"] { z-index: 1; }
 
-/* When WINNERS is selected - all tabs are white shades */
-.bracket-nav[data-active="winner"] .bracket-nav-item[data-type="winner"] {
+/* Active tab - white with dark text */
+.bracket-nav-item.active {
     background: #ffffff;
-    color: #000000;
-}
-.bracket-nav[data-active="winner"] .bracket-nav-item[data-type="loser"] {
-    background: #cccccc;
-    color: #666666;
-}
-.bracket-nav[data-active="winner"] .bracket-nav-item[data-type="grandfinals"] {
-    background: #999999;
-    color: #444444;
-}
-
-/* When LOSERS is selected - all tabs are gray shades */
-.bracket-nav[data-active="loser"] .bracket-nav-item[data-type="winner"] {
-    background: #444444;
-    color: #888888;
-}
-.bracket-nav[data-active="loser"] .bracket-nav-item[data-type="loser"] {
-    background: #666666;
-    color: #ffffff;
-}
-.bracket-nav[data-active="loser"] .bracket-nav-item[data-type="grandfinals"] {
-    background: #333333;
-    color: #777777;
-}
-
-/* When GRAND FINALS is selected - all tabs are red shades */
-.bracket-nav[data-active="grandfinals"] .bracket-nav-item[data-type="winner"] {
-    background: #661122;
-    color: #aa4455;
-}
-.bracket-nav[data-active="grandfinals"] .bracket-nav-item[data-type="loser"] {
-    background: #991133;
-    color: #cc6677;
-}
-.bracket-nav[data-active="grandfinals"] .bracket-nav-item[data-type="grandfinals"] {
-    background: #ff0844;
-    color: #ffffff;
+    color: #1a1a1a;
 }
 
 /* Bracket Container */
@@ -108,6 +65,6 @@
     flex: 1;
     min-height: 0;
     display: flex;
-    overflow: hidden;
+    overflow: auto;
     background: #000000;
 }

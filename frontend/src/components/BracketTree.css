@@ -94,6 +94,90 @@
   padding: 2rem;
 }
 
+/* Override library styles */
+.bracket-section foreignObject {
+  overflow: visible;
+}
+
+/* Custom Match Design */
+.custom-match {
+  background: transparent;
+  border-radius: 4px;
+  overflow: visible;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.custom-match .bracket-date {
+  text-align: center;
+  padding: 0.4rem;
+  color: #888;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+.custom-match .bracket-player-row {
+  display: flex;
+  align-items: stretch;
+  padding: 0 0 0 0.75rem;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  background: #222222;
+}
+
+.custom-match .bracket-player-row + .bracket-player-row {
+  margin-top: 9px;
+}
+
+.custom-match .bracket-seed {
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  font-style: normal;
+  min-width: 35px;
+  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.custom-match .bracket-player-name {
+  flex: 1;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.custom-match .bracket-indicator {
+  background: #FF0844;
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 45px;
+  align-self: stretch;
+}
+
+.custom-match .bracket-round-label {
+  text-align: center;
+  padding: 0.35rem;
+  color: #888;
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .bracket-tree {

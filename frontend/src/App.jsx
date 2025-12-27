@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { api } from './api';
 import { FaDiscord, FaYoutube, FaTwitch } from 'react-icons/fa';
@@ -18,23 +18,13 @@ import AdminPanel from './components/AdminPanel';
 import Spinner from './components/Spinner';
 
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
-  const location = useLocation();
-
-  // Detect bracket type from URL
-  const getBracketType = () => {
-    const match = location.pathname.match(/\/brackets\/(winner|loser|grandfinals)/);
-    return match ? match[1] : null;
-  };
-
-  const bracketType = getBracketType();
-
   if (loading) {
     return <Spinner size="large" text="Cargando..." />;
   }
 
   return (
-    <div className="app" data-bracket={bracketType}>
-      <nav className="nav" data-bracket={bracketType}>
+    <div className="app">
+      <nav className="nav">
         <div className="nav-content">
           <Link to="/" className="nav-logo">
             <img src="/2026/PMCcolor.svg" alt="PMC" />
