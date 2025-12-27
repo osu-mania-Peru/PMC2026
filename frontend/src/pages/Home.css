@@ -29,7 +29,13 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,1) 90%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(0, 0, 0, 0.6) 70%,
+    rgba(0, 0, 0, 1) 90%
+  );
   z-index: -1;
 }
 
@@ -57,7 +63,7 @@
 }
 
 .hero-title {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 5rem;
   font-weight: 900;
   color: var(--text-primary);
@@ -69,14 +75,20 @@
 }
 
 .hero-title span {
-  background: linear-gradient(to bottom, #FF2057 0%, #FF743E 25%, #E0FF00 69%, #A3FF16 100%);
+  background: linear-gradient(
+    to bottom,
+    #ff2057 0%,
+    #ff743e 25%,
+    #e0ff00 69%,
+    #a3ff16 100%
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-subtitle {
-  font-family: 'Alata', sans-serif;
+  font-family: "Alata", sans-serif;
   font-size: 1.1rem;
   color: #fff;
   margin: 0 0 2rem 0;
@@ -92,7 +104,7 @@
 
 button.cta-button,
 a.cta-button {
-  background: linear-gradient(90deg, #FF2057 0%, #FF743E 25%, #E0FF00 100%);
+  background: linear-gradient(90deg, #ff2057 0%, #ff743e 25%, #e0ff00 100%);
   color: var(--text-primary);
   border: none;
   padding: 1rem 2rem;
@@ -101,7 +113,7 @@ a.cta-button {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 0.9rem;
   text-decoration: none;
   text-transform: uppercase;
@@ -128,7 +140,7 @@ a.cta-button.secondary {
 
 button.cta-button.secondary::before,
 a.cta-button.secondary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 4px;
   left: 6px;
@@ -232,7 +244,7 @@ a.cta-button.secondary:hover::before {
 }
 
 .section-header h2 {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 1.8rem;
   color: var(--text-primary);
   margin: 0;
@@ -243,7 +255,7 @@ a.cta-button.secondary:hover::before {
 }
 
 .section-subtitle {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 0.9rem;
   color: var(--text-primary);
   margin: 0;
@@ -311,7 +323,7 @@ a.cta-button.secondary:hover::before {
 }
 
 .timeline-event.active .timeline-dot {
-  background: linear-gradient(to bottom, #FF2057 0%, #FF743E 50%, #E0FF00 100%);
+  background: linear-gradient(to bottom, #e0ff00 0%, #ff743e 50%, #ff2057 100%);
   border: none;
 }
 
@@ -324,6 +336,7 @@ a.cta-button.secondary:hover::before {
 }
 
 .timeline-event-title {
+  font-family: "Poppins", sans-serif;
   font-size: 0.5rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -337,9 +350,9 @@ a.cta-button.secondary:hover::before {
 }
 
 .timeline-event-date {
+  font-family: "Poppins", sans-serif;
   font-size: 0.45rem;
   color: var(--text-muted);
-  font-family: monospace;
   white-space: nowrap;
 }
 
@@ -412,7 +425,7 @@ a.cta-button.secondary:hover::before {
 }
 
 .news-title {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 1.8rem;
   font-weight: 900;
   color: #fff;
@@ -440,21 +453,23 @@ a.cta-button.secondary:hover::before {
 }
 
 .news-date {
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   padding: 0 2rem;
-  min-width: 180px;
+  width: 370px;
+  min-width: 370px;
   display: flex;
   align-items: center;
-  background: linear-gradient(90deg, #A3FF16 0%, #30FF00 31%, #FF743E 75%, #FF2057 100%);
+  justify-content: center;
+  background: linear-gradient(90deg, #FF2057 0%, #FF743E 25%, #E0FF00 100%);
 }
 
 .news-text {
   flex: 1;
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
+  font-family: "Poppins", sans-serif;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   padding: 0 1rem;

@@ -16,11 +16,11 @@ const timelineEvents = [
 ];
 
 const newsItems = [
-  { date: '25/12/2025', title: '¡Feliz Navidad! El equipo de PMC les desea unas felices fiestas a todos los jugadores.', id: 1 },
-  { date: '20/12/2025', title: 'Las inscripciones para PMC 2026 están oficialmente abiertas. ¡No te lo pierdas!', id: 2 },
-  { date: '15/12/2025', title: 'Anunciamos el mappool para las clasificatorias. Revisa los mapas en la sección de Mappool.', id: 3 },
-  { date: '10/12/2025', title: 'Nuevo diseño del sitio web. ¡Esperamos que les guste!', id: 4 },
-  { date: '05/12/2025', title: 'PMC 2026 ha sido anunciado oficialmente. Prepárense para la competencia más grande de Perú.', id: 5 },
+  { date: '25/12/2025', title: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.', id: 1 },
+  { date: '20/12/2025', title: 'Sed do eiusmod tempor incididunt ut labore.', id: 2 },
+  { date: '15/12/2025', title: 'Ut enim ad minim veniam quis nostrud.', id: 3 },
+  { date: '10/12/2025', title: 'Duis aute irure dolor in reprehenderit voluptate.', id: 4 },
+  { date: '05/12/2025', title: 'Excepteur sint occaecat cupidatat non proident sunt.', id: 5 },
 ];
 
 export default function Home({ user }) {

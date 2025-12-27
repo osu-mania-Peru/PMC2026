@@ -10,7 +10,9 @@ html {
   outline: none;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   border: none;
   outline: none;
 }
@@ -28,13 +30,15 @@ html, body, #root {
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
   position: relative;
 }
-
 
 .app {
   min-height: 100vh;
@@ -62,13 +66,13 @@ body {
 }
 
 .nav::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 20px;
-  background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.3));
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
   pointer-events: none;
 }
 
@@ -100,11 +104,10 @@ body {
   height: 100%;
 }
 
-
 .nav-links a {
   color: var(--text-primary);
   text-decoration: none;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -116,20 +119,26 @@ body {
   color: var(--accent-secondary);
 }
 
+.nav-links a.active {
+  background: linear-gradient(180deg, #FF2057 0%, #FF743E 25%, #E0FF00 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .nav-links span {
   background: none;
   border: none;
   color: var(--text-primary);
   padding: 0;
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 500;
   white-space: nowrap;
 }
-
 
 /* Main content */
 .main {
@@ -248,7 +257,8 @@ table {
   margin: 1rem 0;
 }
 
-th, td {
+th,
+td {
   padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--border);
@@ -269,20 +279,22 @@ tr:hover {
     font-size: 0.85rem;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.5rem 0.3rem;
   }
 }
 
 /* Buttons - Sporty Parallelogram Style (matching tabs) */
-button, .button {
+button,
+.button {
   background: linear-gradient(90deg, #A3FF16 0%, #30FF00 31%, #FF743E 75%, #FF2057 100%);
   color: #000;
   border: none;
   padding: 0.8rem 2rem;
   padding-right: calc(2rem + 20px);
   cursor: pointer;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   font-size: 0.9rem;
   text-decoration: none;
   display: inline-block;
@@ -294,12 +306,15 @@ button, .button {
   position: relative;
 }
 
-button span, .button span,
-button, .button {
+button span,
+.button span,
+button,
+.button {
   display: inline-block;
 }
 
-button:hover, .button:hover {
+button:hover,
+.button:hover {
   background: var(--text-primary);
   color: var(--bg-primary);
 }
@@ -308,6 +323,19 @@ button:disabled {
   background: var(--border);
   color: var(--text-muted);
   cursor: not-allowed;
+}
+
+.btn-full-height-iniciar-sesion {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  padding-left: calc(2rem + 20px);
+  clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%);
+  background: linear-gradient(90deg, #FF2057 0%, #FF743E 25%, #E0FF00 100%) left, #E0FF00;
+  background-size: 250px 100%, 100% 100%;
+  background-repeat: no-repeat;
+  color: #fff;
 }
 
 /* Full height button - stretches to parent height and fills to right edge */
@@ -322,7 +350,8 @@ button:disabled {
 
 /* Last button in nav extends to edge */
 .nav-links > button:last-child,
-.nav-links > .btn-full-height:last-child {
+.nav-links > .btn-full-height:last-child,
+.nav-links > .btn-full-height-iniciar-sesion:last-child {
   margin-right: -100vw;
   padding-right: calc(100vw + 2rem);
 }
@@ -425,6 +454,7 @@ a {
 .footer-logo img {
   height: 100px;
   width: auto;
+  filter: brightness(0) invert(1);
 }
 
 .footer-right {
