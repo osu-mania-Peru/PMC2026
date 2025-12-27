@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { api } from './api';
-import { FaDiscord } from 'react-icons/fa';
+import { FaDiscord, FaYoutube, FaTwitch } from 'react-icons/fa';
 import logo from './assets/logo.svg';
 import './App.css';
 
@@ -36,6 +36,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
     <div className="app" data-bracket={bracketType}>
       <nav className="nav" data-bracket={bracketType}>
         <div className="nav-content">
+          <Link to="/" className="nav-logo">
+            <img src="/2026/PMCcolor.svg" alt="PMC" />
+          </Link>
           <div className="nav-links">
             <Link to="/">INICIO</Link>
             <Link to="/brackets">BRACKETS</Link>
@@ -89,17 +92,42 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
       </Routes>
 
       <footer className="footer">
-        <div className="footer-content">
-          <p>PMC2026</p>
-          <a href="https://discord.gg/placeholder" target="_blank" rel="noopener noreferrer" className="discord-link">
-            <FaDiscord size={20} />
-            <span>Únete a nuestro Discord</span>
-          </a>
+        <div className="footer-main">
+          <div className="footer-logo">
+            <img src="/2026/PMCwhite.svg" alt="PMC" />
+          </div>
+          <div className="footer-right">
+            <div className="footer-social">
+              <span className="footer-social-label">Nuestras redes sociales:</span>
+              <div className="footer-social-icons">
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                  <FaYoutube size={20} />
+                </a>
+                <a href="https://twitch.tv" target="_blank" rel="noopener noreferrer" aria-label="Twitch">
+                  <FaTwitch size={20} />
+                </a>
+                <a href="https://discord.gg/placeholder" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+                  <FaDiscord size={20} />
+                </a>
+              </div>
+            </div>
+            <nav className="footer-nav">
+              <Link to="/brackets">BRACKETS</Link>
+              <Link to="/matches">PARTIDAS</Link>
+              <Link to="/players">JUGADORES</Link>
+              <Link to="/maps">MAPPOOL</Link>
+              <a href="https://discord.gg/placeholder" target="_blank" rel="noopener noreferrer">SOPORTE</a>
+            </nav>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <span className="footer-hosted">Peru Mania Cup 2026 Hosteado por Sakisagee y Miaurichesu</span>
+          <span className="footer-credit">Designed by @r_koshiin</span>
         </div>
       </footer>
 
-      {/* Admin Debug Panel */}
-      <AdminPanel />
+      {/* Admin Debug Panel - Hidden */}
+      {/* <AdminPanel /> */}
     </div>
   );
 }

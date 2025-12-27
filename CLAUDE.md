@@ -27,6 +27,18 @@ Never commit or expose:
 - `*.db` database files
 - API keys or secrets
 
+## Security Notes
+
+### Production API
+- FastAPI docs are exposed (`/docs`, `/redoc`, `/openapi.json`) - consider disabling in production
+- `/users/all` endpoint is public and marked "solo para testing" - should be protected or removed
+- Other public endpoints: `/users/{id}`, `/tournament/*`, `/brackets`, `/maps`, `/matches`
+
+### Before Production Launch
+- Disable FastAPI docs: `app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)`
+- Review public endpoints and add auth where needed
+- Remove or protect testing endpoints like `/users/all`
+
 ## Known Issues
 
 ### Horse Racing Game (`/frontend/public/horse/`)

@@ -1,9 +1,36 @@
 .home-page {
   flex: 1;
-  padding: 3rem 4rem 4rem;
-  max-width: 1400px;
-  margin: 0 auto;
   width: 100%;
+  overflow: visible;
+}
+
+/* Video Background Section */
+.video-section {
+  position: relative;
+  padding: 3rem 4rem 4rem;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+
+.video-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,1) 100%);
+  z-index: -1;
 }
 
 /* Hero Section */
@@ -11,12 +38,12 @@
   display: flex;
   align-items: center;
   gap: 2rem;
-  margin-bottom: 3rem;
 }
 
 .hero-left {
   flex: 0 1 auto;
-  max-width: 550px;
+  max-width: 600px;
+  overflow: visible;
 }
 
 /* Hero Logo - Right side */
@@ -30,64 +57,97 @@
 }
 
 .hero-title {
-  font-size: 3.5rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 5rem;
   font-weight: 900;
   color: var(--text-primary);
   margin: 0 0 1rem 0;
   text-transform: uppercase;
   letter-spacing: -0.02em;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .hero-title span {
-  color: var(--accent-secondary);
+  background: linear-gradient(to bottom, #FF2057 0%, #FF743E 25%, #E0FF00 69%, #A3FF16 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-subtitle {
+  font-family: 'Alata', sans-serif;
   font-size: 1.1rem;
-  color: var(--text-muted);
+  color: #fff;
   margin: 0 0 2rem 0;
-  max-width: 500px;
+  white-space: nowrap;
 }
 
 .hero-cta {
   display: flex;
   gap: 1rem;
   align-items: center;
+  overflow: visible;
 }
 
-.cta-button {
-  background: var(--accent-secondary);
+button.cta-button,
+a.cta-button {
+  background: linear-gradient(90deg, #FF2057 0%, #FF743E 25%, #E0FF00 100%);
   color: var(--text-primary);
   border: none;
   padding: 1rem 2rem;
+  height: 59px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  font-family: 'Poppins', sans-serif;
   font-size: 0.9rem;
   text-decoration: none;
-  display: inline-block;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
-  transform: skewX(-10deg);
+  clip-path: polygon(20px 0, 100% 0, calc(100% - 20px) 100%, 0 100%);
   transition: all 0.2s ease;
 }
 
-.cta-button:hover {
+button.cta-button:hover,
+a.cta-button:hover {
   background: var(--text-primary);
   color: var(--bg-primary);
-  transform: skewX(-10deg) translateX(4px);
 }
 
-.cta-button.secondary {
-  background: transparent;
-  border: 2px solid var(--text-muted);
-  color: var(--text-primary);
+button.cta-button.secondary,
+a.cta-button.secondary {
+  background: #fff;
+  border: none;
+  position: relative;
+  color: #fff;
+  z-index: 1;
 }
 
-.cta-button.secondary:hover {
-  border-color: var(--accent-secondary);
-  color: var(--accent-secondary);
-  background: transparent;
+button.cta-button.secondary::before,
+a.cta-button.secondary::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  right: 6px;
+  bottom: 4px;
+  background: #000;
+  clip-path: polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+  z-index: -1;
+}
+
+button.cta-button.secondary:hover,
+a.cta-button.secondary:hover {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+button.cta-button.secondary:hover::before,
+a.cta-button.secondary:hover::before {
+  display: none;
 }
 
 /* Stats Row */
@@ -159,23 +219,33 @@
 
 /* Timeline Section */
 .timeline-section {
+  padding: 3rem 4rem;
+  margin-top: 0;
   margin-bottom: 2rem;
 }
 
 .section-header {
   display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 2rem;
 }
 
 .section-header h2 {
-  font-size: 1.2rem;
+  font-size: 1.8rem;
   color: var(--text-primary);
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-weight: 700;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1;
 }
 
 .section-note {
@@ -229,8 +299,8 @@
 }
 
 .timeline-dot {
-  width: 15px;
-  height: 15px;
+  width: 24px;
+  height: 24px;
   background: var(--bg-tertiary);
   border: 3px solid var(--border);
   position: relative;
@@ -269,6 +339,68 @@
   color: var(--text-muted);
   font-family: monospace;
   white-space: nowrap;
+}
+
+/* Registration Status Banner */
+.registration-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(90deg, #ff2156 0%, #abff14 100%);
+  padding: 2rem 4rem;
+  margin-top: 3rem;
+}
+
+.banner-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.banner-left {
+  align-items: flex-start;
+}
+
+.banner-right {
+  align-items: flex-end;
+}
+
+.banner-number {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.banner-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.banner-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.banner-status {
+  font-size: 4rem;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.banner-status-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 /* User Status Card */

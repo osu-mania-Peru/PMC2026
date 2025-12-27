@@ -4,15 +4,15 @@ import { Link } from 'react-router-dom';
 import './Home.css';
 
 const timelineEvents = [
-  { date: '16/01 - 01/02', title: 'Registros', id: 'registros' },
-  { date: '01/02 - 08/02', title: 'Screening', id: 'screening' },
-  { date: '08/02', title: 'Qualifiers Showcase', id: 'showcase' },
-  { date: '13/02 - 15/02', title: 'Qualifiers', id: 'qualifiers' },
-  { date: '27/02 - 01/03', title: 'Round of 16', id: 'ro16' },
-  { date: '06/03 - 08/03', title: 'Quarterfinals', id: 'quarters' },
-  { date: '13/03 - 15/03', title: 'Semifinals', id: 'semis' },
-  { date: '20/03 - 22/03', title: 'Finals', id: 'finals' },
-  { date: '27/03 - 29/03', title: 'Grand Finals', id: 'grandfinals' },
+  { date: '16/01 - 01/02', title: 'REGISTROS', id: 'registros' },
+  { date: '01/02 - 08/02', title: 'SCREENING', id: 'screening' },
+  { date: '08/02', title: 'QUALIFIERS SHOWCASE', id: 'showcase' },
+  { date: '13/02 - 15/02', title: 'QUALIFIERS', id: 'qualifiers' },
+  { date: '27/02 - 01/03', title: 'ROUND OF 16', id: 'ro16' },
+  { date: '06/03 - 08/03', title: 'QUARTERFINALS', id: 'quarters' },
+  { date: '13/03 - 15/03', title: 'SEMIFINALS', id: 'semis' },
+  { date: '20/03 - 22/03', title: 'FINALS', id: 'finals' },
+  { date: '27/03 - 29/03', title: 'GRANDFINALS', id: 'grandfinals' },
 ];
 
 export default function Home({ user }) {
@@ -24,9 +24,16 @@ export default function Home({ user }) {
 
   return (
     <div className="home-page">
-      {/* Hero Section */}
-      <div className="home-hero">
-        <div className="hero-left">
+      {/* Video Background Section */}
+      <div className="video-section">
+        <video className="video-bg" autoPlay loop playsInline>
+          <source src="/pmcvideo.webm" type="video/webm" />
+        </video>
+        <div className="video-overlay"></div>
+
+        {/* Hero Section */}
+        <div className="home-hero">
+          <div className="hero-left">
           <h1 className="hero-title">
             Peru Mania<br />
             <span>Cup 2026</span>
@@ -41,7 +48,7 @@ export default function Home({ user }) {
                   Inscribirse
                 </button>
                 <Link to="/brackets" className="cta-button secondary">
-                  Ver Brackets
+                  Brackets
                 </Link>
               </>
             ) : !user.is_registered && status?.registration_open ? (
@@ -50,73 +57,25 @@ export default function Home({ user }) {
                   Inscribirse
                 </Link>
                 <Link to="/brackets" className="cta-button secondary">
-                  Ver Brackets
+                  Brackets
                 </Link>
               </>
             ) : (
-              <Link to="/brackets" className="cta-button">
-                Ver Brackets
+              <Link to="/brackets" className="cta-button secondary">
+                Brackets
               </Link>
             )}
           </div>
 
-          {/* Stats inline */}
-          {status && (
-            <div className="hero-stats">
-              <div className="stat-block">
-                <div className="stat-number">{status.total_registered_players}</div>
-                <div className="stat-label">Jugadores</div>
-              </div>
-              <div className="stat-block">
-                <div className="stat-number">32</div>
-                <div className="stat-label">Cupos</div>
-              </div>
-              <div className="stat-block">
-                <div className={`stat-number ${status.registration_open ? 'accent' : ''}`}>
-                  {status.registration_open ? 'Abierta' : 'Cerrada'}
-                </div>
-                <div className="stat-label">Inscripción</div>
-              </div>
-            </div>
-          )}
         </div>
-
-        {/* Hero Logo */}
-        <div className="hero-logo">
-          <img src="/logo.svg" alt="PMC 2026" />
         </div>
-      </div>
-
-      {/* Quick Links */}
-      <div className="quick-links">
-        <Link to="/maps" className="quick-link">
-          <div className="quick-link-text">
-            <h3>MAPPOOL QUALIFIERS</h3>
-            <p>Descarga y estadísticas del mappool</p>
-          </div>
-          <span className="quick-link-arrow">→</span>
-        </Link>
-        <Link to="/players" className="quick-link">
-          <div className="quick-link-text">
-            <h3>JUGADORES INSCRITOS</h3>
-            <p>Lista completa de participantes</p>
-          </div>
-          <span className="quick-link-arrow">→</span>
-        </Link>
-        <Link to="/matches" className="quick-link">
-          <div className="quick-link-text">
-            <h3>PARTIDAS</h3>
-            <p>Resultados y próximos enfrentamientos</p>
-          </div>
-          <span className="quick-link-arrow">→</span>
-        </Link>
       </div>
 
       {/* Timeline */}
       <div className="timeline-section">
         <div className="section-header">
-          <h2>Cronograma</h2>
-          <span className="section-note">Sujeto a cambios</span>
+          <h2>CRONOGRAMA</h2>
+          <p className="section-subtitle">Cronologia del progreso del torneo actual.</p>
         </div>
         <div className="timeline-track">
           <div className="timeline-line"></div>
@@ -132,6 +91,22 @@ export default function Home({ user }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Registration Status Banner */}
+      <div className="registration-banner">
+        <div className="banner-stat banner-left">
+          <span className="banner-number">{(status?.total_registered_players ?? 0).toString().padStart(2, '0')}</span>
+          <span className="banner-label">JUGADORES</span>
+        </div>
+        <div className="banner-center">
+          <span className="banner-status">{status?.registration_open ? 'ABIERTO' : 'CERRADO'}</span>
+          <span className="banner-status-label">ESTADO DE INSCRIPCIONES</span>
+        </div>
+        <div className="banner-stat banner-right">
+          <span className="banner-number">{Math.max(0, 32 - (status?.total_registered_players ?? 0)).toString().padStart(2, '0')}</span>
+          <span className="banner-label">CUPOS DISPONIBLES</span>
         </div>
       </div>
 
