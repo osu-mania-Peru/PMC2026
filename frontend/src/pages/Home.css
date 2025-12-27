@@ -311,8 +311,8 @@ a.cta-button.secondary:hover::before {
 }
 
 .timeline-event.active .timeline-dot {
-  background: var(--accent-secondary);
-  border-color: var(--accent-secondary);
+  background: linear-gradient(to bottom, #FF2057 0%, #FF743E 50%, #E0FF00 100%);
+  border: none;
 }
 
 .timeline-content {
@@ -403,6 +403,75 @@ a.cta-button.secondary:hover::before {
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* News Section */
+.news-section {
+  padding: 3rem 4rem;
+  background: #000;
+}
+
+.news-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 1.5rem 0;
+  text-transform: uppercase;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.news-item {
+  display: flex;
+  align-items: stretch;
+  background: #222222;
+  height: 57px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.news-item:hover {
+  background: #333333;
+}
+
+.news-date {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 2rem;
+  min-width: 180px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg, #A3FF16 0%, #30FF00 31%, #FF743E 75%, #FF2057 100%);
+}
+
+.news-text {
+  flex: 1;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.news-arrow {
+  font-size: 1.5rem;
+  color: #666;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 /* User Status Card */

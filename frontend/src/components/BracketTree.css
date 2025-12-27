@@ -99,6 +99,14 @@
   overflow: visible;
 }
 
+/* Bracket connector lines */
+.bracket-section svg path,
+.bracket-section svg line {
+  stroke: #FF0844;
+  stroke-width: 2;
+  fill: none;
+}
+
 /* Custom Match Design */
 .custom-match {
   background: transparent;

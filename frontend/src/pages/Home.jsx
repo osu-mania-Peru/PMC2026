@@ -15,6 +15,14 @@ const timelineEvents = [
   { date: '27/03 - 29/03', title: 'GRANDFINALS', id: 'grandfinals' },
 ];
 
+const newsItems = [
+  { date: '25/12/2025', title: '¡Feliz Navidad! El equipo de PMC les desea unas felices fiestas a todos los jugadores.', id: 1 },
+  { date: '20/12/2025', title: 'Las inscripciones para PMC 2026 están oficialmente abiertas. ¡No te lo pierdas!', id: 2 },
+  { date: '15/12/2025', title: 'Anunciamos el mappool para las clasificatorias. Revisa los mapas en la sección de Mappool.', id: 3 },
+  { date: '10/12/2025', title: 'Nuevo diseño del sitio web. ¡Esperamos que les guste!', id: 4 },
+  { date: '05/12/2025', title: 'PMC 2026 ha sido anunciado oficialmente. Prepárense para la competencia más grande de Perú.', id: 5 },
+];
+
 export default function Home({ user }) {
   const [status, setStatus] = useState(null);
 
@@ -107,6 +115,20 @@ export default function Home({ user }) {
         <div className="banner-stat banner-right">
           <span className="banner-number">{Math.max(0, 32 - (status?.total_registered_players ?? 0)).toString().padStart(2, '0')}</span>
           <span className="banner-label">CUPOS DISPONIBLES</span>
+        </div>
+      </div>
+
+      {/* News Section */}
+      <div className="news-section">
+        <h2 className="news-title">NOTICIAS</h2>
+        <div className="news-list">
+          {newsItems.map((item) => (
+            <div key={item.id} className="news-item">
+              <span className="news-date">{item.date}</span>
+              <span className="news-text">{item.title}</span>
+              <span className="news-arrow">›</span>
+            </div>
+          ))}
         </div>
       </div>
 
