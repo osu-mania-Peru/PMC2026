@@ -8,7 +8,6 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
       <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-modal-header">
           <h3>{title}</h3>
-          <button className="close-btn" onClick={onClose}>&times;</button>
         </div>
 
         <div className="confirm-modal-content">
