@@ -99,8 +99,15 @@
 }
 
 .news-input.date-input {
-  width: 110px;
+  width: 150px;
   flex-shrink: 0;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.news-input.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }
 
 .news-input.title-input {

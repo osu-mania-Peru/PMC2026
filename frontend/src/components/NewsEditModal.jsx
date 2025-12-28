@@ -1,6 +1,24 @@
 import { useState } from 'react';
 import './NewsEditModal.css';
 
+// Convert DD/MM/YYYY to YYYY-MM-DD for date input
+const toInputFormat = (displayDate) => {
+  if (!displayDate) return '';
+  const parts = displayDate.split('/');
+  if (parts.length !== 3) return '';
+  const [day, month, year] = parts;
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// Convert YYYY-MM-DD to DD/MM/YYYY for display
+const toDisplayFormat = (inputDate) => {
+  if (!inputDate) return '';
+  const parts = inputDate.split('-');
+  if (parts.length !== 3) return '';
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
+};
+
 export default function NewsEditModal({ isOpen, onClose, onSave, items, loading }) {
   // Use items directly as source of truth, only track local edits
   const [localEdits, setLocalEdits] = useState({});
@@ -48,11 +66,10 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading 
             {editedItems.map((item, index) => (
               <div key={item.id} className="news-item-row">
                 <input
-                  type="text"
-                  value={item.date}
-                  onChange={(e) => handleChange(index, 'date', e.target.value)}
+                  type="date"
+                  value={toInputFormat(item.date)}
+                  onChange={(e) => handleChange(index, 'date', toDisplayFormat(e.target.value))}
                   className="news-input date-input"
-                  placeholder="DD/MM/YYYY"
                   disabled={loading}
                 />
                 <input
