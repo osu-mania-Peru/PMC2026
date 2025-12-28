@@ -23,7 +23,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
             onClick={onClose}
             disabled={loading}
           >
-            Cancelar
+            <span>Cancelar</span>
           </button>
           <button
             type="button"
@@ -31,7 +31,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
             onClick={onConfirm}
             disabled={loading}
           >
-            {loading ? 'Procesando...' : 'Confirmar'}
+            <span>{loading ? 'Procesando...' : 'Confirmar'}</span>
           </button>
         </div>
       </div>

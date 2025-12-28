@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,9 +15,8 @@
 .confirm-modal {
   background: #1a1a1a;
   border: 2px solid #ff4444;
-  border-radius: 12px;
-  max-width: 450px;
   width: 100%;
+  max-width: 450px;
   box-shadow: 0 4px 20px rgba(255, 68, 68, 0.3);
   animation: confirmSlideIn 0.2s ease-out;
 }
@@ -59,8 +58,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .confirm-modal .close-btn:hover {
@@ -84,29 +83,36 @@
   border: 1px solid #ed4245;
   color: #ed4245;
   padding: 0.6rem 0.75rem;
-  border-radius: 4px;
   margin-top: 1rem;
   font-size: 0.85rem;
 }
 
 .confirm-modal-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  justify-content: flex-end;
   padding: 0 1.5rem 1.5rem;
 }
 
 .confirm-btn {
-  padding: 0.85rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
   border: none;
   font-family: "Poppins", sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.2s ease;
-  clip-path: polygon(15px 0, 100% 0, calc(100% - 15px) 100%, 0 100%);
+  transform: skewX(-10deg);
+  white-space: nowrap;
+}
+
+.confirm-btn span {
+  transform: skewX(10deg);
 }
 
 .confirm-btn:disabled {
@@ -115,31 +121,14 @@
 }
 
 .confirm-btn.secondary {
-  background: #fff;
+  background: transparent;
   color: #fff;
-  position: relative;
-  z-index: 1;
-}
-
-.confirm-btn.secondary::before {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 5px;
-  right: 5px;
-  bottom: 3px;
-  background: #1a1a1a;
-  clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
-  z-index: -1;
+  border: 2px solid #fff;
 }
 
 .confirm-btn.secondary:hover:not(:disabled) {
   background: #fff;
   color: #1a1a1a;
-}
-
-.confirm-btn.secondary:hover:not(:disabled)::before {
-  display: none;
 }
 
 .confirm-btn.danger {
@@ -159,11 +148,6 @@
   }
 
   .confirm-modal-buttons {
-    flex-direction: column-reverse;
-  }
-
-  .confirm-btn {
-    width: 100%;
-    text-align: center;
+    grid-template-columns: 1fr;
   }
 }
