@@ -117,25 +117,26 @@
 
 .news-delete-btn {
   background: transparent;
-  border: 1px solid #444;
-  color: #888;
-  width: 36px;
-  height: 36px;
-  border-radius: 4px;
-  font-size: 18px;
+  border: none;
+  padding: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
   flex-shrink: 0;
   clip-path: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
+  opacity: 0.4;
 }
 
 .news-delete-btn:hover:not(:disabled) {
-  border-color: #ff4444;
-  color: #ff4444;
+  opacity: 1;
+}
+
+.news-delete-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: #fff;
 }
 
 .news-delete-btn:disabled {
