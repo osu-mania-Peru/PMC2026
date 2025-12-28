@@ -69,6 +69,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const audioContextRef = useRef(null);
   const filterRef = useRef(null);
   const gainRef = useRef(null);
+  const modalOpenRef = useRef(false);
 
   const videoTransitionRef = useRef(null);
 
@@ -128,7 +129,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     videoTransitionRef.current = requestAnimationFrame(animate);
   };
 
-  const restoreVideoSpeed = () => {
+  const restoreVideoSpeed = (force = false) => {
+    if (modalOpenRef.current && !force) return;
     setDangerHover(false);
     document.body.style.overflow = '';
     if (!videoRef.current) return;
@@ -260,6 +262,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       const updatedUser = await api.getMe();
       setUser(updatedUser);
       setShowConfirmModal(false);
+      modalOpenRef.current = false;
+      restoreVideoSpeed(true);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -295,9 +299,9 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
             ) : user.is_registered ? (
               // Logged in and registered - show unregister button
               <button
-                onClick={() => setShowConfirmModal(true)}
+                onClick={() => { setShowConfirmModal(true); modalOpenRef.current = true; }}
                 onMouseEnter={slowDownVideo}
-                onMouseLeave={restoreVideoSpeed}
+                onMouseLeave={() => restoreVideoSpeed()}
                 disabled={loading}
                 className="cta-button danger"
               >
@@ -425,7 +429,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
 
       <ConfirmModal
         isOpen={showConfirmModal}
-        onClose={() => { setShowConfirmModal(false); setError(null); }}
+        onClose={() => { setShowConfirmModal(false); setError(null); modalOpenRef.current = false; restoreVideoSpeed(true); }}
         onConfirm={handleUnregister}
         title="Cancelar Registro"
         message="¿Estás seguro de que quieres cancelar tu registro del torneo?"
