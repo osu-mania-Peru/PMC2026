@@ -4,6 +4,7 @@ import './DiscordModal.css';
 
 export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
   const [discordUsername, setDiscordUsername] = useState('');
+  const [nationalityConfirmed, setNationalityConfirmed] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -27,12 +28,17 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
       setError(validationError);
       return;
     }
+    if (!nationalityConfirmed) {
+      setError('Debes confirmar tu nacionalidad peruana para participar');
+      return;
+    }
     setError('');
     onSubmit(discordUsername.trim().toLowerCase());
   };
 
   const handleClose = () => {
     setDiscordUsername('');
+    setNationalityConfirmed(false);
     setError('');
     onClose();
   };
@@ -65,6 +71,24 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
               disabled={loading}
             />
             {error && <div className="discord-error">{error}</div>}
+          </div>
+
+          <div className="discord-form-group">
+            <label className="discord-checkbox-label">
+              <input
+                type="checkbox"
+                checked={nationalityConfirmed}
+                onChange={(e) => {
+                  setNationalityConfirmed(e.target.checked);
+                  setError('');
+                }}
+                disabled={loading}
+                className="discord-checkbox"
+              />
+              <span className="discord-checkbox-text">
+                Bajo protesta de decir verdad, declaro que soy de nacionalidad peruana y acepto las sanciones correspondientes en caso de falsedad.
+              </span>
+            </label>
           </div>
 
           <div className="discord-modal-buttons">
