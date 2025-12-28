@@ -89,7 +89,7 @@ export default function Home({ user, setUser }) {
             {!user ? (
               // Not logged in - show login button
               <button onClick={api.login} className="cta-button">
-                Inscribirse
+                Iniciar Sesión
               </button>
             ) : user.is_registered ? (
               // Logged in and registered - show unregister button
