@@ -19,6 +19,7 @@
   max-width: 500px;
   box-shadow: 0 4px 20px rgba(88, 101, 242, 0.3);
   animation: modalSlideIn 0.2s ease-out;
+  overflow: visible;
 }
 
 @keyframes modalSlideIn {
