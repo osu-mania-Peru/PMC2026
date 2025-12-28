@@ -1,0 +1,57 @@
+import './MatchCard.css';
+
+export default function MatchCard({ match, player1, player2, statusInfo, hasScore }) {
+  const getAvatarUrl = (player) => {
+    if (!player?.osu_id) return null;
+    return `https://a.ppy.sh/${player.osu_id}`;
+  };
+
+  return (
+    <div className={`match-card ${statusInfo.type}`}>
+      {/* Left content with gray bg */}
+      <div className="match-card-left">
+        <div className="match-teams">
+          <div className="match-team">
+            <span className="team-label">TEAM 1</span>
+            <span className="team-dash"> - </span>
+            <span className="team-name">{player1?.username || 'TBD'}</span>
+            <span className="team-dash"> -</span>
+          </div>
+          <div className="match-team">
+            <span className="team-label">TEAM 2</span>
+            <span className="team-dash"> </span>
+            <span className="team-name">{player2?.username || 'TBD'}</span>
+          </div>
+        </div>
+        <div className="match-info">
+          <span className="match-status-text">{statusInfo.text}</span>
+          <span className="match-referee">Refeado por &lt;username del ref&gt;</span>
+        </div>
+      </div>
+
+      {/* Right image area - full height */}
+      <div className="match-card-right">
+        <div className="match-card-image-fade"></div>
+        {player2 && (
+          <img
+            src={getAvatarUrl(player2)}
+            alt=""
+            className="match-bg-avatar"
+          />
+        )}
+        <div className="match-score-display">
+          {hasScore ? (
+            <span className="match-score">{match.player1_score} - {match.player2_score}</span>
+          ) : (
+            <span className="match-no-info">NO INFO</span>
+          )}
+        </div>
+      </div>
+
+      {/* Footer overlay */}
+      <a href="#" className={`match-link ${statusInfo.type}`}>
+        CLICK PARA IR AL MP {statusInfo.type === 'scheduled' && '(NO DISPONIBLE AUN)'} &gt;
+      </a>
+    </div>
+  );
+}

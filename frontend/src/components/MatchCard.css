@@ -1,0 +1,182 @@
+/* Match Card */
+.match-card {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  min-height: 150px;
+}
+
+/* Left side - gray content */
+.match-card-left {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  padding-bottom: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  background: #1a1a1a;
+  position: relative;
+  z-index: 2;
+}
+
+/* Right side - image area, full height, 35% width */
+.match-card-right {
+  width: 35%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #1a1a1a;
+}
+
+.match-bg-avatar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.8;
+}
+
+.match-card-image-fade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, #1a1a1a 0%, transparent 100%);
+  z-index: 1;
+}
+
+.match-score-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Teams */
+.match-teams {
+  margin-bottom: 0;
+}
+
+.match-team {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.team-label {
+  color: #ff0844;
+  font-weight: 700;
+}
+
+.match-card.live .team-label {
+  color: #ff4444;
+}
+
+.match-card.completed .team-label {
+  color: #00b894;
+}
+
+.team-dash {
+  color: #fff;
+}
+
+.team-name {
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Match Info */
+.match-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  margin-top: 0;
+}
+
+.match-status-text {
+  color: #fff;
+}
+
+.match-referee {
+  color: #fff;
+}
+
+/* Match Link - footer overlay */
+.match-link {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: block;
+  background: linear-gradient(90deg, #00d9ff 0%, #00ff88 50%, transparent 100%);
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.5rem 1.5rem;
+  text-decoration: none;
+  clip-path: none;
+}
+
+.match-link.scheduled {
+  background: linear-gradient(90deg, #ff0844 0%, #ff6b6b 50%, transparent 100%);
+  color: #fff;
+}
+
+.match-link.live {
+  background: linear-gradient(90deg, #ff4444 0%, #ff6b6b 50%, transparent 100%);
+  color: #fff;
+}
+
+.match-link.completed {
+  background: linear-gradient(90deg, #00b894 0%, #00ff88 50%, transparent 100%);
+  color: #000;
+}
+
+/* Score display */
+.match-score {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.match-no-info {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .match-card-right {
+    width: 30%;
+  }
+
+  .match-score {
+    font-size: 1.5rem;
+  }
+
+  .match-no-info {
+    font-size: 1rem;
+  }
+}

@@ -66,5 +66,14 @@
     min-height: 0;
     display: flex;
     overflow: auto;
-    background: #000000;
+    background-color: #080808;
+    background-image:
+        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e),
+        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e);
+    background-size: 40px 70px;
+    background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
 }
