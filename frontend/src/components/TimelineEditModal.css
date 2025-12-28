@@ -138,6 +138,10 @@
   transition: stroke 0.2s ease;
 }
 
+.timeline-delete-btn:hover:not(:disabled) {
+  background: transparent;
+}
+
 .timeline-delete-btn:hover:not(:disabled) svg {
   stroke: #ff4444;
 }

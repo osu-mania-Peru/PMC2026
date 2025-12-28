@@ -134,6 +134,10 @@
   transition: stroke 0.2s ease;
 }
 
+.news-delete-btn:hover:not(:disabled) {
+  background: transparent;
+}
+
 .news-delete-btn:hover:not(:disabled) svg {
   stroke: #ff4444;
 }
