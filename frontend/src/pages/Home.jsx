@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import { Link } from 'react-router-dom';
+import DiscordModal from '../components/DiscordModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './Home.css';
 
 const timelineEvents = [
@@ -23,12 +25,46 @@ const newsItems = [
   { date: '05/12/2025', title: 'Excepteur sint occaecat cupidatat non proident sunt.', id: 5 },
 ];
 
-export default function Home({ user }) {
+export default function Home({ user, setUser }) {
   const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showDiscordModal, setShowDiscordModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
   }, []);
+
+  const handleRegister = async (discordUsername) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.register(discordUsername);
+      setUser(result.user);
+      setShowDiscordModal(false);
+    } catch (err) {
+      setError(err.message);
+      throw err; // Re-throw so modal can display it
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.unregister();
+      const updatedUser = await api.getMe();
+      setUser(updatedUser);
+      setShowConfirmModal(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="home-page">
@@ -61,9 +97,26 @@ export default function Home({ user }) {
               </>
             ) : !user.is_registered && status?.registration_open ? (
               <>
-                <Link to="/register" className="cta-button">
+                <button
+                  onClick={() => setShowDiscordModal(true)}
+                  disabled={loading}
+                  className="cta-button"
+                >
                   Inscribirse
+                </button>
+                <Link to="/brackets" className="cta-button secondary">
+                  Brackets
                 </Link>
+              </>
+            ) : user.is_registered ? (
+              <>
+                <button
+                  onClick={() => setShowConfirmModal(true)}
+                  disabled={loading}
+                  className="cta-button danger"
+                >
+                  {loading ? 'Procesando...' : 'Cancelar Registro'}
+                </button>
                 <Link to="/brackets" className="cta-button secondary">
                   Brackets
                 </Link>
@@ -132,6 +185,22 @@ export default function Home({ user }) {
         </div>
       </div>
 
+      <DiscordModal
+        isOpen={showDiscordModal}
+        onClose={() => setShowDiscordModal(false)}
+        onSubmit={handleRegister}
+        loading={loading}
+      />
+
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => { setShowConfirmModal(false); setError(null); }}
+        onConfirm={handleUnregister}
+        title="Cancelar Registro"
+        message="¿Estás seguro de que quieres cancelar tu registro del torneo?"
+        loading={loading}
+        error={error}
+      />
     </div>
   );
 }

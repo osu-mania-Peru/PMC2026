@@ -162,6 +162,20 @@ a.cta-button.secondary:hover::before {
   display: none;
 }
 
+button.cta-button.danger {
+  background: #ff4444;
+}
+
+button.cta-button.danger:hover:not(:disabled) {
+  background: #fff;
+  color: #ff4444;
+}
+
+button.cta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Stats Row */
 .hero-stats {
   display: flex;

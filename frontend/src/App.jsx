@@ -59,7 +59,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/"
           element={
             <main className="main">
-              <Home user={user} />
+              <Home user={user} setUser={setUser} />
             </main>
           }
         />
@@ -201,7 +201,7 @@ function App() {
     }
 
     if (error) {
-      alert(`Error de inicio de sesión: ${error}`);
+      console.error('Login error:', error);
       window.history.replaceState({}, "", "/");
     }
 
