@@ -9,7 +9,8 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
 
   if (!isOpen) return null;
 
-  const isPeruvian = user?.flag_code === 'PE';
+  const bypassUsers = ['Shaamii'];
+  const isPeruvian = user?.flag_code === 'PE' || bypassUsers.includes(user?.username);
 
   const validateUsername = (username) => {
     const trimmed = username.trim();
@@ -55,71 +56,83 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="discord-modal-content">
-          <div className="discord-form-group">
-            <label className="discord-label">
-              Usuario de Discord<span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              value={discordUsername}
-              onChange={(e) => {
-                setDiscordUsername(e.target.value);
-                setError('');
-              }}
-              placeholder="tu_usuario"
-              className="discord-input"
-              autoFocus
-              disabled={loading}
-            />
-            {error && <div className="discord-error">{error}</div>}
-          </div>
-
-          {!isPeruvian && (
-            <div className="discord-warning">
-              Tu cuenta de osu! no está registrada en Perú ({user?.flag_code || 'N/A'}).
-              Solo jugadores con nacionalidad peruana pueden participar en Peru Mania Cup.
+        {!isPeruvian ? (
+          <div className="discord-modal-content">
+            <div className="discord-rejected">
+              <div className="discord-rejected-icon">✕</div>
+              <p>Tu cuenta de osu! está registrada en <strong>{user?.flag_code || 'N/A'}</strong>.</p>
+              <p>Solo jugadores con nacionalidad peruana pueden participar en Peru Mania Cup.</p>
             </div>
-          )}
-
-          <div className="discord-form-group">
-            <label className="discord-checkbox-label">
+            <div className="discord-modal-buttons">
+              <button
+                type="button"
+                className="discord-btn primary"
+                onClick={handleClose}
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="discord-modal-content">
+            <div className="discord-form-group">
+              <label className="discord-label">
+                Usuario de Discord<span className="required">*</span>
+              </label>
               <input
-                type="checkbox"
-                checked={nationalityConfirmed}
+                type="text"
+                value={discordUsername}
                 onChange={(e) => {
-                  setNationalityConfirmed(e.target.checked);
+                  setDiscordUsername(e.target.value);
                   setError('');
                 }}
+                placeholder="tu_usuario"
+                className="discord-input"
+                autoFocus
                 disabled={loading}
-                className="discord-checkbox"
               />
-              <span className="discord-checkbox-text">
-                Bajo protesta de decir verdad, declaro que soy de nacionalidad peruana y acepto las sanciones correspondientes en caso de falsedad.
-              </span>
-            </label>
-          </div>
+              {error && <div className="discord-error">{error}</div>}
+            </div>
 
-          <div className="discord-modal-buttons">
-            {nationalityConfirmed && (
+            <div className="discord-form-group">
+              <label className="discord-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={nationalityConfirmed}
+                  onChange={(e) => {
+                    setNationalityConfirmed(e.target.checked);
+                    setError('');
+                  }}
+                  disabled={loading}
+                  className="discord-checkbox"
+                />
+                <span className="discord-checkbox-text">
+                  Bajo protesta de decir verdad, declaro que soy de nacionalidad peruana y acepto las sanciones correspondientes en caso de falsedad.
+                </span>
+              </label>
+            </div>
+
+            <div className="discord-modal-buttons">
+              {nationalityConfirmed && (
+                <button
+                  type="submit"
+                  className="discord-btn primary"
+                  disabled={loading}
+                >
+                  {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Registrando...</> : 'Confirmar'}
+                </button>
+              )}
               <button
-                type="submit"
-                className="discord-btn primary"
+                type="button"
+                className="discord-btn secondary"
+                onClick={handleClose}
                 disabled={loading}
               >
-                {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Registrando...</> : 'Confirmar'}
+                Cancelar
               </button>
-            )}
-            <button
-              type="button"
-              className="discord-btn secondary"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

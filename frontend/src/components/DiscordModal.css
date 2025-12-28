@@ -136,14 +136,34 @@
   line-height: 1.4;
 }
 
-.discord-warning {
-  background: rgba(250, 168, 26, 0.1);
-  border: 1px solid #faa81a;
-  color: #faa81a;
-  padding: 12px;
-  font-size: 13px;
+.discord-rejected {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.discord-rejected-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 16px;
+  background: #f23f42;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.discord-rejected p {
+  color: #b5bac1;
+  font-size: 14px;
+  margin: 8px 0;
   line-height: 1.4;
-  border-radius: 3px;
+}
+
+.discord-rejected p strong {
+  color: #fff;
 }
 
 .discord-modal-buttons {
