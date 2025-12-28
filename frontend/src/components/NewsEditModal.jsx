@@ -41,9 +41,6 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading 
       <div className="news-modal" onClick={(e) => e.stopPropagation()}>
         <div className="news-modal-header">
           <h3>Editar Noticias</h3>
-          <p className="news-modal-description">
-            Modifica las noticias y anuncios del torneo.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="news-modal-content">

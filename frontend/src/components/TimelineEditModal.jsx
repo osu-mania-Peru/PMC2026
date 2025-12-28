@@ -41,9 +41,6 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
       <div className="timeline-modal" onClick={(e) => e.stopPropagation()}>
         <div className="timeline-modal-header">
           <h3>Editar Cronograma</h3>
-          <p className="timeline-modal-description">
-            Modifica las fechas y títulos de los eventos del torneo.
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="timeline-modal-content">
