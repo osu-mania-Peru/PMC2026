@@ -1,83 +1,132 @@
 .players-page {
-  background: var(--bg-primary);
-  flex: 1;
-  margin: 0;
-  min-height: 0;
-  padding: 3rem;
+  min-height: 100vh;
+  background: #0a0a0a;
+  padding: 2rem 4rem;
 }
 
+/* Header */
 .players-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.5rem;
 }
 
-.players-header h2 {
-  margin-bottom: 0;
+.players-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.players-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .players-count {
-  background: var(--accent-secondary);
-  color: var(--text-primary);
-  padding: 0.5rem 1.5rem;
-  font-size: 1.2rem;
+  background: #ff0844;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
   font-weight: 700;
-  transform: skewX(-10deg);
+  padding: 0.5rem 1.5rem;
+  border-radius: 2px;
+  text-transform: uppercase;
 }
 
+.players-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.players-header-icon {
+  width: 80px;
+  height: 80px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+/* Subtitle */
+.players-subtitle {
+  color: #888;
+  font-size: 1rem;
+  margin: 0 0 2rem 0;
+}
+
+/* Player Grid */
 .players-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1rem;
 }
 
+/* Player Card */
 .player-card {
-  background: var(--bg-tertiary);
-  padding: 1rem 1.5rem;
+  background: #111;
+  border: 1px solid #222;
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  padding: 0;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-.player-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--bg-primary);
+.player-card:hover {
+  border-color: #ff0844;
+  background: #151515;
 }
 
-.player-seed {
-  background: var(--bg-primary);
-  color: var(--accent-secondary);
-  font-size: 1.2rem;
-  font-weight: 900;
-  min-width: 40px;
-  height: 40px;
+/* Seed container with accent bar */
+.player-seed-container {
+  background: linear-gradient(135deg, #ff0844 0%, #ff4466 100%);
+  padding: 1rem 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  transform: skewX(-10deg);
+  min-width: 50px;
+  align-self: stretch;
+}
+
+.player-seed {
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .player-seed.unranked {
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 1rem;
+  opacity: 0.7;
 }
 
+/* Avatar */
+.player-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Player Info */
 .player-info {
   flex: 1;
   min-width: 0;
+  padding-right: 1rem;
 }
 
 .player-name {
-  color: var(--text-primary);
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
   font-weight: 600;
   font-size: 1rem;
-  text-decoration: none;
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -89,26 +138,32 @@
   gap: 1rem;
   margin-top: 0.25rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: #666;
 }
 
 .player-flag {
   text-transform: uppercase;
   font-weight: 600;
+  color: #888;
 }
 
-.player-osu-id {
-  font-family: monospace;
+.player-rank {
+  font-family: 'JetBrains Mono', monospace;
+  color: #666;
 }
 
 /* Empty state */
 .players-empty {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--text-muted);
+  color: #666;
   font-size: 1.1rem;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 4px;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .players-page {
     padding: 1.5rem;
@@ -118,6 +173,20 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .players-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .players-title {
+    font-size: 2rem;
+  }
+
+  .players-header-right {
+    display: none;
   }
 
   .players-grid {
