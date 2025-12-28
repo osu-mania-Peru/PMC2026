@@ -98,13 +98,12 @@ async def get_registration_stats(db: Session = Depends(get_db)):
     registered_users = db.query(User).filter(User.is_registered.is_(True)).all()
 
     total_registered = len(registered_users)
-    max_spots = 32
     registration_open = tournament_state.registration_open if tournament_state else False
 
     return {
         "total_registered": total_registered,
         "registration_open": registration_open,
-        "spots_remaining": max(0, max_spots - total_registered),
+        "spots_remaining": None,
         "registered_players": registered_users
     }
 
