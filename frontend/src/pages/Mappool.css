@@ -39,6 +39,26 @@
   text-transform: uppercase;
 }
 
+.mappool-edit-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #888;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  clip-path: none;
+}
+
+.mappool-edit-btn:hover {
+  border-color: #ff0844;
+  color: #ff0844;
+  background: transparent;
+}
+
 .mappool-header-right {
   display: flex;
   align-items: center;

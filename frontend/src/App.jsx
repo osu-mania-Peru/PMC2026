@@ -110,7 +110,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/maps"
           element={
             <main className="main">
-              <Mappool />
+              <Mappool user={user} />
             </main>
           }
         />

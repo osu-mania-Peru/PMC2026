@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
+import MappoolEditModal from '../components/MappoolEditModal';
 import './Mappool.css';
 
 // Icons as SVG components
@@ -123,16 +124,22 @@ function MappoolAccordion({ pool, defaultOpen = false }) {
   );
 }
 
-export default function Mappool() {
+export default function Mappool({ user }) {
   const [data, setData] = useState({ total_maps: 0, pools: [] });
   const [loading, setLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
 
-  useEffect(() => {
-    api.getMappools()
+  const fetchMappools = () => {
+    const fetchFn = user?.is_staff ? api.getMappoolsAdmin : api.getMappools;
+    fetchFn()
       .then(setData)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchMappools();
+  }, [user]);
 
   if (loading) {
     return (
@@ -149,6 +156,14 @@ export default function Mappool() {
         <div className="mappool-header-left">
           <h1 className="mappool-title">MAPPOOL</h1>
           <span className="mappool-count">{data.total_maps} MAPS</span>
+          {user?.is_staff && (
+            <button
+              className="mappool-edit-btn"
+              onClick={() => setShowEditModal(true)}
+            >
+              Editar
+            </button>
+          )}
         </div>
         <div className="mappool-header-right">
           <MusicIcon />
@@ -186,6 +201,14 @@ export default function Mappool() {
           ))
         )}
       </div>
+
+      {/* Edit Modal */}
+      <MappoolEditModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        pools={data.pools}
+        onRefresh={fetchMappools}
+      />
     </div>
   );
 }
