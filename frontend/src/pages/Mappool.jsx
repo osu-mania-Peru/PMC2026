@@ -35,6 +35,16 @@ const ChevronIcon = ({ isOpen }) => (
   </svg>
 );
 
+// Format stage name to title case
+const formatStageName = (name) => {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 // Accordion component for each stage
 function MappoolAccordion({ pool, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -45,7 +55,7 @@ function MappoolAccordion({ pool, defaultOpen = false }) {
         className="mappool-accordion-header"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="accordion-title">{pool.stage_name}</span>
+        <span className="accordion-title">{formatStageName(pool.stage_name)}</span>
         <ChevronIcon isOpen={isOpen} />
       </button>
 
@@ -74,12 +84,16 @@ function MappoolAccordion({ pool, defaultOpen = false }) {
                       <span className="slot-badge">{map.slot}</span>
                     </td>
                     <td className="col-banner">
-                      <img
-                        src={map.banner_url}
-                        alt=""
-                        className="map-banner"
-                        loading="lazy"
-                      />
+                      {map.banner_url ? (
+                        <img
+                          src={map.banner_url}
+                          alt=""
+                          className="map-banner"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="map-banner-placeholder" />
+                      )}
                     </td>
                     <td className="col-title">
                       <span className="map-title">

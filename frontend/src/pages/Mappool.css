@@ -129,6 +129,7 @@
   border: none;
   cursor: pointer;
   transition: background 0.2s ease;
+  clip-path: none;
 }
 
 .mappool-accordion-header:hover {
@@ -166,31 +167,55 @@
 
 .mappool-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 8px;
   font-size: 0.875rem;
+  margin-top: -8px;
 }
 
 .mappool-table thead {
-  background: #1a1a1a;
+  background: #fff !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mappool-table tbody {
+  margin-top: 16px;
+}
+
+.mappool-table tbody::before {
+  content: '';
+  display: table-row;
+  height: 16px;
 }
 
 .mappool-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  color: #888;
-  font-weight: 500;
-  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  background: #fff !important;
+  color: #000 !important;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
   font-size: 0.75rem;
-  letter-spacing: 0.05em;
   white-space: nowrap;
-  border-bottom: 1px solid #222;
+}
+
+.mappool-table th.col-title {
+  text-align: left;
 }
 
 .mappool-table td {
-  padding: 0.5rem 1rem;
-  color: #ccc;
+  padding: 12px 1rem;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
   border-bottom: 1px solid #1a1a1a;
   vertical-align: middle;
+  overflow: hidden;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .mappool-row {
@@ -202,21 +227,24 @@
 }
 
 /* Column widths */
-.col-slot {
+.mappool-table td.col-slot {
   width: 60px;
+  padding: 12px 0 !important;
+  position: relative;
 }
 
-.col-banner {
+.mappool-table td.col-banner {
   width: 80px;
-}
-
-.col-title {
-  min-width: 300px;
+  padding: 12px 0 !important;
+  position: relative;
 }
 
 .col-custom {
   width: 70px;
   text-align: center;
+  background: #373737;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
 }
 
 .col-sr,
@@ -224,56 +252,92 @@
 .col-length {
   width: 70px;
   text-align: center;
+  background: #262626;
 }
 
 .col-stats {
   width: 120px;
   text-align: center;
+  white-space: nowrap;
+  background: #262626;
 }
 
 .col-mapper {
   min-width: 150px;
+  background: #262626;
 }
 
 .col-beatmap {
   width: 100px;
+  background: #262626;
 }
 
 /* Slot badge */
 .slot-badge {
-  display: inline-block;
-  background: #ff0844;
-  color: #fff;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 8px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #000;
   font-family: 'Poppins', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2px;
-  min-width: 40px;
-  text-align: center;
+  border-right: 12px solid #3b82f6;
+  box-shadow: 8px 0 0 0 #000;
 }
 
 /* Map banner */
 .map-banner {
-  width: 60px;
-  height: 40px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 2px;
-  filter: grayscale(100%);
-  transition: filter 0.2s ease;
 }
 
-.mappool-row:hover .map-banner {
-  filter: grayscale(0%);
+.map-banner-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #333;
 }
 
 /* Map title */
+td.col-title {
+  min-width: 300px;
+  background: #373737;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
 .map-title {
   display: block;
-  max-width: 400px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding-right: 40px;
+}
+
+td.col-title::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 60px;
+  background: linear-gradient(to right, transparent, #373737);
+  pointer-events: none;
 }
 
 /* Custom icons */
@@ -405,8 +469,4 @@
     max-width: 200px;
   }
 
-  .map-banner {
-    width: 40px;
-    height: 28px;
-  }
 }

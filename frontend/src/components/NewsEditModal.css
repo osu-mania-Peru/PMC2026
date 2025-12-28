@@ -229,3 +229,18 @@
     width: 100%;
   }
 }
+
+/* Loading cat */
+.btn-loading-cat {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.btn-loading-cat-small {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}

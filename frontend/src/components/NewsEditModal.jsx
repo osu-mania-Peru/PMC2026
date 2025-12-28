@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api';
+import catGif from '../assets/cat.gif';
 import './NewsEditModal.css';
 
 // Convert DD/MM/YYYY to YYYY-MM-DD for date input
@@ -113,7 +114,9 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
                   onClick={() => handleDelete(item.id)}
                   disabled={loading || deleting === item.id}
                 >
-                  {deleting === item.id ? '...' : (
+                  {deleting === item.id ? (
+                    <img src={catGif} alt="" className="btn-loading-cat-small" />
+                  ) : (
                     <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="18" y1="6" x2="6" y2="18"></line>
                       <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -130,7 +133,9 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
             onClick={handleAdd}
             disabled={loading || adding}
           >
-            {adding ? 'Agregando...' : '+ Agregar Noticia'}
+            {adding ? (
+              <><img src={catGif} alt="" className="btn-loading-cat" /> Agregando...</>
+            ) : '+ Agregar Noticia'}
           </button>
 
           <div className="news-modal-buttons">
@@ -139,7 +144,9 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
               className="news-btn primary"
               disabled={loading}
             >
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
+              {loading ? (
+                <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
+              ) : 'Guardar Cambios'}
             </button>
             <button
               type="button"

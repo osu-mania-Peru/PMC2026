@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../api';
+import catGif from '../assets/cat.gif';
 import './TimelineEditModal.css';
 
 // Convert DD/MM/YYYY or DD/MM to YYYY-MM-DD for date input
@@ -166,7 +167,9 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
                     onClick={() => handleDelete(event.id)}
                     disabled={loading || deleting === event.id}
                   >
-                    {deleting === event.id ? '...' : (
+                    {deleting === event.id ? (
+                      <img src={catGif} alt="" className="btn-loading-cat-small" />
+                    ) : (
                       <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -184,7 +187,9 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
             onClick={handleAdd}
             disabled={loading || adding}
           >
-            {adding ? 'Agregando...' : '+ Agregar Evento'}
+            {adding ? (
+              <><img src={catGif} alt="" className="btn-loading-cat" /> Agregando...</>
+            ) : '+ Agregar Evento'}
           </button>
 
           <div className="timeline-modal-buttons">
@@ -193,7 +198,9 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
               className="timeline-btn primary"
               disabled={loading}
             >
-              {loading ? 'Guardando...' : 'Guardar Cambios'}
+              {loading ? (
+                <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
+              ) : 'Guardar Cambios'}
             </button>
             <button
               type="button"

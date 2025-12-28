@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
-from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline, news, mappool
+from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline, news, mappool, slot
 
 # Configure logging
 logging.basicConfig(
@@ -34,6 +34,8 @@ origins = [
     Config.FRONTEND_URL,
     "https://perumaniacup.info",
     "http://perumaniacup.info",
+    "https://www.perumaniacup.info",
+    "http://www.perumaniacup.info",
 ]
 
 app.add_middleware(
@@ -56,6 +58,7 @@ app.include_router(api_keys.router)
 app.include_router(timeline.router)
 app.include_router(news.router)
 app.include_router(mappool.router)
+app.include_router(slot.router)
 
 # Internal routers (for inter-service communication)
 app.include_router(internal.router)

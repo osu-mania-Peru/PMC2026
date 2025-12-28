@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../api';
+import catGif from '../assets/cat.gif';
+import SlotEditModal from './SlotEditModal';
 import './MappoolEditModal.css';
 
 // SVG Icons
@@ -31,17 +33,28 @@ const EditIcon = () => (
   </svg>
 );
 
+// Arrow Icons
+const ChevronUpIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="18 15 12 9 6 15"></polyline>
+  </svg>
+);
+
+const ChevronDownIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="6 9 12 15 18 9"></polyline>
+  </svg>
+);
+
 // Add Pool Form
-function AddPoolForm({ onAdd, onCancel, loading }) {
+function AddPoolForm({ onAdd, onCancel, loading, nextOrder }) {
   const [stageName, setStageName] = useState('');
-  const [stageOrder, setStageOrder] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!stageName.trim()) return;
-    await onAdd({ stage_name: stageName, stage_order: stageOrder });
+    await onAdd({ stage_name: stageName, stage_order: nextOrder });
     setStageName('');
-    setStageOrder(0);
   };
 
   return (
@@ -55,22 +68,14 @@ function AddPoolForm({ onAdd, onCancel, loading }) {
           placeholder="Ej: Quarterfinals, Round of 16, Qualifiers..."
           className="mpm-input"
           disabled={loading}
-        />
-      </div>
-      <div className="form-group">
-        <label className="form-label">Orden (menor = aparece primero)</label>
-        <input
-          type="number"
-          value={stageOrder}
-          onChange={(e) => setStageOrder(parseInt(e.target.value) || 0)}
-          placeholder="0"
-          className="mpm-input"
-          disabled={loading}
+          autoFocus
         />
       </div>
       <div className="form-actions">
         <button type="submit" className="mpm-btn mpm-btn-primary" disabled={loading || !stageName.trim()}>
-          Agregar Pool
+          {loading ? (
+            <><img src={catGif} alt="" className="btn-loading-cat" /> Agregando...</>
+          ) : 'Agregar Pool'}
         </button>
         <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel} disabled={loading}>
           Cancelar
@@ -80,25 +85,139 @@ function AddPoolForm({ onAdd, onCancel, loading }) {
   );
 }
 
+// Pencil Icon for slot editing
+const PencilIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+  </svg>
+);
+
 // Add Map Form
-function AddMapForm({ poolId, onAdd, onCancel, loading }) {
-  const [formData, setFormData] = useState({
-    slot: 'NM1',
-    slot_order: 0,
-    beatmap_id: '',
-    artist: '',
-    title: '',
-    difficulty_name: '',
-    star_rating: 0,
-    bpm: 0,
-    length_seconds: 0,
-    od: 0,
-    hp: 0,
-    ln_percent: 0,
-    mapper: '',
-    is_custom_map: false,
-    is_custom_song: false,
-  });
+function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
+  const [urlInput, setUrlInput] = useState('');
+  const [beatmapsetData, setBeatmapsetData] = useState(null);
+  const [formData, setFormData] = useState(null);
+  const [bannerUrl, setBannerUrl] = useState(null);
+  const [fetching, setFetching] = useState(false);
+  const [fetchError, setFetchError] = useState(null);
+
+  // Parse URL to extract beatmapset ID and optional beatmap ID
+  const parseOsuUrl = (input) => {
+    if (!input) return null;
+
+    // Format: https://osu.ppy.sh/beatmapsets/2478095#mania/5435290
+    const fullMatch = input.match(/beatmapsets\/(\d+)(?:#\w+\/(\d+))?/);
+    if (fullMatch) {
+      return {
+        beatmapsetId: fullMatch[1],
+        beatmapId: fullMatch[2] || null,
+      };
+    }
+
+    // Format: https://osu.ppy.sh/beatmaps/5435290
+    const beatmapMatch = input.match(/beatmaps\/(\d+)/);
+    if (beatmapMatch) {
+      return { beatmapsetId: null, beatmapId: beatmapMatch[1] };
+    }
+
+    // Just a number - assume it's a beatmapset ID
+    const numMatch = input.match(/^(\d+)$/);
+    if (numMatch) {
+      return { beatmapsetId: numMatch[1], beatmapId: null };
+    }
+
+    return null;
+  };
+
+  const handleUrlChange = async (value) => {
+    setUrlInput(value);
+    setFetchError(null);
+
+    const parsed = parseOsuUrl(value);
+    if (!parsed) return;
+
+    // If we have a specific beatmap ID from URL, fetch just that
+    if (parsed.beatmapId) {
+      await fetchBeatmap(parsed.beatmapId);
+    } else if (parsed.beatmapsetId && parsed.beatmapsetId.length >= 4) {
+      // Otherwise fetch the beatmapset to show all difficulties
+      await fetchBeatmapset(parsed.beatmapsetId);
+    }
+  };
+
+  const fetchBeatmapset = async (beatmapsetId) => {
+    setFetching(true);
+    setFetchError(null);
+
+    try {
+      const data = await api.lookupBeatmapset(beatmapsetId);
+      setBeatmapsetData(data);
+      setBannerUrl(data.banner_url);
+    } catch (err) {
+      setFetchError('Beatmapset no encontrado');
+      setBeatmapsetData(null);
+      setBannerUrl(null);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const getDefaultSlot = () => slots && slots.length > 0 ? slots[0].name : 'NM1';
+
+  const fetchBeatmap = async (beatmapId) => {
+    setFetching(true);
+    setFetchError(null);
+
+    try {
+      const data = await api.lookupBeatmap(beatmapId);
+      setBannerUrl(data.banner_url);
+      setFormData({
+        slot: getDefaultSlot(),
+        slot_order: 0,
+        beatmap_id: beatmapId,
+        artist: data.artist,
+        title: data.title,
+        difficulty_name: data.difficulty_name,
+        mapper: data.mapper,
+        star_rating: data.star_rating,
+        bpm: data.bpm,
+        length_seconds: data.length_seconds,
+        od: data.od,
+        hp: data.hp,
+        ln_percent: 0,
+        is_custom_map: false,
+        is_custom_song: false,
+        banner_url: data.banner_url,
+      });
+    } catch (err) {
+      setFetchError('Beatmap no encontrado');
+      setFormData(null);
+      setBannerUrl(null);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const selectDifficulty = (beatmap) => {
+    setFormData({
+      slot: getDefaultSlot(),
+      slot_order: 0,
+      beatmap_id: beatmap.beatmap_id,
+      artist: beatmapsetData.artist,
+      title: beatmapsetData.title,
+      difficulty_name: beatmap.difficulty_name,
+      mapper: beatmapsetData.mapper,
+      star_rating: beatmap.star_rating,
+      bpm: beatmap.bpm,
+      length_seconds: beatmap.length_seconds,
+      od: beatmap.od,
+      hp: beatmap.hp,
+      ln_percent: 0,
+      is_custom_map: false,
+      is_custom_song: false,
+      banner_url: beatmapsetData.banner_url,
+    });
+  };
 
   const handleChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -106,134 +225,273 @@ function AddMapForm({ poolId, onAdd, onCancel, loading }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.beatmap_id || !formData.title) return;
+    if (!formData || !formData.beatmap_id || !formData.title) return;
     await onAdd(poolId, formData);
   };
 
+  const handleBack = () => {
+    setFormData(null);
+    setBeatmapsetData(null);
+    setBannerUrl(null);
+    setUrlInput('');
+  };
+
+  // Stage 1: URL Input
+  if (!formData && !beatmapsetData) {
+    return (
+      <div className="add-map-form">
+        {fetching ? (
+          <div className="map-fetch-status">
+            <img src={catGif} alt="Loading" className="loading-cat" />
+            <span>Buscando beatmap...</span>
+          </div>
+        ) : (
+          <>
+            <div className="mpm-field">
+              <label className="mpm-field-label">URL o ID del Beatmap</label>
+              <input
+                type="text"
+                value={urlInput}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                placeholder="Pega el link de osu! aquí..."
+                className="mpm-input"
+                autoFocus
+              />
+            </div>
+            {fetchError && <div className="map-fetch-error">{fetchError}</div>}
+            <div className="map-form-actions">
+              <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel}>
+                Cancelar
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Stage 2: Difficulty Selection (when beatmapset has multiple diffs)
+  if (beatmapsetData && !formData) {
+    return (
+      <div className="add-map-form">
+        {bannerUrl && (
+          <div className="map-preview">
+            <img src={bannerUrl} alt="Map banner" />
+          </div>
+        )}
+        <div className="map-info-header">
+          <span className="map-info-artist">{beatmapsetData.artist}</span>
+          <span className="map-info-title">{beatmapsetData.title}</span>
+          <span className="map-info-mapper">by {beatmapsetData.mapper}</span>
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">Selecciona la dificultad</label>
+          <div className="difficulty-list">
+            {beatmapsetData.beatmaps.map((bm) => (
+              <button
+                key={bm.beatmap_id}
+                type="button"
+                className="difficulty-item"
+                onClick={() => selectDifficulty(bm)}
+              >
+                <span className="diff-name">{bm.difficulty_name}</span>
+                <span className="diff-sr">{bm.star_rating.toFixed(2)}★</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="map-form-actions">
+          <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleBack}>
+            Cambiar Mapa
+          </button>
+          <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel}>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Stage 2: Full Form
   return (
     <form className="add-map-form" onSubmit={handleSubmit}>
+      {/* Map Preview */}
+      {bannerUrl && (
+        <div className="map-preview">
+          <img src={bannerUrl} alt="Map banner" />
+        </div>
+      )}
+
+      {/* Row 1: Slot */}
       <div className="map-form-row">
-        <select
-          value={formData.slot}
-          onChange={(e) => handleChange('slot', e.target.value)}
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        >
-          <option value="NM1">NM1</option>
-          <option value="NM2">NM2</option>
-          <option value="NM3">NM3</option>
-          <option value="NM4">NM4</option>
-          <option value="HD1">HD1</option>
-          <option value="HD2">HD2</option>
-          <option value="HR1">HR1</option>
-          <option value="HR2">HR2</option>
-          <option value="DT1">DT1</option>
-          <option value="DT2">DT2</option>
-          <option value="FM1">FM1</option>
-          <option value="FM2">FM2</option>
-          <option value="TB">TB</option>
-        </select>
-        <input
-          type="text"
-          value={formData.beatmap_id}
-          onChange={(e) => handleChange('beatmap_id', e.target.value)}
-          placeholder="Beatmap ID"
-          className="mpm-input"
-          disabled={loading}
-        />
+        <div className="mpm-field">
+          <label className="mpm-field-label">
+            Slot
+            <button type="button" className="slot-edit-pencil" onClick={onEditSlots} title="Editar slots">
+              <PencilIcon />
+            </button>
+          </label>
+          <select
+            value={formData.slot}
+            onChange={(e) => handleChange('slot', e.target.value)}
+            className="mpm-input"
+            disabled={loading}
+          >
+            {slots && slots.length > 0 ? (
+              slots.map((slot) => (
+                <option key={slot.id} value={slot.name}>{slot.name}</option>
+              ))
+            ) : (
+              <>
+                <option value="NM1">NM1</option>
+                <option value="NM2">NM2</option>
+                <option value="NM3">NM3</option>
+                <option value="NM4">NM4</option>
+                <option value="HD1">HD1</option>
+                <option value="HD2">HD2</option>
+                <option value="HR1">HR1</option>
+                <option value="HR2">HR2</option>
+                <option value="DT1">DT1</option>
+                <option value="DT2">DT2</option>
+                <option value="FM1">FM1</option>
+                <option value="FM2">FM2</option>
+                <option value="TB">TB</option>
+              </>
+            )}
+          </select>
+        </div>
+        <div className="mpm-field mpm-field-grow">
+          <label className="mpm-field-label">Beatmap ID</label>
+          <input
+            type="text"
+            value={formData.beatmap_id}
+            className="mpm-input"
+            disabled
+          />
+        </div>
       </div>
+
+      {/* Row 2: Artist + Title */}
       <div className="map-form-row">
-        <input
-          type="text"
-          value={formData.artist}
-          onChange={(e) => handleChange('artist', e.target.value)}
-          placeholder="Artista"
-          className="mpm-input"
-          disabled={loading}
-        />
-        <input
-          type="text"
-          value={formData.title}
-          onChange={(e) => handleChange('title', e.target.value)}
-          placeholder="Título"
-          className="mpm-input"
-          disabled={loading}
-        />
+        <div className="mpm-field">
+          <label className="mpm-field-label">Artista</label>
+          <input
+            type="text"
+            value={formData.artist}
+            onChange={(e) => handleChange('artist', e.target.value)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">Título</label>
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => handleChange('title', e.target.value)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
       </div>
+
+      {/* Row 3: Difficulty + Mapper */}
       <div className="map-form-row">
-        <input
-          type="text"
-          value={formData.difficulty_name}
-          onChange={(e) => handleChange('difficulty_name', e.target.value)}
-          placeholder="Dificultad"
-          className="mpm-input"
-          disabled={loading}
-        />
-        <input
-          type="text"
-          value={formData.mapper}
-          onChange={(e) => handleChange('mapper', e.target.value)}
-          placeholder="Mapper"
-          className="mpm-input"
-          disabled={loading}
-        />
+        <div className="mpm-field">
+          <label className="mpm-field-label">Dificultad</label>
+          <input
+            type="text"
+            value={formData.difficulty_name}
+            onChange={(e) => handleChange('difficulty_name', e.target.value)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">Mapper</label>
+          <input
+            type="text"
+            value={formData.mapper}
+            onChange={(e) => handleChange('mapper', e.target.value)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
       </div>
-      <div className="map-form-row">
-        <input
-          type="number"
-          step="0.01"
-          value={formData.star_rating}
-          onChange={(e) => handleChange('star_rating', parseFloat(e.target.value) || 0)}
-          placeholder="SR"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
-        <input
-          type="number"
-          value={formData.bpm}
-          onChange={(e) => handleChange('bpm', parseInt(e.target.value) || 0)}
-          placeholder="BPM"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
-        <input
-          type="number"
-          value={formData.length_seconds}
-          onChange={(e) => handleChange('length_seconds', parseInt(e.target.value) || 0)}
-          placeholder="Duración (seg)"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
+
+      {/* Row 4: SR, BPM, Length */}
+      <div className="map-form-row map-form-row-stats">
+        <div className="mpm-field">
+          <label className="mpm-field-label">SR</label>
+          <input
+            type="number"
+            step="0.01"
+            value={formData.star_rating}
+            onChange={(e) => handleChange('star_rating', parseFloat(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">BPM</label>
+          <input
+            type="number"
+            value={formData.bpm}
+            onChange={(e) => handleChange('bpm', parseInt(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">Tiempo</label>
+          <input
+            type="number"
+            value={formData.length_seconds}
+            onChange={(e) => handleChange('length_seconds', parseInt(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
       </div>
-      <div className="map-form-row">
-        <input
-          type="number"
-          step="0.1"
-          value={formData.od}
-          onChange={(e) => handleChange('od', parseFloat(e.target.value) || 0)}
-          placeholder="OD"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
-        <input
-          type="number"
-          step="0.1"
-          value={formData.hp}
-          onChange={(e) => handleChange('hp', parseFloat(e.target.value) || 0)}
-          placeholder="HP"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
-        <input
-          type="number"
-          value={formData.ln_percent}
-          onChange={(e) => handleChange('ln_percent', parseInt(e.target.value) || 0)}
-          placeholder="LN%"
-          className="mpm-input mpm-input-small"
-          disabled={loading}
-        />
+
+      {/* Row 5: OD, HP, LN% */}
+      <div className="map-form-row map-form-row-stats">
+        <div className="mpm-field">
+          <label className="mpm-field-label">OD</label>
+          <input
+            type="number"
+            step="0.1"
+            value={formData.od}
+            onChange={(e) => handleChange('od', parseFloat(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">HP</label>
+          <input
+            type="number"
+            step="0.1"
+            value={formData.hp}
+            onChange={(e) => handleChange('hp', parseFloat(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
+        <div className="mpm-field">
+          <label className="mpm-field-label">LN%</label>
+          <input
+            type="number"
+            value={formData.ln_percent}
+            onChange={(e) => handleChange('ln_percent', parseInt(e.target.value) || 0)}
+            className="mpm-input"
+            disabled={loading}
+          />
+        </div>
       </div>
-      <div className="map-form-row">
+
+      {/* Row 6: Checkboxes */}
+      <div className="map-form-row map-form-row-checkboxes">
         <label className="mpm-checkbox">
           <input
             type="checkbox"
@@ -253,9 +511,16 @@ function AddMapForm({ poolId, onAdd, onCancel, loading }) {
           Custom Song
         </label>
       </div>
+
+      {/* Actions */}
       <div className="map-form-actions">
         <button type="submit" className="mpm-btn mpm-btn-primary" disabled={loading}>
-          Agregar Mapa
+          {loading ? (
+            <><img src={catGif} alt="" className="btn-loading-cat" /> Agregando...</>
+          ) : 'Agregar Mapa'}
+        </button>
+        <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleBack} disabled={loading}>
+          Cambiar Mapa
         </button>
         <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel} disabled={loading}>
           Cancelar
@@ -266,7 +531,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading }) {
 }
 
 // Pool Item Component
-function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, loading }) {
+function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots }) {
   const [showAddMap, setShowAddMap] = useState(false);
   const [deletingMap, setDeletingMap] = useState(null);
 
@@ -284,6 +549,24 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, loading }) {
   return (
     <div className="mpm-pool-item">
       <div className="mpm-pool-header">
+        <div className="mpm-pool-order-btns">
+          <button
+            className="mpm-order-btn"
+            onClick={() => onMoveUp(pool.id)}
+            disabled={loading || isFirst}
+            title="Mover arriba"
+          >
+            <ChevronUpIcon />
+          </button>
+          <button
+            className="mpm-order-btn"
+            onClick={() => onMoveDown(pool.id)}
+            disabled={loading || isLast}
+            title="Mover abajo"
+          >
+            <ChevronDownIcon />
+          </button>
+        </div>
         <span className="mpm-pool-name">{pool.stage_name}</span>
         <span className="mpm-pool-count">{pool.map_count} maps</span>
         <button
@@ -292,7 +575,7 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, loading }) {
           disabled={loading}
           title="Eliminar pool"
         >
-          <TrashIcon />
+          {loading ? <img src={catGif} alt="" className="btn-loading-cat-small" /> : <TrashIcon />}
         </button>
       </div>
 
@@ -308,7 +591,7 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, loading }) {
                 disabled={loading || deletingMap === map.id}
                 title="Eliminar mapa"
               >
-                {deletingMap === map.id ? '...' : <TrashIcon />}
+                {deletingMap === map.id ? <img src={catGif} alt="" className="btn-loading-cat-small" /> : <TrashIcon />}
               </button>
             </div>
           ))}
@@ -321,6 +604,8 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, loading }) {
           onAdd={handleAddMap}
           onCancel={() => setShowAddMap(false)}
           loading={loading}
+          slots={slots}
+          onEditSlots={onEditSlots}
         />
       ) : (
         <button
@@ -339,8 +624,28 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
   const [loading, setLoading] = useState(false);
   const [showAddPool, setShowAddPool] = useState(false);
   const [deletingPool, setDeletingPool] = useState(null);
+  const [slots, setSlots] = useState([]);
+  const [showSlotModal, setShowSlotModal] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchSlots();
+    }
+  }, [isOpen]);
+
+  const fetchSlots = async () => {
+    try {
+      const data = await api.getSlots();
+      setSlots(data);
+    } catch (err) {
+      console.error('Failed to fetch slots:', err);
+    }
+  };
 
   if (!isOpen) return null;
+
+  // Calculate next order for new pools
+  const nextOrder = pools.length > 0 ? Math.max(...pools.map(p => p.stage_order)) + 1 : 0;
 
   const handleAddPool = async (data) => {
     setLoading(true);
@@ -365,6 +670,44 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
       console.error('Failed to delete mappool:', err);
     } finally {
       setDeletingPool(null);
+    }
+  };
+
+  const handleMoveUp = async (poolId) => {
+    const index = pools.findIndex(p => p.id === poolId);
+    if (index <= 0) return;
+
+    setLoading(true);
+    try {
+      const currentPool = pools[index];
+      const prevPool = pools[index - 1];
+      // Swap orders
+      await api.updateMappool(currentPool.id, { stage_order: prevPool.stage_order });
+      await api.updateMappool(prevPool.id, { stage_order: currentPool.stage_order });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to move pool:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMoveDown = async (poolId) => {
+    const index = pools.findIndex(p => p.id === poolId);
+    if (index < 0 || index >= pools.length - 1) return;
+
+    setLoading(true);
+    try {
+      const currentPool = pools[index];
+      const nextPool = pools[index + 1];
+      // Swap orders
+      await api.updateMappool(currentPool.id, { stage_order: nextPool.stage_order });
+      await api.updateMappool(nextPool.id, { stage_order: currentPool.stage_order });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to move pool:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -409,14 +752,20 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
             <p className="mpm-empty">No hay mappools. Agrega uno para comenzar.</p>
           ) : (
             <div className="mpm-pools-list">
-              {pools.map((pool) => (
+              {pools.map((pool, index) => (
                 <PoolItem
                   key={pool.id}
                   pool={pool}
                   onDelete={handleDeletePool}
                   onAddMap={handleAddMap}
                   onDeleteMap={handleDeleteMap}
+                  onMoveUp={handleMoveUp}
+                  onMoveDown={handleMoveDown}
+                  isFirst={index === 0}
+                  isLast={index === pools.length - 1}
                   loading={loading || deletingPool === pool.id}
+                  slots={slots}
+                  onEditSlots={() => setShowSlotModal(true)}
                 />
               ))}
             </div>
@@ -427,6 +776,7 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
               onAdd={handleAddPool}
               onCancel={() => setShowAddPool(false)}
               loading={loading}
+              nextOrder={nextOrder}
             />
           ) : (
             <button
@@ -439,6 +789,12 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
           )}
         </div>
       </div>
+
+      <SlotEditModal
+        isOpen={showSlotModal}
+        onClose={() => setShowSlotModal(false)}
+        onSlotsChange={fetchSlots}
+      />
     </div>
   );
 }

@@ -11,6 +11,7 @@ from models.api_key import APIKey
 from models.timeline_event import TimelineEvent
 from models.news_item import NewsItem
 from models.mappool import Mappool, MappoolMap
+from models.slot import Slot
 
 __all__ = [
     "Base",
@@ -27,4 +28,5 @@ __all__ = [
     "NewsItem",
     "Mappool",
     "MappoolMap",
+    "Slot",
 ]

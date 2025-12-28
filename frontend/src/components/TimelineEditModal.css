@@ -104,15 +104,21 @@
 }
 
 .timeline-input.date-input {
-  width: 130px;
+  width: 150px;
   flex-shrink: 0;
   cursor: pointer;
   color-scheme: dark;
+  padding-right: 30px;
+  position: relative;
 }
 
 .timeline-input.date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .timeline-input.title-input {
@@ -244,4 +250,19 @@
     height: auto;
     padding: 8px;
   }
+}
+
+/* Loading cat */
+.btn-loading-cat {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.btn-loading-cat-small {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }

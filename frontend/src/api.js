@@ -109,6 +109,8 @@ export const api = {
   getMappools: () => api.fetch('/mappools'),
   getMappoolsAdmin: () => api.fetch('/mappools/all'),
   getMappool: (id) => api.fetch(`/mappools/${id}`),
+  lookupBeatmap: (beatmapId) => api.fetch(`/mappools/lookup/${beatmapId}`),
+  lookupBeatmapset: (beatmapsetId) => api.fetch(`/mappools/lookup-set/${beatmapsetId}`),
   createMappool: (data) => api.fetch('/mappools', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -130,5 +132,22 @@ export const api = {
   }),
   deletePoolMap: (mapId) => api.fetch(`/mappools/maps/${mapId}`, {
     method: 'DELETE',
+  }),
+
+  // Slots
+  getSlots: () => api.fetch('/slots'),
+  createSlot: (data) => api.fetch('/slots', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updateSlot: (id, data) => api.fetch(`/slots/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  deleteSlot: (id) => api.fetch(`/slots/${id}`, {
+    method: 'DELETE',
+  }),
+  seedSlots: () => api.fetch('/slots/seed', {
+    method: 'POST',
   }),
 };

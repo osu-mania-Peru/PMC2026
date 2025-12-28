@@ -8,6 +8,7 @@ from utils.auth import get_current_staff_user
 from utils.database import get_db
 from models.mappool import Mappool, MappoolMap
 from models.user import User
+from services.osu_api import osu_api
 
 router = APIRouter(prefix="/mappools", tags=["Mappools"])
 
@@ -29,7 +30,7 @@ def serialize_map(m: MappoolMap) -> dict:
         "artist": m.artist,
         "title": m.title,
         "difficulty_name": m.difficulty_name,
-        "banner_url": m.banner_url or f"https://assets.ppy.sh/beatmaps/{m.beatmap_id}/covers/cover.jpg",
+        "banner_url": m.banner_url,
         "star_rating": float(m.star_rating),
         "bpm": m.bpm,
         "length": format_length(m.length_seconds),
@@ -116,7 +117,7 @@ class MapUpdate(BaseModel):
 @router.get("")
 async def get_all_mappools(db: Session = Depends(get_db)):
     """Get all mappools with their maps (public, only visible pools)."""
-    pools = db.query(Mappool).filter(Mappool.is_visible == True).order_by(Mappool.stage_order).all()
+    pools = db.query(Mappool).filter(Mappool.is_visible.is_(True)).order_by(Mappool.stage_order).all()
     total_maps = sum(len(pool.maps) for pool in pools)
     return {
         "total_maps": total_maps,
@@ -197,6 +198,41 @@ async def delete_mappool(
     db.delete(pool)
     db.commit()
     return {"message": "Mappool deleted"}
+
+
+# === Beatmap lookup ===
+
+@router.get("/lookup/{beatmap_id}")
+async def lookup_beatmap(
+    beatmap_id: int,
+    current_user: User = Depends(get_current_staff_user)
+):
+    """
+    Lookup beatmap data from osu! API (staff only).
+
+    Returns beatmap metadata including artist, title, difficulty, mapper,
+    star rating, BPM, length, and other stats.
+    """
+    data = await osu_api.get_beatmap(beatmap_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Beatmap not found")
+    return data
+
+
+@router.get("/lookup-set/{beatmapset_id}")
+async def lookup_beatmapset(
+    beatmapset_id: int,
+    current_user: User = Depends(get_current_staff_user)
+):
+    """
+    Lookup beatmapset data from osu! API (staff only).
+
+    Returns beatmapset metadata with all available difficulties.
+    """
+    data = await osu_api.get_beatmapset(beatmapset_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Beatmapset not found")
+    return data
 
 
 # === Map endpoints ===
