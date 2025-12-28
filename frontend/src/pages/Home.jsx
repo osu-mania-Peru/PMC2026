@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '../api';
 import { Link } from 'react-router-dom';
 import DiscordModal from '../components/DiscordModal';
@@ -6,6 +6,39 @@ import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
 import './Home.css';
+
+// Parse DD/MM date string to Date object (assumes current year, handles year rollover)
+const parseDate = (dateStr) => {
+  if (!dateStr) return null;
+  const [day, month] = dateStr.trim().split('/').map(Number);
+  if (!day || !month) return null;
+  const now = new Date();
+  const year = now.getFullYear();
+  // If month is less than current month by a lot, it might be next year
+  const date = new Date(year, month - 1, day);
+  return date;
+};
+
+// Get event status based on date range
+const getEventStatus = (dateRange) => {
+  if (!dateRange) return 'future';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const parts = dateRange.split(' - ');
+  const startDate = parseDate(parts[0]);
+  const endDate = parts[1] ? parseDate(parts[1]) : startDate;
+
+  if (!startDate) return 'future';
+
+  // Set end date to end of day
+  const endOfDay = new Date(endDate || startDate);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  if (today > endOfDay) return 'completed';
+  if (today >= startDate && today <= endOfDay) return 'active';
+  return 'future';
+};
 
 export default function Home({ user, setUser }) {
   const [status, setStatus] = useState(null);
@@ -19,6 +52,33 @@ export default function Home({ user, setUser }) {
   const [timelineSaving, setTimelineSaving] = useState(false);
   const [newsSaving, setNewsSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // Calculate timeline progress
+  const timelineProgress = useMemo(() => {
+    if (!timelineEvents.length) return { events: [], progressPercent: 0 };
+
+    const eventsWithStatus = timelineEvents.map(event => ({
+      ...event,
+      status: getEventStatus(event.date),
+    }));
+
+    // Find the active or last completed event index
+    let activeIndex = eventsWithStatus.findIndex(e => e.status === 'active');
+    if (activeIndex === -1) {
+      // No active event, find last completed
+      const lastCompleted = eventsWithStatus.map((e, i) => e.status === 'completed' ? i : -1).filter(i => i !== -1);
+      activeIndex = lastCompleted.length ? lastCompleted[lastCompleted.length - 1] : -1;
+    }
+
+    // Calculate progress percentage (center of active event or end of last completed)
+    let progressPercent = 0;
+    if (activeIndex >= 0) {
+      const eventWidth = 100 / timelineEvents.length;
+      progressPercent = (activeIndex + 0.5) * eventWidth;
+    }
+
+    return { events: eventsWithStatus, progressPercent };
+  }, [timelineEvents]);
 
   const refreshTimeline = () => {
     api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
@@ -164,10 +224,14 @@ export default function Home({ user, setUser }) {
         </div>
         <div className="timeline-track">
           <div className="timeline-line"></div>
-          {timelineEvents.map((event) => (
+          <div
+            className="timeline-progress"
+            style={{ width: `${timelineProgress.progressPercent}%` }}
+          ></div>
+          {timelineProgress.events.map((event) => (
             <div
               key={event.id}
-              className={`timeline-event ${event.id === 'registros' ? 'active' : ''}`}
+              className={`timeline-event ${event.status}`}
             >
               <div className="timeline-dot"></div>
               <div className="timeline-content">

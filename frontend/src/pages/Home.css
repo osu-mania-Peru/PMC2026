@@ -340,6 +340,17 @@ button.cta-button:disabled {
   transform: translateY(6px);
 }
 
+.timeline-progress {
+  position: absolute;
+  top: 1rem;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ff2057 0%, #ff743e 50%, #e0ff00 100%);
+  transform: translateY(6px);
+  z-index: 1;
+  transition: width 0.5s ease;
+}
+
 .timeline-event {
   display: flex;
   flex-direction: column;
@@ -360,6 +371,7 @@ button.cta-button:disabled {
   flex-shrink: 0;
 }
 
+.timeline-event.completed .timeline-dot,
 .timeline-event.active .timeline-dot {
   background: linear-gradient(to bottom, #e0ff00 0%, #ff743e 50%, #ff2057 100%);
   border: none;
@@ -383,6 +395,7 @@ button.cta-button:disabled {
   white-space: nowrap;
 }
 
+.timeline-event.completed .timeline-event-title,
 .timeline-event.active .timeline-event-title {
   color: var(--accent-secondary);
 }
