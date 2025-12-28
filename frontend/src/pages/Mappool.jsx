@@ -46,8 +46,13 @@ const formatStageName = (name) => {
 };
 
 // Accordion component for each stage
-function MappoolAccordion({ pool, defaultOpen = false }) {
+function MappoolAccordion({ pool, slots, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  const getSlotColor = (slotName) => {
+    const slot = slots?.find(s => s.name === slotName);
+    return slot?.color || '#3b82f6';
+  };
 
   return (
     <div className="mappool-accordion">
@@ -81,7 +86,7 @@ function MappoolAccordion({ pool, defaultOpen = false }) {
                 {pool.maps.map((map) => (
                   <tr key={map.id} className="mappool-row">
                     <td className="col-slot">
-                      <span className="slot-badge">{map.slot}</span>
+                      <span className="slot-badge" style={{ borderRightColor: getSlotColor(map.slot) }}>{map.slot}</span>
                     </td>
                     <td className="col-banner">
                       {map.banner_url ? (
@@ -140,6 +145,7 @@ function MappoolAccordion({ pool, defaultOpen = false }) {
 
 export default function Mappool({ user }) {
   const [data, setData] = useState({ total_maps: 0, pools: [] });
+  const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -151,8 +157,15 @@ export default function Mappool({ user }) {
       .finally(() => setLoading(false));
   };
 
+  const fetchSlots = () => {
+    api.getSlots()
+      .then(setSlots)
+      .catch(console.error);
+  };
+
   useEffect(() => {
     fetchMappools();
+    fetchSlots();
   }, [user]);
 
   if (loading) {
@@ -210,6 +223,7 @@ export default function Mappool({ user }) {
             <MappoolAccordion
               key={pool.id}
               pool={pool}
+              slots={slots}
               defaultOpen={index === 0}
             />
           ))
