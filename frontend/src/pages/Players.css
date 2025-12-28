@@ -70,12 +70,12 @@
   border: 1px solid #222;
   display: flex;
   align-items: stretch;
-  gap: 1rem;
+  gap: 0;
   padding: 0;
   text-decoration: none;
   transition: all 0.2s ease;
   overflow: hidden;
-  height: 64px;
+  height: 80px;
 }
 
 .player-card:hover {
@@ -85,12 +85,11 @@
 /* Seed container with accent bar */
 .player-seed-container {
   background: linear-gradient(135deg, #ff0844 0%, #ff4466 100%);
-  padding: 1rem 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 50px;
-  align-self: stretch;
+  width: 56px;
+  flex-shrink: 0;
 }
 
 .player-seed {
@@ -117,7 +116,10 @@
 .player-info {
   flex: 1;
   min-width: 0;
-  padding-right: 1rem;
+  padding: 0 1rem 0 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .player-name {
