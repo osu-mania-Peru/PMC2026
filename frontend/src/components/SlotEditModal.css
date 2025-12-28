@@ -169,6 +169,8 @@
   align-items: center;
   gap: 8px;
   flex: 1;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .slot-input {
@@ -178,7 +180,8 @@
   padding: 8px 12px;
   color: #fff;
   font-size: 0.875rem;
-  flex: 1;
+  flex: 1 1 120px;
+  min-width: 120px;
   outline: none;
   transition: border-color 0.2s ease;
 }
@@ -230,6 +233,7 @@
   padding: 12px;
   background: #0d0d0d;
   border-radius: 4px;
+  flex-wrap: wrap;
 }
 
 .slot-add-btn {
@@ -271,6 +275,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .slot-btn:disabled {
