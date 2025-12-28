@@ -72,6 +72,7 @@
 .news-item-row {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
 .news-input {
@@ -126,6 +127,10 @@
   transition: all 0.2s ease;
   flex-shrink: 0;
   clip-path: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .news-delete-btn:hover:not(:disabled) {
