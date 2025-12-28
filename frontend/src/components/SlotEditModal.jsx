@@ -261,7 +261,8 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                       onClick={() => handleAddSlot(slots.length - 1)}
                       disabled={saving}
                     >
-                      <Plus size={18} /> Agregar Slot
+                      {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : <Plus size={18} />}
+                      Agregar Slot
                     </button>
                   </div>
                 </div>

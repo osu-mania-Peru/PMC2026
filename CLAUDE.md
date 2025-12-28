@@ -13,6 +13,16 @@ When making commits:
 - Run `ruff check` and `pyright` before committing
 - Generate docs with: `PYTHONPATH=/home/sharo/Desktop/projects/PMC/backend pdoc --output-dir docs/api config utils models services routers main`
 
+## Frontend UI Conventions
+
+- **Loading indicators**: Use `cat.gif` (`src/assets/cat.gif`) for all loading states in buttons and spinners
+  ```jsx
+  import catGif from '../assets/cat.gif';
+  // In button: {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : <Icon />}
+  ```
+- **Icons**: Use `lucide-react` for all icons (e.g., `Plus`, `Trash2`, `X`, `ChevronUp`)
+- **Button overrides**: Global button styles in `App.css` use `clip-path`. Override with `!important` in component CSS when needed
+
 ## Project Structure
 
 - Backend: FastAPI Python app in `/backend`
