@@ -10,15 +10,19 @@ import './Home.css';
 // Parse DD/MM/YYYY or DD/MM date string to Date object
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
-  const parts = dateStr.trim().split('/').map(Number);
+  const trimmed = dateStr.trim();
+  const parts = trimmed.split('/').map(Number);
+
   if (parts.length === 2) {
     // DD/MM format - assume 2026 for backwards compatibility
     const [day, month] = parts;
+    if (isNaN(day) || isNaN(month)) return null;
     return new Date(2026, month - 1, day);
   }
   if (parts.length === 3) {
     // DD/MM/YYYY format
     const [day, month, year] = parts;
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
     return new Date(year, month - 1, day);
   }
   return null;
@@ -30,11 +34,15 @@ const getEventStatus = (dateRange) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const parts = dateRange.split(' - ');
+  // Handle various separators (with or without spaces)
+  const parts = dateRange.split(/\s*-\s*/);
   const startDate = parseDate(parts[0]);
   const endDate = parts[1] ? parseDate(parts[1]) : startDate;
 
-  if (!startDate) return 'future';
+  if (!startDate) {
+    console.warn('Failed to parse timeline date:', dateRange);
+    return 'future';
+  }
 
   // Set end date to end of day
   const endOfDay = new Date(endDate || startDate);
@@ -62,10 +70,11 @@ export default function Home({ user, setUser }) {
   const timelineProgress = useMemo(() => {
     if (!timelineEvents.length) return { events: [], progressPercent: 0 };
 
-    const eventsWithStatus = timelineEvents.map(event => ({
-      ...event,
-      status: getEventStatus(event.date),
-    }));
+    const eventsWithStatus = timelineEvents.map(event => {
+      const status = getEventStatus(event.date);
+      console.log('Timeline event:', event.title, '| date:', event.date, '| status:', status);
+      return { ...event, status };
+    });
 
     // Find the active or last completed event index
     let activeIndex = eventsWithStatus.findIndex(e => e.status === 'active');
