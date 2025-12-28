@@ -1,0 +1,392 @@
+.mappool-page {
+  min-height: 100vh;
+  background: #0a0a0a;
+  padding: 2rem 4rem;
+}
+
+/* Header */
+.mappool-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.mappool-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.mappool-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mappool-count {
+  background: #ff0844;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.mappool-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.mappool-header-icon {
+  width: 80px;
+  height: 80px;
+  color: #fff;
+  opacity: 0.9;
+}
+
+/* Subtitle */
+.mappool-subtitle {
+  color: #888;
+  font-size: 1rem;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Legend */
+.mappool-legend {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.legend-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.legend-icon.star {
+  color: #fff;
+}
+
+.legend-icon.song {
+  color: #fff;
+}
+
+/* Accordion */
+.mappool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mappool-accordion {
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mappool-accordion-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #ff0844;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.mappool-accordion-header:hover {
+  background: #e0073c;
+}
+
+.accordion-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.accordion-chevron {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  transition: transform 0.2s ease;
+}
+
+.accordion-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Accordion Content */
+.mappool-accordion-content {
+  background: #0a0a0a;
+  padding: 0;
+}
+
+/* Table */
+.mappool-table-wrapper {
+  overflow-x: auto;
+}
+
+.mappool-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.mappool-table thead {
+  background: #1a1a1a;
+}
+
+.mappool-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  border-bottom: 1px solid #222;
+}
+
+.mappool-table td {
+  padding: 0.5rem 1rem;
+  color: #ccc;
+  border-bottom: 1px solid #1a1a1a;
+  vertical-align: middle;
+}
+
+.mappool-row {
+  transition: background 0.15s ease;
+}
+
+.mappool-row:hover {
+  background: #111;
+}
+
+/* Column widths */
+.col-slot {
+  width: 60px;
+}
+
+.col-banner {
+  width: 80px;
+}
+
+.col-title {
+  min-width: 300px;
+}
+
+.col-custom {
+  width: 70px;
+  text-align: center;
+}
+
+.col-sr,
+.col-bpm,
+.col-length {
+  width: 70px;
+  text-align: center;
+}
+
+.col-stats {
+  width: 120px;
+  text-align: center;
+}
+
+.col-mapper {
+  min-width: 150px;
+}
+
+.col-beatmap {
+  width: 100px;
+}
+
+/* Slot badge */
+.slot-badge {
+  display: inline-block;
+  background: #ff0844;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Map banner */
+.map-banner {
+  width: 60px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 2px;
+  filter: grayscale(100%);
+  transition: filter 0.2s ease;
+}
+
+.mappool-row:hover .map-banner {
+  filter: grayscale(0%);
+}
+
+/* Map title */
+.map-title {
+  display: block;
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Custom icons */
+.custom-icons {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.custom-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.custom-icon.star {
+  color: #fff;
+}
+
+.custom-icon.song {
+  color: #fff;
+}
+
+/* Download button */
+.mappool-download {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.5rem;
+  background: #0a0a0a;
+}
+
+.download-btn {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+}
+
+.download-btn:hover {
+  background: #fff;
+  color: #0a0a0a;
+  border-color: #fff;
+}
+
+/* Empty state */
+.mappool-empty {
+  color: #666;
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .mappool-page {
+    padding: 2rem;
+  }
+
+  .mappool-title {
+    font-size: 2rem;
+  }
+
+  .mappool-header-icon {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mappool-page {
+    padding: 1rem;
+  }
+
+  .mappool-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .mappool-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .mappool-header-right {
+    display: none;
+  }
+
+  .mappool-title {
+    font-size: 1.5rem;
+  }
+
+  .mappool-count {
+    font-size: 0.875rem;
+    padding: 0.25rem 1rem;
+  }
+
+  .mappool-legend {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .accordion-title {
+    font-size: 1rem;
+  }
+
+  .mappool-table {
+    font-size: 0.75rem;
+  }
+
+  .mappool-table th,
+  .mappool-table td {
+    padding: 0.5rem;
+  }
+
+  .col-title {
+    min-width: 200px;
+  }
+
+  .map-title {
+    max-width: 200px;
+  }
+
+  .map-banner {
+    width: 40px;
+    height: 28px;
+  }
+}

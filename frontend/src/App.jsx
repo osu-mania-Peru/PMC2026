@@ -11,7 +11,7 @@ import Register from "./pages/Register";
 import Brackets from "./pages/Brackets";
 import Matches from "./pages/Matches";
 import Players from "./pages/Players";
-import Maps from "./pages/Maps";
+import Mappool from "./pages/Mappool";
 
 // Components
 import AdminPanel from "./components/AdminPanel";
@@ -109,8 +109,8 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
         <Route
           path="/maps"
           element={
-            <main className="main has-container">
-              <Maps />
+            <main className="main">
+              <Mappool />
             </main>
           }
         />

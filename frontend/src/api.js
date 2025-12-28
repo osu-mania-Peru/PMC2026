@@ -104,4 +104,31 @@ export const api = {
   getNotifications: (unreadOnly = false) =>
     api.fetch(`/notifications${unreadOnly ? '?unread_only=true' : ''}`),
   markNotificationRead: (id) => api.fetch(`/notifications/${id}/read`, { method: 'PATCH' }),
+
+  // Mappools
+  getMappools: () => api.fetch('/mappools'),
+  getMappoolsAdmin: () => api.fetch('/mappools/all'),
+  getMappool: (id) => api.fetch(`/mappools/${id}`),
+  createMappool: (data) => api.fetch('/mappools', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updateMappool: (id, data) => api.fetch(`/mappools/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  deleteMappool: (id) => api.fetch(`/mappools/${id}`, {
+    method: 'DELETE',
+  }),
+  addMapToPool: (poolId, data) => api.fetch(`/mappools/${poolId}/maps`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updatePoolMap: (mapId, data) => api.fetch(`/mappools/maps/${mapId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  deletePoolMap: (mapId) => api.fetch(`/mappools/maps/${mapId}`, {
+    method: 'DELETE',
+  }),
 };

@@ -10,6 +10,7 @@ from models.notification import Notification
 from models.api_key import APIKey
 from models.timeline_event import TimelineEvent
 from models.news_item import NewsItem
+from models.mappool import Mappool, MappoolMap
 
 __all__ = [
     "Base",
@@ -24,4 +25,6 @@ __all__ = [
     "APIKey",
     "TimelineEvent",
     "NewsItem",
+    "Mappool",
+    "MappoolMap",
 ]
