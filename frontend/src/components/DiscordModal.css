@@ -74,6 +74,7 @@
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  clip-path: none;
 }
 
 .discord-modal .close-btn:hover {
@@ -169,6 +170,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  clip-path: none;
 }
 
 .discord-btn:disabled {
