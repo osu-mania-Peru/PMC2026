@@ -39,6 +39,26 @@ Never commit or expose:
 - Review public endpoints and add auth where needed
 - Remove or protect testing endpoints like `/users/all`
 
+## Frontend Deployment
+
+When deploying the frontend to production:
+
+1. **Before build**: Change API URLs from `api-staging` to `api`:
+   - `frontend/.env`: `VITE_API_URL=https://api.perumaniacup.info`
+   - `frontend/public/horse/index.html`: `const API_BASE = 'https://api.perumaniacup.info'`
+   - `frontend/public/horse/index-clean.html`: same change
+
+2. **Build and deploy**:
+   ```bash
+   ssh deploy@172.237.60.221 "cd ~/apps/PMC2026 && git pull && cd frontend && sed -i 's/api-staging/api/g' .env && npm run build"
+   ```
+
+3. **After deploy**: Revert API URLs back to `api-staging` in source files:
+   - On VPS: `sed -i 's/api\.perumaniacup/api-staging.perumaniacup/g' .env`
+   - Locally: revert `.env` and horse page files to `api-staging`
+
+This ensures production uses the production API while local development uses staging.
+
 ## Known Issues
 
 ### Horse Racing Game (`/frontend/public/horse/`)
