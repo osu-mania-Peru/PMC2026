@@ -158,8 +158,8 @@ export default function Home({ user, setUser }) {
           <span className="banner-status-label">ESTADO DE INSCRIPCIONES</span>
         </div>
         <div className="banner-stat banner-right">
-          <span className="banner-number">{Math.max(0, 32 - (status?.total_registered_players ?? 0)).toString().padStart(2, '0')}</span>
-          <span className="banner-label">CUPOS DISPONIBLES</span>
+          <span className="banner-number">{(status?.total_registered_players ?? 0).toString().padStart(2, '0')}</span>
+          <span className="banner-label">REGISTRADOS</span>
         </div>
       </div>
 

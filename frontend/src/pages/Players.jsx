@@ -23,7 +23,7 @@ export default function Players() {
     <div className="players-page">
       <div className="players-header">
         <h2>Jugadores</h2>
-        <div className="players-count">{players.length}/32</div>
+        <div className="players-count">{players.length} jugadores</div>
       </div>
 
       {players.length === 0 ? (

@@ -77,7 +77,7 @@ export default function Register({ user, setUser }) {
         <div>
           <div className="stat-box">
             <h4>El Registro está Abierto</h4>
-            <p>Cupos Restantes: <strong>{32 - status.total_registered_players}/32</strong></p>
+            <p>Jugadores Registrados: <strong>{status.total_registered_players}</strong></p>
             <p>Tu Usuario: <strong>{user.username}</strong></p>
             <p>Tu País: <strong>{user.flag_code}</strong></p>
           </div>
