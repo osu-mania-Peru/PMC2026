@@ -69,12 +69,13 @@
   background: #111;
   border: 1px solid #222;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 1rem;
   padding: 0;
   text-decoration: none;
   transition: all 0.2s ease;
   overflow: hidden;
+  height: 64px;
 }
 
 .player-card:hover {
@@ -106,7 +107,7 @@
 
 /* Avatar */
 .player-avatar {
-  align-self: stretch;
+  height: 100%;
   aspect-ratio: 1;
   object-fit: cover;
   flex-shrink: 0;
