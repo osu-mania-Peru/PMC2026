@@ -167,12 +167,7 @@
   letter-spacing: 0.05em;
   cursor: pointer;
   transition: all 0.2s ease;
-  transform: skewX(-10deg);
   white-space: nowrap;
-}
-
-.discord-btn span {
-  transform: skewX(10deg);
 }
 
 .discord-btn:disabled {

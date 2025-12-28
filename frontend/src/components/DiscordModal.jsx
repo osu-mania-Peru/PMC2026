@@ -78,14 +78,14 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
               onClick={handleClose}
               disabled={loading}
             >
-              <span>Cancelar</span>
+              Cancelar
             </button>
             <button
               type="submit"
               className="discord-btn primary"
               disabled={loading}
             >
-              <span>{loading ? 'Registrando...' : 'Confirmar'}</span>
+              {loading ? 'Registrando...' : 'Confirmar'}
             </button>
           </div>
         </form>

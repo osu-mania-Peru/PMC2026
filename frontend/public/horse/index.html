@@ -1331,7 +1331,7 @@
         <div class="prerace-participants-wrapper">
             <div class="prerace-participants" id="preraceParticipants"></div>
         </div>
-        <button class="prerace-button" id="preraceButton" disabled>Empezar!</button>
+        <button class="prerace-button" id="preraceButton">Empezar!</button>
     </div>
 
     <!-- Race Countdown -->
@@ -1400,7 +1400,7 @@
 
     <script>
         // Always use production API for real player data
-        const API_BASE = 'https://api.perumaniacup.info';
+        const API_BASE = 'https://api-staging.perumaniacup.info';
 
         async function loadPlayers() {
             const loadingText = document.getElementById('loadingText');
