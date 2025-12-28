@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Link, NavLink, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, NavLink, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { FaDiscord, FaYoutube, FaTwitch } from "react-icons/fa";
+import { Menu, X } from "lucide-react";
 import logo from "./assets/logo.svg";
 import "./App.css";
 
@@ -18,18 +19,34 @@ import AdminPanel from "./components/AdminPanel";
 import Spinner from "./components/Spinner";
 
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dangerHover, setDangerHover] = useState(false);
+  const location = useLocation();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location]);
+
   if (loading) {
     return <Spinner size="large" text="Cargando..." />;
   }
 
   return (
     <div className="app">
-      <nav className="nav">
+      <nav className={`nav ${mobileMenuOpen ? 'menu-open' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
         <div className="nav-content">
           <Link to="/" className="nav-logo">
             <img src="/2026/PMCcolor.svg" alt="PMC" />
           </Link>
-          <div className="nav-links">
+          <button
+            className="nav-hamburger"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
             <NavLink to="/" end>INICIO</NavLink>
             <NavLink to="/brackets">BRACKETS</NavLink>
             <NavLink to="/matches">PARTIDAS</NavLink>
@@ -62,7 +79,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/"
           element={
             <main className="main">
-              <Home user={user} setUser={setUser} />
+              <Home user={user} setUser={setUser} dangerHover={dangerHover} setDangerHover={setDangerHover} />
             </main>
           }
         />

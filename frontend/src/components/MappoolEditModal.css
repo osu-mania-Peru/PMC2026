@@ -61,6 +61,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  clip-path: none;
 }
 
 .mpm-close-btn svg {

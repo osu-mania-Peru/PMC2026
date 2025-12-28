@@ -165,3 +165,12 @@
     padding: 24px;
   }
 }
+
+/* Loading cat */
+.btn-loading-cat {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 4px;
+}

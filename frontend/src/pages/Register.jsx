@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
 import DiscordModal from '../components/DiscordModal';
+import catGif from '../assets/cat.gif';
 import './Register.css';
 
 export default function Register({ user, setUser }) {
@@ -70,7 +71,7 @@ export default function Register({ user, setUser }) {
             disabled={loading}
             style={{ marginTop: '1rem', background: '#d44', border: 'none' }}
           >
-            {loading ? 'Procesando...' : 'Cancelar Registro'}
+            {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Procesando...</> : 'Cancelar Registro'}
           </button>
         </div>
       ) : status.registration_open ? (

@@ -127,6 +127,7 @@
   justify-content: center;
   background: #1a1a1a;
   border: 2px solid #333;
+  border-radius: 0;
   color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
@@ -136,11 +137,13 @@
   position: relative;
   z-index: 1;
   margin: 0 0.25rem;
+  padding: 0;
 }
 
 .pagination-btn:hover {
   background: #333;
   border-color: #fff;
+  color: #fff;
 }
 
 .pagination-btn.active {
@@ -152,7 +155,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .matches-page {
-    padding: 1rem;
+    padding: 1.5rem;
   }
 
   .matches-header {
@@ -160,7 +163,27 @@
     gap: 1rem;
   }
 
-  .trophy-icon {
-    width: 60px;
+  .matches-title {
+    font-size: 1.4rem;
+  }
+
+  .matches-header-right {
+    display: none;
+  }
+
+  .matches-filter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .filter-tags {
+    flex-wrap: wrap;
+  }
+
+  .filter-tag {
+    font-size: 0.6rem;
+    padding: 0.35rem 0.75rem;
+    clip-path: none;
   }
 }

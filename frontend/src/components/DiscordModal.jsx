@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
 
 export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
@@ -72,7 +73,7 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
               className="discord-btn primary"
               disabled={loading}
             >
-              {loading ? 'Registrando...' : 'Confirmar'}
+              {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Registrando...</> : 'Confirmar'}
             </button>
             <button
               type="button"

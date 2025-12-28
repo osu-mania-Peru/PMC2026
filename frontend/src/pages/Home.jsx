@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { api } from '../api';
 import { Link } from 'react-router-dom';
 import DiscordModal from '../components/DiscordModal';
 import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
+import catGif from '../assets/cat.gif';
 import './Home.css';
 
 // Parse DD/MM/YYYY or DD/MM date string to Date object
@@ -50,7 +51,7 @@ const getEventStatus = (dateRange) => {
   return 'future';
 };
 
-export default function Home({ user, setUser }) {
+export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showDiscordModal, setShowDiscordModal] = useState(false);
@@ -59,9 +60,107 @@ export default function Home({ user, setUser }) {
   const [showNewsModal, setShowNewsModal] = useState(false);
   const [timelineEvents, setTimelineEvents] = useState([]);
   const [newsItems, setNewsItems] = useState([]);
+  const [timelineLoading, setTimelineLoading] = useState(true);
+  const [newsLoading, setNewsLoading] = useState(true);
   const [timelineSaving, setTimelineSaving] = useState(false);
   const [newsSaving, setNewsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const videoRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const filterRef = useRef(null);
+  const gainRef = useRef(null);
+
+  const videoTransitionRef = useRef(null);
+
+  const initAudioContext = () => {
+    if (audioContextRef.current || !videoRef.current) return;
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const source = audioContext.createMediaElementSource(videoRef.current);
+    const filter = audioContext.createBiquadFilter();
+    const gain = audioContext.createGain();
+
+    filter.type = 'lowpass';
+    filter.frequency.value = 22000; // Start fully open
+    filter.Q.value = 1;
+
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioContext.destination);
+
+    audioContextRef.current = audioContext;
+    filterRef.current = filter;
+    gainRef.current = gain;
+  };
+
+  const slowDownVideo = () => {
+    setDangerHover(true);
+    document.body.style.overflow = 'hidden';
+    if (!videoRef.current) return;
+    initAudioContext();
+    if (videoTransitionRef.current) cancelAnimationFrame(videoTransitionRef.current);
+
+    const video = videoRef.current;
+    const duration = 500;
+    const startTime = performance.now();
+    const startRate = video.playbackRate;
+    const startFreq = filterRef.current?.frequency.value || 22000;
+    const startGain = gainRef.current?.gain.value || 1;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      video.playbackRate = Math.max(0.1, startRate + (0.3 - startRate) * eased);
+
+      if (filterRef.current) {
+        filterRef.current.frequency.value = startFreq + (300 - startFreq) * eased;
+      }
+      if (gainRef.current) {
+        gainRef.current.gain.value = startGain + (0.5 - startGain) * eased;
+      }
+
+      if (progress < 1) {
+        videoTransitionRef.current = requestAnimationFrame(animate);
+      }
+    };
+    videoTransitionRef.current = requestAnimationFrame(animate);
+  };
+
+  const restoreVideoSpeed = () => {
+    setDangerHover(false);
+    document.body.style.overflow = '';
+    if (!videoRef.current) return;
+    if (videoTransitionRef.current) cancelAnimationFrame(videoTransitionRef.current);
+
+    const video = videoRef.current;
+    const duration = 500;
+    const startTime = performance.now();
+    const startRate = video.playbackRate;
+    const startFreq = filterRef.current?.frequency.value || 300;
+    const startGain = gainRef.current?.gain.value || 0.5;
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      video.playbackRate = startRate + (1 - startRate) * eased;
+
+      if (filterRef.current) {
+        filterRef.current.frequency.value = startFreq + (22000 - startFreq) * eased;
+      }
+      if (gainRef.current) {
+        gainRef.current.gain.value = startGain + (1 - startGain) * eased;
+      }
+
+      if (progress < 1) {
+        videoTransitionRef.current = requestAnimationFrame(animate);
+      }
+    };
+    videoTransitionRef.current = requestAnimationFrame(animate);
+  };
 
   // Calculate timeline progress
   const timelineProgress = useMemo(() => {
@@ -91,11 +190,19 @@ export default function Home({ user, setUser }) {
   }, [timelineEvents]);
 
   const refreshTimeline = () => {
-    api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
+    setTimelineLoading(true);
+    api.getTimeline()
+      .then(data => setTimelineEvents(data.events))
+      .catch(console.error)
+      .finally(() => setTimelineLoading(false));
   };
 
   const refreshNews = () => {
-    api.getNews().then(data => setNewsItems(data.items)).catch(console.error);
+    setNewsLoading(true);
+    api.getNews()
+      .then(data => setNewsItems(data.items))
+      .catch(console.error)
+      .finally(() => setNewsLoading(false));
   };
 
   useEffect(() => {
@@ -163,8 +270,8 @@ export default function Home({ user, setUser }) {
   return (
     <div className="home-page">
       {/* Video Background Section */}
-      <div className="video-section">
-        <video className="video-bg" autoPlay loop playsInline>
+      <div className={`video-section ${user ? 'logged-in' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
+        <video ref={videoRef} className="video-bg" autoPlay loop playsInline>
           <source src="/pmcvideo.webm" type="video/webm" />
         </video>
         <div className="video-overlay"></div>
@@ -189,10 +296,12 @@ export default function Home({ user, setUser }) {
               // Logged in and registered - show unregister button
               <button
                 onClick={() => setShowConfirmModal(true)}
+                onMouseEnter={slowDownVideo}
+                onMouseLeave={restoreVideoSpeed}
                 disabled={loading}
                 className="cta-button danger"
               >
-                {loading ? 'Procesando...' : 'Cancelar Registro'}
+                {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Procesando...</> : 'Cancelar Registro'}
               </button>
             ) : status?.registration_open ? (
               // Logged in, not registered, registration open - show register button
@@ -232,25 +341,32 @@ export default function Home({ user, setUser }) {
             </button>
           )}
         </div>
-        <div className="timeline-track">
-          <div className="timeline-line"></div>
-          <div
-            className="timeline-progress"
-            style={{ width: `${timelineProgress.progressPercent}%` }}
-          ></div>
-          {timelineProgress.events.map((event) => (
+        {timelineLoading ? (
+          <div className="section-loading">
+            <img src={catGif} alt="" className="section-loading-cat" />
+            <span>Cargando cronograma...</span>
+          </div>
+        ) : (
+          <div className="timeline-track">
+            <div className="timeline-line"></div>
             <div
-              key={event.id}
-              className={`timeline-event ${event.status}`}
-            >
-              <div className="timeline-dot"></div>
-              <div className="timeline-content">
-                <span className="timeline-event-title">{event.title}</span>
-                <span className="timeline-event-date">{event.date}</span>
+              className="timeline-progress"
+              style={{ width: `${timelineProgress.progressPercent}%` }}
+            ></div>
+            {timelineProgress.events.map((event) => (
+              <div
+                key={event.id}
+                className={`timeline-event ${event.status}`}
+              >
+                <div className="timeline-dot"></div>
+                <div className="timeline-content">
+                  <span className="timeline-event-title">{event.title}</span>
+                  <span className="timeline-event-date">{event.date}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Registration Status Banner */}
@@ -282,15 +398,22 @@ export default function Home({ user, setUser }) {
             </button>
           )}
         </div>
-        <div className="news-list">
-          {newsItems.map((item) => (
-            <div key={item.id} className="news-item">
-              <span className="news-date">{item.date}</span>
-              <span className="news-text">{item.title}</span>
-              <span className="news-arrow">›</span>
-            </div>
-          ))}
-        </div>
+        {newsLoading ? (
+          <div className="section-loading">
+            <img src={catGif} alt="" className="section-loading-cat" />
+            <span>Cargando noticias...</span>
+          </div>
+        ) : (
+          <div className="news-list">
+            {newsItems.map((item) => (
+              <div key={item.id} className="news-item">
+                <span className="news-date">{item.date}</span>
+                <span className="news-text">{item.title}</span>
+                <span className="news-arrow">›</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <DiscordModal

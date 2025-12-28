@@ -1,3 +1,4 @@
+import catGif from '../assets/cat.gif';
 import './ConfirmModal.css';
 
 export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, loading, error }) {
@@ -30,7 +31,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
             onClick={onConfirm}
             disabled={loading}
           >
-            {loading ? 'Procesando...' : 'Confirmar'}
+            {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Procesando...</> : 'Confirmar'}
           </button>
         </div>
       </div>
