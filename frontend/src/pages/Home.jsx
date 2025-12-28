@@ -87,45 +87,37 @@ export default function Home({ user, setUser }) {
           </p>
           <div className="hero-cta">
             {!user ? (
-              <>
-                <button onClick={api.login} className="cta-button">
-                  Inscribirse
-                </button>
-                <Link to="/brackets" className="cta-button secondary">
-                  Brackets
-                </Link>
-              </>
-            ) : !user.is_registered && status?.registration_open ? (
-              <>
-                <button
-                  onClick={() => setShowDiscordModal(true)}
-                  disabled={loading}
-                  className="cta-button"
-                >
-                  Inscribirse
-                </button>
-                <Link to="/brackets" className="cta-button secondary">
-                  Brackets
-                </Link>
-              </>
+              // Not logged in - show login button
+              <button onClick={api.login} className="cta-button">
+                Inscribirse
+              </button>
             ) : user.is_registered ? (
-              <>
-                <button
-                  onClick={() => setShowConfirmModal(true)}
-                  disabled={loading}
-                  className="cta-button danger"
-                >
-                  {loading ? 'Procesando...' : 'Cancelar Registro'}
-                </button>
-                <Link to="/brackets" className="cta-button secondary">
-                  Brackets
-                </Link>
-              </>
-            ) : (
-              <Link to="/brackets" className="cta-button secondary">
-                Brackets
-              </Link>
-            )}
+              // Logged in and registered - show unregister button
+              <button
+                onClick={() => setShowConfirmModal(true)}
+                disabled={loading}
+                className="cta-button danger"
+              >
+                {loading ? 'Procesando...' : 'Cancelar Registro'}
+              </button>
+            ) : status?.registration_open ? (
+              // Logged in, not registered, registration open - show register button
+              <button
+                onClick={() => setShowDiscordModal(true)}
+                disabled={loading}
+                className="cta-button"
+              >
+                Inscribirse
+              </button>
+            ) : status && !status.registration_open ? (
+              // Logged in, not registered, registration closed - show disabled
+              <button className="cta-button" disabled>
+                Registro Cerrado
+              </button>
+            ) : null}
+            <Link to="/brackets" className="cta-button secondary">
+              Brackets
+            </Link>
           </div>
 
         </div>
