@@ -9,7 +9,7 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
 
   if (!isOpen) return null;
 
-  const bypassUsers = ['Shaamii'];
+  const bypassUsers = [];
   const isPeruvian = user?.flag_code === 'PE' || bypassUsers.includes(user?.username);
 
   const validateUsername = (username) => {
