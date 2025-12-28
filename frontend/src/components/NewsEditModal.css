@@ -13,13 +13,13 @@
 }
 
 .news-modal {
-  background: #313338;
+  background: #1a1a1a;
   border-radius: 4px;
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   animation: newsModalSlideIn 0.2s ease-out;
   padding: 32px;
 }
@@ -41,10 +41,12 @@
 }
 
 .news-modal-header h3 {
-  margin: 0 0 8px 0;
-  color: #f2f3f5;
-  font-size: 24px;
-  font-weight: 600;
+  margin: 0;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .news-modal-description {
@@ -73,21 +75,22 @@
 }
 
 .news-input {
-  background: #1e1f22;
-  border: none;
-  border-radius: 3px;
+  background: #0d0d0d;
+  border: 1px solid #333;
+  border-radius: 4px;
   padding: 10px;
-  color: #dbdee1;
+  color: #fff;
   font-size: 14px;
   outline: none;
+  transition: border-color 0.2s ease;
 }
 
 .news-input::placeholder {
-  color: #87898c;
+  color: #666;
 }
 
 .news-input:focus {
-  outline: none;
+  border-color: #ff0844;
 }
 
 .news-input:disabled {
@@ -127,24 +130,24 @@
 }
 
 .news-btn.primary {
-  background: #5865f2;
+  background: #ff0844;
   color: #fff;
 }
 
 .news-btn.primary:hover:not(:disabled) {
-  background: #4752c4;
+  background: #cc0636;
 }
 
 .news-btn.secondary {
   background: transparent;
-  color: #00a8fc;
+  color: #888;
   padding: 4px 0;
   font-size: 14px;
   margin-top: 4px;
 }
 
 .news-btn.secondary:hover:not(:disabled) {
-  text-decoration: underline;
+  color: #fff;
   background: transparent;
 }
 
