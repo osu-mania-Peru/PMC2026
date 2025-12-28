@@ -535,6 +535,11 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, onMoveUp, onMoveDown,
   const [showAddMap, setShowAddMap] = useState(false);
   const [deletingMap, setDeletingMap] = useState(null);
 
+  const getSlotColor = (slotName) => {
+    const slot = slots?.find(s => s.name === slotName);
+    return slot?.color || '#ff0844'; // Default color if not found
+  };
+
   const handleAddMap = async (poolId, mapData) => {
     await onAddMap(poolId, mapData);
     setShowAddMap(false);
@@ -583,7 +588,7 @@ function PoolItem({ pool, onDelete, onAddMap, onDeleteMap, onMoveUp, onMoveDown,
         <div className="mpm-maps-list">
           {pool.maps.map((map) => (
             <div key={map.id} className="mpm-map-item">
-              <span className="mpm-map-slot">{map.slot}</span>
+              <span className="mpm-map-slot" style={{ backgroundColor: getSlotColor(map.slot) }}>{map.slot}</span>
               <span className="mpm-map-title">{map.artist} - {map.title}</span>
               <button
                 className="mpm-icon-btn mpm-icon-btn-danger"
