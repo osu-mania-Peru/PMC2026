@@ -75,7 +75,7 @@
   text-decoration: none;
   transition: all 0.2s ease;
   overflow: hidden;
-  height: 80px;
+  height: 120px;
 }
 
 .player-card:hover {
@@ -88,14 +88,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
+  width: 70px;
   flex-shrink: 0;
 }
 
 .player-seed {
   color: #fff;
   font-family: 'Poppins', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 800;
 }
 
@@ -126,7 +126,7 @@
   color: #fff;
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.25rem;
   display: block;
   white-space: nowrap;
   overflow: hidden;
@@ -136,8 +136,8 @@
 .player-meta {
   display: flex;
   gap: 1rem;
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
   color: #666;
 }
 
