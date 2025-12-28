@@ -106,8 +106,8 @@
 
 /* Avatar */
 .player-avatar {
-  width: 56px;
-  height: 56px;
+  align-self: stretch;
+  aspect-ratio: 1;
   object-fit: cover;
   flex-shrink: 0;
 }
