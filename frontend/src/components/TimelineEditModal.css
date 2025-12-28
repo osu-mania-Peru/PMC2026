@@ -104,21 +104,16 @@
 }
 
 .timeline-input.date-input {
-  width: 150px;
+  width: 170px;
   flex-shrink: 0;
   cursor: pointer;
   color-scheme: dark;
-  padding-right: 30px;
-  position: relative;
 }
 
 .timeline-input.date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
   cursor: pointer;
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
+  margin-left: 8px;
 }
 
 .timeline-input.title-input {
