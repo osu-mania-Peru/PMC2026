@@ -368,6 +368,7 @@
   justify-content: center;
   opacity: 0.5;
   transition: opacity 0.2s ease;
+  clip-path: none;
 }
 
 .slot-edit-pencil:hover {
