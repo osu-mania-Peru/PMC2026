@@ -92,6 +92,7 @@ export default function Register({ user, setUser }) {
             onClose={() => setShowDiscordModal(false)}
             onSubmit={handleRegister}
             loading={loading}
+            user={user}
           />
         </div>
       ) : (

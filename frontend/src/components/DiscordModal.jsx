@@ -2,12 +2,14 @@ import { useState } from 'react';
 import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
 
-export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
+export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user }) {
   const [discordUsername, setDiscordUsername] = useState('');
   const [nationalityConfirmed, setNationalityConfirmed] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
+
+  const isPeruvian = user?.flag_code === 'PE';
 
   const validateUsername = (username) => {
     const trimmed = username.trim();
@@ -73,6 +75,13 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
             {error && <div className="discord-error">{error}</div>}
           </div>
 
+          {!isPeruvian && (
+            <div className="discord-warning">
+              Tu cuenta de osu! no está registrada en Perú ({user?.flag_code || 'N/A'}).
+              Solo jugadores con nacionalidad peruana pueden participar en Peru Mania Cup.
+            </div>
+          )}
+
           <div className="discord-form-group">
             <label className="discord-checkbox-label">
               <input
@@ -92,13 +101,15 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
           </div>
 
           <div className="discord-modal-buttons">
-            <button
-              type="submit"
-              className="discord-btn primary"
-              disabled={loading}
-            >
-              {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Registrando...</> : 'Confirmar'}
-            </button>
+            {nationalityConfirmed && (
+              <button
+                type="submit"
+                className="discord-btn primary"
+                disabled={loading}
+              >
+                {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Registrando...</> : 'Confirmar'}
+              </button>
+            )}
             <button
               type="button"
               className="discord-btn secondary"

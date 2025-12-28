@@ -425,6 +425,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         onClose={() => setShowDiscordModal(false)}
         onSubmit={handleRegister}
         loading={loading}
+        user={user}
       />
 
       <ConfirmModal

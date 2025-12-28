@@ -136,6 +136,16 @@
   line-height: 1.4;
 }
 
+.discord-warning {
+  background: rgba(250, 168, 26, 0.1);
+  border: 1px solid #faa81a;
+  color: #faa81a;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  border-radius: 3px;
+}
+
 .discord-modal-buttons {
   margin-top: 8px;
 }
