@@ -7,15 +7,21 @@ import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
 import './Home.css';
 
-// Tournament year - PMC 2026
-const TOURNAMENT_YEAR = 2026;
-
-// Parse DD/MM date string to Date object
+// Parse DD/MM/YYYY or DD/MM date string to Date object
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
-  const [day, month] = dateStr.trim().split('/').map(Number);
-  if (!day || !month) return null;
-  return new Date(TOURNAMENT_YEAR, month - 1, day);
+  const parts = dateStr.trim().split('/').map(Number);
+  if (parts.length === 2) {
+    // DD/MM format - assume 2026 for backwards compatibility
+    const [day, month] = parts;
+    return new Date(2026, month - 1, day);
+  }
+  if (parts.length === 3) {
+    // DD/MM/YYYY format
+    const [day, month, year] = parts;
+    return new Date(year, month - 1, day);
+  }
+  return null;
 };
 
 // Get event status based on date range

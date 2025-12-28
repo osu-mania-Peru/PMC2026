@@ -12,15 +12,15 @@ router = APIRouter(prefix="/timeline", tags=["Timeline"])
 
 # Default timeline data (matches frontend hardcoded values)
 DEFAULT_TIMELINE = [
-    {"event_id": "registros", "date_range": "16/01 - 01/02", "title": "REGISTROS", "sort_order": 0},
-    {"event_id": "screening", "date_range": "01/02 - 08/02", "title": "SCREENING", "sort_order": 1},
-    {"event_id": "showcase", "date_range": "08/02", "title": "QUALIFIERS SHOWCASE", "sort_order": 2},
-    {"event_id": "qualifiers", "date_range": "13/02 - 15/02", "title": "QUALIFIERS", "sort_order": 3},
-    {"event_id": "ro16", "date_range": "27/02 - 01/03", "title": "ROUND OF 16", "sort_order": 4},
-    {"event_id": "quarters", "date_range": "06/03 - 08/03", "title": "QUARTERFINALS", "sort_order": 5},
-    {"event_id": "semis", "date_range": "13/03 - 15/03", "title": "SEMIFINALS", "sort_order": 6},
-    {"event_id": "finals", "date_range": "20/03 - 22/03", "title": "FINALS", "sort_order": 7},
-    {"event_id": "grandfinals", "date_range": "27/03 - 29/03", "title": "GRANDFINALS", "sort_order": 8},
+    {"event_id": "registros", "date_range": "16/01/2026 - 01/02/2026", "title": "REGISTROS", "sort_order": 0},
+    {"event_id": "screening", "date_range": "01/02/2026 - 08/02/2026", "title": "SCREENING", "sort_order": 1},
+    {"event_id": "showcase", "date_range": "08/02/2026", "title": "QUALIFIERS SHOWCASE", "sort_order": 2},
+    {"event_id": "qualifiers", "date_range": "13/02/2026 - 15/02/2026", "title": "QUALIFIERS", "sort_order": 3},
+    {"event_id": "ro16", "date_range": "27/02/2026 - 01/03/2026", "title": "ROUND OF 16", "sort_order": 4},
+    {"event_id": "quarters", "date_range": "06/03/2026 - 08/03/2026", "title": "QUARTERFINALS", "sort_order": 5},
+    {"event_id": "semis", "date_range": "13/03/2026 - 15/03/2026", "title": "SEMIFINALS", "sort_order": 6},
+    {"event_id": "finals", "date_range": "20/03/2026 - 22/03/2026", "title": "FINALS", "sort_order": 7},
+    {"event_id": "grandfinals", "date_range": "27/03/2026 - 29/03/2026", "title": "GRANDFINALS", "sort_order": 8},
 ]
 
 

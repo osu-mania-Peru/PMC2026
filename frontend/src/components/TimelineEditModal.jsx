@@ -2,23 +2,30 @@ import { useState } from 'react';
 import { api } from '../api';
 import './TimelineEditModal.css';
 
-// Convert DD/MM to YYYY-MM-DD for date input (assumes current year)
+// Convert DD/MM/YYYY or DD/MM to YYYY-MM-DD for date input
 const toInputFormat = (displayDate) => {
   if (!displayDate) return '';
   const parts = displayDate.split('/');
-  if (parts.length !== 2) return '';
-  const [day, month] = parts;
-  const year = new Date().getFullYear();
-  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  if (parts.length === 2) {
+    // DD/MM format - assume 2026
+    const [day, month] = parts;
+    return `2026-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  if (parts.length === 3) {
+    // DD/MM/YYYY format
+    const [day, month, year] = parts;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  return '';
 };
 
-// Convert YYYY-MM-DD to DD/MM for display
+// Convert YYYY-MM-DD to DD/MM/YYYY for display
 const toDisplayFormat = (inputDate) => {
   if (!inputDate) return '';
   const parts = inputDate.split('-');
   if (parts.length !== 3) return '';
-  const [, month, day] = parts;
-  return `${day}/${month}`;
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
 };
 
 // Parse date range "DD/MM - DD/MM" into { start, end }
@@ -105,7 +112,7 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
     setAdding(true);
     try {
       const today = new Date();
-      const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
       await api.addTimelineEvent({ date_range: dateStr, title: 'NUEVO EVENTO' });
       onRefresh();
     } catch (err) {
