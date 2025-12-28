@@ -62,6 +62,29 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     }
   };
 
+  const handleKeyDown = (e, slot, field) => {
+    if (e.key === 'Enter') {
+      e.target.blur(); // This triggers handleBlur which saves
+    }
+  };
+
+  const handleColorChange = async (slot, newColor) => {
+    // Update local state for immediate visual feedback
+    handleFieldChange(slot.id, 'color', newColor);
+
+    // Save immediately
+    setSaving(true);
+    try {
+      await api.updateSlot(slot.id, { color: newColor });
+      await fetchSlots();
+      onSlotsChange?.();
+    } catch (err) {
+      console.error('Failed to update slot color:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleAddSlot = async (afterIndex = -1) => {
     setSaving(true);
     try {
@@ -216,6 +239,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                           type="text"
                           value={getSlotValue(slot, 'name')}
                           onChange={(e) => handleFieldChange(slot.id, 'name', e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(e, slot, 'name')}
                           onBlur={() => handleBlur(slot, 'name')}
                           className="slot-table-input"
                           disabled={saving}
@@ -226,8 +250,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                         <input
                           type="color"
                           value={getSlotValue(slot, 'color')}
-                          onChange={(e) => handleFieldChange(slot.id, 'color', e.target.value)}
-                          onBlur={() => handleBlur(slot, 'color')}
+                          onChange={(e) => handleColorChange(slot, e.target.value)}
                           className="slot-table-color"
                           disabled={saving}
                         />
