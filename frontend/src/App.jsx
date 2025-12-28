@@ -37,7 +37,10 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <NavLink to="/maps">MAPPOOL</NavLink>
             {user ? (
               <>
-                <span>{user.username}</span>
+                <span className="nav-user">
+                  {user.username}
+                  {user.is_staff && <span className="staff-badge">STAFF</span>}
+                </span>
                 <button className="btn-full-height" onClick={handleLogout}>
                   CERRAR SESIÓN
                 </button>

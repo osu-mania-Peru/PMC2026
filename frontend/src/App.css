@@ -140,6 +140,21 @@ body {
   white-space: nowrap;
 }
 
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.staff-badge {
+  background: linear-gradient(90deg, #FF2057 0%, #FF743E 100%);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  letter-spacing: 0.05em;
+}
+
 /* Main content */
 .main {
   flex: 1;
