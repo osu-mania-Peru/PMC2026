@@ -46,28 +46,36 @@ function AddPoolForm({ onAdd, onCancel, loading }) {
 
   return (
     <form className="add-pool-form" onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={stageName}
-        onChange={(e) => setStageName(e.target.value)}
-        placeholder="Nombre del stage (ej: Quarterfinals)"
-        className="mpm-input"
-        disabled={loading}
-      />
-      <input
-        type="number"
-        value={stageOrder}
-        onChange={(e) => setStageOrder(parseInt(e.target.value) || 0)}
-        placeholder="Orden"
-        className="mpm-input mpm-input-small"
-        disabled={loading}
-      />
-      <button type="submit" className="mpm-btn mpm-btn-primary" disabled={loading || !stageName.trim()}>
-        Agregar
-      </button>
-      <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel} disabled={loading}>
-        Cancelar
-      </button>
+      <div className="form-group">
+        <label className="form-label">Nombre del Stage</label>
+        <input
+          type="text"
+          value={stageName}
+          onChange={(e) => setStageName(e.target.value)}
+          placeholder="Ej: Quarterfinals, Round of 16, Qualifiers..."
+          className="mpm-input"
+          disabled={loading}
+        />
+      </div>
+      <div className="form-group">
+        <label className="form-label">Orden (menor = aparece primero)</label>
+        <input
+          type="number"
+          value={stageOrder}
+          onChange={(e) => setStageOrder(parseInt(e.target.value) || 0)}
+          placeholder="0"
+          className="mpm-input"
+          disabled={loading}
+        />
+      </div>
+      <div className="form-actions">
+        <button type="submit" className="mpm-btn mpm-btn-primary" disabled={loading || !stageName.trim()}>
+          Agregar Pool
+        </button>
+        <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel} disabled={loading}>
+          Cancelar
+        </button>
+      </div>
     </form>
   );
 }
