@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check } from 'lucide-react';
 import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
 
@@ -9,8 +10,9 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
 
   if (!isOpen) return null;
 
-  const bypassUsers = ['Shaamii'];
-  const isPeruvian = user?.flag_code === 'PE' || bypassUsers.includes(user?.username);
+  const bypassUsers = ['Shaamii', 'guden'];
+  const isWhitelisted = bypassUsers.includes(user?.username);
+  const isPeruvian = user?.flag_code === 'PE' || isWhitelisted;
 
   const validateUsername = (username) => {
     const trimmed = username.trim();
@@ -54,6 +56,11 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
           <p className="discord-modal-description">
             Ingresa tu usuario de Discord para contactarte durante el torneo.
           </p>
+          {isWhitelisted && (
+            <span className="discord-whitelisted">
+              <Check size={14} /> Whitelisted
+            </span>
+          )}
         </div>
 
         {!isPeruvian ? (

@@ -53,6 +53,16 @@
   text-align: center;
 }
 
+.discord-whitelisted {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #3ba55c;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
 .discord-modal-content {
   display: flex;
   flex-direction: column;
