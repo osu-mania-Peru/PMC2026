@@ -1,41 +1,8 @@
 import { useState, useEffect } from 'react';
+import { X, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { api } from '../api';
 import catGif from '../assets/cat.gif';
 import './SlotEditModal.css';
-
-// SVG Icons
-const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18"></line>
-    <line x1="6" y1="6" x2="18" y2="18"></line>
-  </svg>
-);
-
-const PlusIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19"></line>
-    <line x1="5" y1="12" x2="19" y2="12"></line>
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="3 6 5 6 21 6"></polyline>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-  </svg>
-);
-
-const ChevronUpIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="18 15 12 9 6 15"></polyline>
-  </svg>
-);
-
-const ChevronDownIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="6 9 12 15 18 9"></polyline>
-  </svg>
-);
 
 export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
   const [slots, setSlots] = useState([]);
@@ -176,7 +143,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
         <div className="slot-modal-header">
           <h3>Editar Slots</h3>
           <button className="slot-close-btn" onClick={onClose}>
-            <CloseIcon />
+            <X size={20} />
           </button>
         </div>
 
@@ -197,7 +164,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                       Crear Slots por Defecto
                     </button>
                     <button className="slot-btn slot-btn-secondary" onClick={() => handleAddSlot(-1)} disabled={saving}>
-                      <PlusIcon /> Agregar Slot Vacío
+                      <Plus size={18} /> Agregar Slot Vacío
                     </button>
                   </div>
                 </div>
@@ -221,7 +188,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                           disabled={saving}
                           title="Insertar slot después"
                         >
-                          <PlusIcon />
+                          <Plus size={14} />
                         </button>
                       </div>
 
@@ -232,14 +199,14 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                             onClick={() => handleMoveSlot(slot.id, 'up')}
                             disabled={saving || index === 0}
                           >
-                            <ChevronUpIcon />
+                            <ChevronUp size={14} />
                           </button>
                           <button
                             className="slot-order-btn"
                             onClick={() => handleMoveSlot(slot.id, 'down')}
                             disabled={saving || index === slots.length - 1}
                           >
-                            <ChevronDownIcon />
+                            <ChevronDown size={14} />
                           </button>
                         </div>
                       </div>
@@ -282,7 +249,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                           disabled={saving}
                           title="Eliminar slot"
                         >
-                          <TrashIcon />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </div>
@@ -294,7 +261,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                       onClick={() => handleAddSlot(slots.length - 1)}
                       disabled={saving}
                     >
-                      <PlusIcon /> Agregar Slot
+                      <Plus size={18} /> Agregar Slot
                     </button>
                   </div>
                 </div>

@@ -16,9 +16,8 @@
   background: #1a1a1a;
   border-radius: 8px;
   width: 90%;
-  max-width: 800px;
+  max-width: 900px;
   max-height: 85vh;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
@@ -53,20 +52,17 @@
 }
 
 .slot-close-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke: #666;
-  transition: stroke 0.15s ease;
+  color: #666;
+  transition: color 0.15s ease;
 }
 
 .slot-close-btn:hover svg {
-  stroke: #fff;
+  color: #fff;
 }
 
 .slot-modal-content {
   padding: 24px;
   overflow-y: auto;
-  overflow-x: hidden;
   flex: 1;
 }
 
@@ -105,7 +101,6 @@
 /* Table Layout using CSS Grid */
 .slot-table {
   width: 100%;
-  overflow: hidden;
 }
 
 .slot-table-header,
@@ -151,26 +146,27 @@
   overflow: hidden;
 }
 
-/* Row buttons */
+/* Row buttons - override global button styles */
 .slot-row-btn {
-  background: #252525;
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
-  width: 32px;
-  height: 32px;
+  background: #252525 !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 6px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
   cursor: pointer;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
-  clip-path: none;
+  clip-path: none !important;
   flex-shrink: 0;
 }
 
 .slot-row-btn svg {
-  width: 14px;
-  height: 14px;
-  stroke: #888;
+  color: #888;
 }
 
 .slot-row-btn:disabled {
@@ -184,7 +180,7 @@
 }
 
 .slot-row-btn-add:hover:not(:disabled) svg {
-  stroke: #22c55e;
+  color: #22c55e;
 }
 
 .slot-row-btn-delete:hover:not(:disabled) {
@@ -193,10 +189,10 @@
 }
 
 .slot-row-btn-delete:hover:not(:disabled) svg {
-  stroke: #ef4444;
+  color: #ef4444;
 }
 
-/* Order buttons */
+/* Order buttons - override global button styles */
 .slot-order-btns {
   display: flex;
   flex-direction: column;
@@ -204,22 +200,23 @@
 }
 
 .slot-order-btn {
-  background: #252525;
-  border: 1px solid #3a3a3a;
-  border-radius: 4px;
-  padding: 2px;
+  background: #252525 !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 4px !important;
+  padding: 2px !important;
+  width: 28px !important;
+  height: 16px !important;
+  min-width: 28px !important;
   cursor: pointer;
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
-  clip-path: none;
+  clip-path: none !important;
 }
 
 .slot-order-btn svg {
-  width: 14px;
-  height: 14px;
-  stroke: #888;
+  color: #888;
 }
 
 .slot-order-btn:hover:not(:disabled) {
@@ -228,7 +225,7 @@
 }
 
 .slot-order-btn:hover:not(:disabled) svg {
-  stroke: #ff0844;
+  color: #ff0844;
 }
 
 .slot-order-btn:disabled {
