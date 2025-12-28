@@ -78,12 +78,26 @@ export const api = {
     method: 'PUT',
     body: JSON.stringify(events),
   }),
+  addTimelineEvent: (data) => api.fetch('/timeline', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  deleteTimelineEvent: (eventId) => api.fetch(`/timeline/${eventId}`, {
+    method: 'DELETE',
+  }),
 
   // News
   getNews: () => api.fetch('/news'),
   updateNews: (items) => api.fetch('/news', {
     method: 'PUT',
     body: JSON.stringify(items),
+  }),
+  addNewsItem: (data) => api.fetch('/news', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  deleteNewsItem: (itemId) => api.fetch(`/news/${itemId}`, {
+    method: 'DELETE',
   }),
 
   // Notifications

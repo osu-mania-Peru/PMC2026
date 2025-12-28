@@ -113,3 +113,52 @@ async def update_all_timeline_events(
             for e in db_events
         ]
     }
+
+
+class TimelineEventCreateSimple(BaseModel):
+    date_range: str
+    title: str
+
+
+@router.post("")
+async def add_timeline_event(
+    data: TimelineEventCreateSimple,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Add a new timeline event (staff only)."""
+    # Generate event_id from title
+    event_id = data.title.lower().replace(" ", "_")[:20]
+    # Get max sort_order
+    max_order = db.query(TimelineEvent).count()
+
+    event = TimelineEvent(
+        event_id=event_id,
+        date_range=data.date_range,
+        title=data.title,
+        sort_order=max_order
+    )
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return {
+        "id": event.event_id,
+        "date": event.date_range,
+        "title": event.title,
+    }
+
+
+@router.delete("/{event_id}")
+async def delete_timeline_event(
+    event_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Delete a timeline event (staff only)."""
+    event = db.query(TimelineEvent).filter(TimelineEvent.event_id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Timeline event not found")
+
+    db.delete(event)
+    db.commit()
+    return {"message": "Timeline event deleted"}

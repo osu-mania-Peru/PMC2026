@@ -1,13 +1,51 @@
 import { useState } from 'react';
+import { api } from '../api';
 import './TimelineEditModal.css';
 
-export default function TimelineEditModal({ isOpen, onClose, onSave, events, loading }) {
-  // Use events directly as source of truth, only track local edits
+// Convert DD/MM to YYYY-MM-DD for date input (assumes current year)
+const toInputFormat = (displayDate) => {
+  if (!displayDate) return '';
+  const parts = displayDate.split('/');
+  if (parts.length !== 2) return '';
+  const [day, month] = parts;
+  const year = new Date().getFullYear();
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+// Convert YYYY-MM-DD to DD/MM for display
+const toDisplayFormat = (inputDate) => {
+  if (!inputDate) return '';
+  const parts = inputDate.split('-');
+  if (parts.length !== 3) return '';
+  const [, month, day] = parts;
+  return `${day}/${month}`;
+};
+
+// Parse date range "DD/MM - DD/MM" into { start, end }
+const parseDateRange = (dateRange) => {
+  if (!dateRange) return { start: '', end: '' };
+  const parts = dateRange.split(' - ');
+  if (parts.length === 2) {
+    return { start: parts[0].trim(), end: parts[1].trim() };
+  }
+  // Single date
+  return { start: dateRange.trim(), end: '' };
+};
+
+// Combine start and end into "DD/MM - DD/MM" or "DD/MM"
+const combineDateRange = (start, end) => {
+  if (!start && !end) return '';
+  if (!end || start === end) return start;
+  return `${start} - ${end}`;
+};
+
+export default function TimelineEditModal({ isOpen, onClose, onSave, events, loading, onRefresh }) {
   const [localEdits, setLocalEdits] = useState({});
+  const [deleting, setDeleting] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   if (!isOpen) return null;
 
-  // Merge events with local edits
   const editedEvents = (events || []).map((event, index) => ({
     ...event,
     ...localEdits[index],
@@ -23,6 +61,21 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
     }));
   };
 
+  const handleDateChange = (index, type, inputValue) => {
+    const event = editedEvents[index];
+    const { start, end } = parseDateRange(event.date);
+    const displayValue = toDisplayFormat(inputValue);
+
+    let newDateRange;
+    if (type === 'start') {
+      newDateRange = combineDateRange(displayValue, end);
+    } else {
+      newDateRange = combineDateRange(start, displayValue);
+    }
+
+    handleChange(index, 'date', newDateRange);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(editedEvents.map(event => ({
@@ -36,6 +89,32 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
     onClose();
   };
 
+  const handleDelete = async (eventId) => {
+    setDeleting(eventId);
+    try {
+      await api.deleteTimelineEvent(eventId);
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to delete timeline event:', err);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleAdd = async () => {
+    setAdding(true);
+    try {
+      const today = new Date();
+      const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+      await api.addTimelineEvent({ date_range: dateStr, title: 'NUEVO EVENTO' });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to add timeline event:', err);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <div className="timeline-modal-overlay" onClick={handleClose}>
       <div className="timeline-modal" onClick={(e) => e.stopPropagation()}>
@@ -45,27 +124,56 @@ export default function TimelineEditModal({ isOpen, onClose, onSave, events, loa
 
         <form onSubmit={handleSubmit} className="timeline-modal-content">
           <div className="timeline-events-list">
-            {editedEvents.map((event, index) => (
-              <div key={event.id} className="timeline-event-row">
-                <input
-                  type="text"
-                  value={event.date}
-                  onChange={(e) => handleChange(index, 'date', e.target.value)}
-                  className="timeline-input date-input"
-                  placeholder="DD/MM - DD/MM"
-                  disabled={loading}
-                />
-                <input
-                  type="text"
-                  value={event.title}
-                  onChange={(e) => handleChange(index, 'title', e.target.value)}
-                  className="timeline-input title-input"
-                  placeholder="Título del evento"
-                  disabled={loading}
-                />
-              </div>
-            ))}
+            {editedEvents.map((event, index) => {
+              const { start, end } = parseDateRange(event.date);
+              return (
+                <div key={event.id} className="timeline-event-row">
+                  <div className="timeline-date-range">
+                    <input
+                      type="date"
+                      value={toInputFormat(start)}
+                      onChange={(e) => handleDateChange(index, 'start', e.target.value)}
+                      className="timeline-input date-input"
+                      disabled={loading || deleting === event.id}
+                    />
+                    <span className="timeline-date-separator">-</span>
+                    <input
+                      type="date"
+                      value={toInputFormat(end)}
+                      onChange={(e) => handleDateChange(index, 'end', e.target.value)}
+                      className="timeline-input date-input"
+                      disabled={loading || deleting === event.id}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={event.title}
+                    onChange={(e) => handleChange(index, 'title', e.target.value)}
+                    className="timeline-input title-input"
+                    placeholder="Título del evento"
+                    disabled={loading || deleting === event.id}
+                  />
+                  <button
+                    type="button"
+                    className="timeline-delete-btn"
+                    onClick={() => handleDelete(event.id)}
+                    disabled={loading || deleting === event.id}
+                  >
+                    {deleting === event.id ? '...' : '×'}
+                  </button>
+                </div>
+              );
+            })}
           </div>
+
+          <button
+            type="button"
+            className="timeline-add-btn"
+            onClick={handleAdd}
+            disabled={loading || adding}
+          >
+            {adding ? 'Agregando...' : '+ Agregar Evento'}
+          </button>
 
           <div className="timeline-modal-buttons">
             <button

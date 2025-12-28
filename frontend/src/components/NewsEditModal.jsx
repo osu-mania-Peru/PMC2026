@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { api } from '../api';
 import './NewsEditModal.css';
 
 // Convert DD/MM/YYYY to YYYY-MM-DD for date input
@@ -19,13 +20,13 @@ const toDisplayFormat = (inputDate) => {
   return `${day}/${month}/${year}`;
 };
 
-export default function NewsEditModal({ isOpen, onClose, onSave, items, loading }) {
-  // Use items directly as source of truth, only track local edits
+export default function NewsEditModal({ isOpen, onClose, onSave, items, loading, onRefresh }) {
   const [localEdits, setLocalEdits] = useState({});
+  const [deleting, setDeleting] = useState(null);
+  const [adding, setAdding] = useState(false);
 
   if (!isOpen) return null;
 
-  // Merge items with local edits
   const editedItems = (items || []).map((item, index) => ({
     ...item,
     ...localEdits[index],
@@ -54,6 +55,32 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading 
     onClose();
   };
 
+  const handleDelete = async (itemId) => {
+    setDeleting(itemId);
+    try {
+      await api.deleteNewsItem(itemId);
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to delete news item:', err);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleAdd = async () => {
+    setAdding(true);
+    try {
+      const today = new Date();
+      const date = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+      await api.addNewsItem({ date, title: 'Nueva noticia' });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to add news item:', err);
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <div className="news-modal-overlay" onClick={handleClose}>
       <div className="news-modal" onClick={(e) => e.stopPropagation()}>
@@ -70,7 +97,7 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading 
                   value={toInputFormat(item.date)}
                   onChange={(e) => handleChange(index, 'date', toDisplayFormat(e.target.value))}
                   className="news-input date-input"
-                  disabled={loading}
+                  disabled={loading || deleting === item.id}
                 />
                 <input
                   type="text"
@@ -78,11 +105,28 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading 
                   onChange={(e) => handleChange(index, 'title', e.target.value)}
                   className="news-input title-input"
                   placeholder="Título de la noticia"
-                  disabled={loading}
+                  disabled={loading || deleting === item.id}
                 />
+                <button
+                  type="button"
+                  className="news-delete-btn"
+                  onClick={() => handleDelete(item.id)}
+                  disabled={loading || deleting === item.id}
+                >
+                  {deleting === item.id ? '...' : '×'}
+                </button>
               </div>
             ))}
           </div>
+
+          <button
+            type="button"
+            className="news-add-btn"
+            onClick={handleAdd}
+            disabled={loading || adding}
+          >
+            {adding ? 'Agregando...' : '+ Agregar Noticia'}
+          </button>
 
           <div className="news-modal-buttons">
             <button

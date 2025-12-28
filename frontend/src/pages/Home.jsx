@@ -20,10 +20,18 @@ export default function Home({ user, setUser }) {
   const [newsSaving, setNewsSaving] = useState(false);
   const [error, setError] = useState(null);
 
+  const refreshTimeline = () => {
+    api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
+  };
+
+  const refreshNews = () => {
+    api.getNews().then(data => setNewsItems(data.items)).catch(console.error);
+  };
+
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
-    api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
-    api.getNews().then(data => setNewsItems(data.items)).catch(console.error);
+    refreshTimeline();
+    refreshNews();
   }, []);
 
   const handleSaveTimeline = async (events) => {
@@ -234,6 +242,7 @@ export default function Home({ user, setUser }) {
         onSave={handleSaveTimeline}
         events={timelineEvents}
         loading={timelineSaving}
+        onRefresh={refreshTimeline}
       />
 
       <NewsEditModal
@@ -242,6 +251,7 @@ export default function Home({ user, setUser }) {
         onSave={handleSaveNews}
         items={newsItems}
         loading={newsSaving}
+        onRefresh={refreshNews}
       />
     </div>
   );

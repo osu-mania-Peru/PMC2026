@@ -16,7 +16,7 @@
   background: #1a1a1a;
   border-radius: 4px;
   width: 100%;
-  max-width: 550px;
+  max-width: 650px;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -49,14 +49,6 @@
   text-transform: uppercase;
 }
 
-.timeline-modal-description {
-  color: #b5bac1;
-  margin: 0;
-  font-size: 16px;
-  line-height: 1.25;
-  text-align: center;
-}
-
 .timeline-modal-content {
   display: flex;
   flex-direction: column;
@@ -72,6 +64,19 @@
 .timeline-event-row {
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.timeline-date-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.timeline-date-separator {
+  color: #666;
+  font-size: 14px;
 }
 
 .timeline-input {
@@ -90,7 +95,7 @@
 }
 
 .timeline-input:focus {
-  border-color: #ff0844;
+  border-color: #555;
 }
 
 .timeline-input:disabled {
@@ -101,10 +106,64 @@
 .timeline-input.date-input {
   width: 130px;
   flex-shrink: 0;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.timeline-input.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }
 
 .timeline-input.title-input {
   flex: 1;
+}
+
+.timeline-delete-btn {
+  background: transparent;
+  border: 1px solid #444;
+  color: #888;
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  clip-path: none;
+}
+
+.timeline-delete-btn:hover:not(:disabled) {
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.timeline-delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.timeline-add-btn {
+  background: transparent;
+  border: 1px dashed #444;
+  color: #888;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  clip-path: none;
+}
+
+.timeline-add-btn:hover:not(:disabled) {
+  border-color: #888;
+  color: #fff;
+}
+
+.timeline-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .timeline-modal-buttons {
@@ -151,7 +210,7 @@
   background: transparent;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .timeline-modal {
     max-width: 100%;
     margin: 10px;
@@ -160,9 +219,21 @@
 
   .timeline-event-row {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .timeline-date-range {
+    width: 100%;
   }
 
   .timeline-input.date-input {
+    flex: 1;
+    width: auto;
+  }
+
+  .timeline-delete-btn {
     width: 100%;
+    height: auto;
+    padding: 8px;
   }
 }
