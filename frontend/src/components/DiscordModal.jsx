@@ -40,17 +40,17 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
     <div className="discord-modal-overlay" onClick={handleClose}>
       <div className="discord-modal" onClick={(e) => e.stopPropagation()}>
         <div className="discord-modal-header">
-          <h3>Discord Username</h3>
-          <button className="close-btn" onClick={handleClose}>&times;</button>
+          <h3>Registrar Discord</h3>
+          <p className="discord-modal-description">
+            Ingresa tu usuario de Discord para contactarte durante el torneo.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="discord-modal-content">
-          <p className="discord-modal-description">
-            Ingresa tu usuario de Discord para que podamos contactarte durante el torneo.
-          </p>
-
-          <div className="discord-input-wrapper">
-            <span className="discord-at">@</span>
+          <div className="discord-form-group">
+            <label className="discord-label">
+              Usuario de Discord<span className="required">*</span>
+            </label>
             <input
               type="text"
               value={discordUsername}
@@ -63,15 +63,17 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
               autoFocus
               disabled={loading}
             />
+            {error && <div className="discord-error">{error}</div>}
           </div>
 
-          {error && <div className="discord-error">{error}</div>}
-
-          <p className="discord-hint">
-            Solo letras minusculas, numeros, guiones bajos (_) y puntos (.)
-          </p>
-
           <div className="discord-modal-buttons">
+            <button
+              type="submit"
+              className="discord-btn primary"
+              disabled={loading}
+            >
+              {loading ? 'Registrando...' : 'Confirmar'}
+            </button>
             <button
               type="button"
               className="discord-btn secondary"
@@ -79,13 +81,6 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading }) {
               disabled={loading}
             >
               Cancelar
-            </button>
-            <button
-              type="submit"
-              className="discord-btn primary"
-              disabled={loading}
-            >
-              {loading ? 'Registrando...' : 'Confirmar'}
             </button>
           </div>
         </form>
