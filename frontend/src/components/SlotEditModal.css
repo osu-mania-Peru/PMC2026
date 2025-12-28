@@ -16,7 +16,7 @@
   background: #1a1a1a;
   border-radius: 4px;
   width: 100%;
-  max-width: 500px;
+  max-width: 700px;
   max-height: 80vh;
   overflow: hidden;
   display: flex;
@@ -92,22 +92,120 @@
   margin-bottom: 16px;
 }
 
-.slot-list {
+.slot-empty-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Table Layout */
+.slot-table {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 0;
 }
 
-.slot-item {
+.slot-table-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background: #0d0d0d;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+  color: #666;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
+.slot-table-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #222;
+}
+
+.slot-table-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Column widths */
+.slot-col-actions {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.slot-col-order {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.slot-col-name {
+  flex: 1;
+  min-width: 100px;
+}
+
+.slot-col-color {
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.slot-col-preview {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.slot-col-delete {
+  width: 32px;
+  flex-shrink: 0;
+}
+
+/* Row buttons */
+.slot-row-btn {
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  clip-path: none;
+}
+
+.slot-row-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: #666;
+}
+
+.slot-row-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.slot-row-btn-add:hover:not(:disabled) {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.slot-row-btn-add:hover:not(:disabled) svg {
+  stroke: #22c55e;
+}
+
+.slot-row-btn-delete:hover:not(:disabled) {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.slot-row-btn-delete:hover:not(:disabled) svg {
+  stroke: #ef4444;
+}
+
+/* Order buttons */
 .slot-order-btns {
   display: flex;
   flex-direction: column;
@@ -118,18 +216,18 @@
   background: transparent;
   border: 1px solid #333;
   border-radius: 3px;
-  padding: 2px;
+  padding: 1px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   clip-path: none;
 }
 
 .slot-order-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   stroke: #666;
 }
 
@@ -147,52 +245,30 @@
   cursor: not-allowed;
 }
 
-.slot-preview {
-  flex: 1;
-  background: #fff;
-  color: #000;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-right: 8px solid #3b82f6;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.slot-preview:hover {
-  opacity: 0.8;
-}
-
-.slot-edit-form {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.slot-input {
+/* Table inputs */
+.slot-table-input {
+  width: 100%;
   background: #0d0d0d;
   border: 1px solid #333;
   border-radius: 4px;
-  padding: 8px 12px;
+  padding: 6px 10px;
   color: #fff;
   font-size: 0.875rem;
-  flex: 1 1 120px;
-  min-width: 120px;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.15s ease;
 }
 
-.slot-input:focus {
+.slot-table-input:focus {
   border-color: #555;
 }
 
-.slot-color-input {
-  width: 40px;
-  height: 36px;
+.slot-table-input:disabled {
+  opacity: 0.5;
+}
+
+.slot-table-color {
+  width: 100%;
+  height: 32px;
   padding: 2px;
   border: 1px solid #333;
   border-radius: 4px;
@@ -200,69 +276,64 @@
   cursor: pointer;
 }
 
-.slot-icon-btn {
-  background: transparent;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  clip-path: none;
+.slot-table-color:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.slot-icon-btn svg {
-  width: 16px;
-  height: 16px;
+/* Preview badge */
+.slot-preview-badge {
+  background: #fff;
+  color: #000;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-right: 8px solid #3b82f6;
+  box-shadow: 4px 0 0 0 #000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.slot-icon-btn-danger svg {
-  stroke: #666;
+/* Table footer */
+.slot-table-footer {
+  padding-top: 16px;
 }
 
-.slot-icon-btn-danger:hover svg {
-  stroke: #ff4444;
-}
-
-.slot-add-form {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: #0d0d0d;
-  border-radius: 4px;
-  flex-wrap: wrap;
-}
-
-.slot-add-btn {
+.slot-add-row-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background: transparent;
   border: 1px dashed #444;
   color: #888;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   border-radius: 4px;
   clip-path: none;
 }
 
-.slot-add-btn:hover {
-  border-color: #666;
-  color: #fff;
+.slot-add-row-btn:hover:not(:disabled) {
+  border-color: #22c55e;
+  color: #22c55e;
 }
 
-.slot-add-btn svg {
+.slot-add-row-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slot-add-row-btn svg {
   width: 16px;
   height: 16px;
 }
 
+/* Buttons */
 .slot-btn {
   padding: 8px 16px;
   border: none;
@@ -270,13 +341,11 @@
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   clip-path: none;
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .slot-btn:disabled {
@@ -304,12 +373,28 @@
   color: #fff;
 }
 
-.slot-btn-sm {
-  padding: 6px 12px;
-  font-size: 0.8rem;
+.slot-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .btn-loading-cat {
   width: 16px;
   height: 16px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .slot-modal {
+    max-width: 100%;
+    margin: 10px;
+  }
+
+  .slot-col-preview {
+    display: none;
+  }
+
+  .slot-col-name {
+    min-width: 80px;
+  }
 }

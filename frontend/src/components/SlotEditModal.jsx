@@ -41,9 +41,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newSlot, setNewSlot] = useState({ name: '', color: '#3b82f6' });
-  const [editingSlot, setEditingSlot] = useState(null);
+  const [editedSlots, setEditedSlots] = useState({});
 
   useEffect(() => {
     if (isOpen) {
@@ -56,6 +54,7 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     try {
       const data = await api.getSlots();
       setSlots(data);
+      setEditedSlots({});
     } catch (err) {
       console.error('Failed to fetch slots:', err);
     } finally {
@@ -63,31 +62,31 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     }
   };
 
-  const handleAddSlot = async (e) => {
-    e.preventDefault();
-    if (!newSlot.name.trim()) return;
-
-    setSaving(true);
-    try {
-      const nextOrder = slots.length > 0 ? Math.max(...slots.map(s => s.slot_order)) + 1 : 0;
-      await api.createSlot({ ...newSlot, slot_order: nextOrder });
-      await fetchSlots();
-      setNewSlot({ name: '', color: '#3b82f6' });
-      setShowAddForm(false);
-      onSlotsChange?.();
-    } catch (err) {
-      console.error('Failed to create slot:', err);
-    } finally {
-      setSaving(false);
-    }
+  const handleFieldChange = (slotId, field, value) => {
+    setEditedSlots(prev => ({
+      ...prev,
+      [slotId]: {
+        ...prev[slotId],
+        [field]: value
+      }
+    }));
   };
 
-  const handleUpdateSlot = async (slot) => {
+  const getSlotValue = (slot, field) => {
+    if (editedSlots[slot.id] && editedSlots[slot.id][field] !== undefined) {
+      return editedSlots[slot.id][field];
+    }
+    return slot[field];
+  };
+
+  const handleBlur = async (slot, field) => {
+    const newValue = editedSlots[slot.id]?.[field];
+    if (newValue === undefined || newValue === slot[field]) return;
+
     setSaving(true);
     try {
-      await api.updateSlot(slot.id, { name: slot.name, color: slot.color });
+      await api.updateSlot(slot.id, { [field]: newValue });
       await fetchSlots();
-      setEditingSlot(null);
       onSlotsChange?.();
     } catch (err) {
       console.error('Failed to update slot:', err);
@@ -96,9 +95,33 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     }
   };
 
-  const handleDeleteSlot = async (slotId) => {
-    if (!confirm('¿Eliminar este slot?')) return;
+  const handleAddSlot = async (afterIndex = -1) => {
+    setSaving(true);
+    try {
+      const newOrder = afterIndex >= 0 ? afterIndex + 1 : slots.length;
 
+      // Shift orders of slots after the insertion point
+      if (afterIndex >= 0 && afterIndex < slots.length - 1) {
+        for (let i = slots.length - 1; i > afterIndex; i--) {
+          await api.updateSlot(slots[i].id, { slot_order: slots[i].slot_order + 1 });
+        }
+      }
+
+      await api.createSlot({
+        name: `SLOT${slots.length + 1}`,
+        color: '#3b82f6',
+        slot_order: newOrder
+      });
+      await fetchSlots();
+      onSlotsChange?.();
+    } catch (err) {
+      console.error('Failed to create slot:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteSlot = async (slotId) => {
     setSaving(true);
     try {
       await api.deleteSlot(slotId);
@@ -133,8 +156,6 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
   };
 
   const handleSeedSlots = async () => {
-    if (!confirm('¿Crear slots por defecto? Esto solo funciona si no hay slots existentes.')) return;
-
     setSaving(true);
     try {
       await api.seedSlots();
@@ -170,122 +191,113 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
               {slots.length === 0 ? (
                 <div className="slot-empty">
                   <p>No hay slots definidos.</p>
-                  <button className="slot-btn slot-btn-primary" onClick={handleSeedSlots} disabled={saving}>
-                    {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : null}
-                    Crear Slots por Defecto
-                  </button>
+                  <div className="slot-empty-actions">
+                    <button className="slot-btn slot-btn-primary" onClick={handleSeedSlots} disabled={saving}>
+                      {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : null}
+                      Crear Slots por Defecto
+                    </button>
+                    <button className="slot-btn slot-btn-secondary" onClick={() => handleAddSlot(-1)} disabled={saving}>
+                      <PlusIcon /> Agregar Slot Vacío
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="slot-list">
+                <div className="slot-table">
+                  <div className="slot-table-header">
+                    <div className="slot-col-actions"></div>
+                    <div className="slot-col-order"></div>
+                    <div className="slot-col-name">Nombre</div>
+                    <div className="slot-col-color">Color</div>
+                    <div className="slot-col-preview">Preview</div>
+                    <div className="slot-col-delete"></div>
+                  </div>
+
                   {slots.map((slot, index) => (
-                    <div key={slot.id} className="slot-item">
-                      <div className="slot-order-btns">
+                    <div key={slot.id} className="slot-table-row">
+                      <div className="slot-col-actions">
                         <button
-                          className="slot-order-btn"
-                          onClick={() => handleMoveSlot(slot.id, 'up')}
-                          disabled={saving || index === 0}
+                          className="slot-row-btn slot-row-btn-add"
+                          onClick={() => handleAddSlot(index)}
+                          disabled={saving}
+                          title="Insertar slot después"
                         >
-                          <ChevronUpIcon />
-                        </button>
-                        <button
-                          className="slot-order-btn"
-                          onClick={() => handleMoveSlot(slot.id, 'down')}
-                          disabled={saving || index === slots.length - 1}
-                        >
-                          <ChevronDownIcon />
+                          <PlusIcon />
                         </button>
                       </div>
 
-                      {editingSlot?.id === slot.id ? (
-                        <div className="slot-edit-form">
-                          <input
-                            type="text"
-                            value={editingSlot.name}
-                            onChange={(e) => setEditingSlot({ ...editingSlot, name: e.target.value })}
-                            className="slot-input"
-                            placeholder="Nombre"
-                          />
-                          <input
-                            type="color"
-                            value={editingSlot.color}
-                            onChange={(e) => setEditingSlot({ ...editingSlot, color: e.target.value })}
-                            className="slot-color-input"
-                          />
+                      <div className="slot-col-order">
+                        <div className="slot-order-btns">
                           <button
-                            className="slot-btn slot-btn-primary slot-btn-sm"
-                            onClick={() => handleUpdateSlot(editingSlot)}
-                            disabled={saving}
+                            className="slot-order-btn"
+                            onClick={() => handleMoveSlot(slot.id, 'up')}
+                            disabled={saving || index === 0}
                           >
-                            Guardar
+                            <ChevronUpIcon />
                           </button>
                           <button
-                            className="slot-btn slot-btn-secondary slot-btn-sm"
-                            onClick={() => setEditingSlot(null)}
-                            disabled={saving}
+                            className="slot-order-btn"
+                            onClick={() => handleMoveSlot(slot.id, 'down')}
+                            disabled={saving || index === slots.length - 1}
                           >
-                            Cancelar
+                            <ChevronDownIcon />
                           </button>
                         </div>
-                      ) : (
-                        <>
-                          <div
-                            className="slot-preview"
-                            style={{ borderRightColor: slot.color }}
-                            onClick={() => setEditingSlot({ ...slot })}
-                          >
-                            {slot.name}
-                          </div>
-                          <button
-                            className="slot-icon-btn slot-icon-btn-danger"
-                            onClick={() => handleDeleteSlot(slot.id)}
-                            disabled={saving}
-                          >
-                            <TrashIcon />
-                          </button>
-                        </>
-                      )}
+                      </div>
+
+                      <div className="slot-col-name">
+                        <input
+                          type="text"
+                          value={getSlotValue(slot, 'name')}
+                          onChange={(e) => handleFieldChange(slot.id, 'name', e.target.value)}
+                          onBlur={() => handleBlur(slot, 'name')}
+                          className="slot-table-input"
+                          disabled={saving}
+                        />
+                      </div>
+
+                      <div className="slot-col-color">
+                        <input
+                          type="color"
+                          value={getSlotValue(slot, 'color')}
+                          onChange={(e) => handleFieldChange(slot.id, 'color', e.target.value)}
+                          onBlur={() => handleBlur(slot, 'color')}
+                          className="slot-table-color"
+                          disabled={saving}
+                        />
+                      </div>
+
+                      <div className="slot-col-preview">
+                        <div
+                          className="slot-preview-badge"
+                          style={{ borderRightColor: getSlotValue(slot, 'color') }}
+                        >
+                          {getSlotValue(slot, 'name')}
+                        </div>
+                      </div>
+
+                      <div className="slot-col-delete">
+                        <button
+                          className="slot-row-btn slot-row-btn-delete"
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          disabled={saving}
+                          title="Eliminar slot"
+                        >
+                          <TrashIcon />
+                        </button>
+                      </div>
                     </div>
                   ))}
-                </div>
-              )}
 
-              {showAddForm ? (
-                <form className="slot-add-form" onSubmit={handleAddSlot}>
-                  <input
-                    type="text"
-                    value={newSlot.name}
-                    onChange={(e) => setNewSlot({ ...newSlot, name: e.target.value })}
-                    className="slot-input"
-                    placeholder="Nombre del slot (ej: NM1, HD1)"
-                    autoFocus
-                  />
-                  <input
-                    type="color"
-                    value={newSlot.color}
-                    onChange={(e) => setNewSlot({ ...newSlot, color: e.target.value })}
-                    className="slot-color-input"
-                  />
-                  <button type="submit" className="slot-btn slot-btn-primary" disabled={saving || !newSlot.name.trim()}>
-                    {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : null}
-                    Agregar
-                  </button>
-                  <button
-                    type="button"
-                    className="slot-btn slot-btn-secondary"
-                    onClick={() => setShowAddForm(false)}
-                    disabled={saving}
-                  >
-                    Cancelar
-                  </button>
-                </form>
-              ) : (
-                <button
-                  className="slot-add-btn"
-                  onClick={() => setShowAddForm(true)}
-                  disabled={saving}
-                >
-                  <PlusIcon /> Agregar Slot
-                </button>
+                  <div className="slot-table-footer">
+                    <button
+                      className="slot-add-row-btn"
+                      onClick={() => handleAddSlot(slots.length - 1)}
+                      disabled={saving}
+                    >
+                      <PlusIcon /> Agregar Slot
+                    </button>
+                  </div>
+                </div>
               )}
             </>
           )}
