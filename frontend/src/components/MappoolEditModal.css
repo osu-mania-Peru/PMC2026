@@ -170,6 +170,7 @@
   justify-content: center;
   border-radius: 4px;
   transition: all 0.2s ease;
+  clip-path: none;
 }
 
 .mpm-icon-btn svg {
@@ -205,6 +206,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px;
+  clip-path: none;
 }
 
 .mpm-add-pool-btn:hover,
@@ -303,6 +305,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  clip-path: none;
 }
 
 .mpm-btn:disabled {
