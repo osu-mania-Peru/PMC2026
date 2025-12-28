@@ -14,29 +14,30 @@
 
 .slot-modal {
   background: #1a1a1a;
-  border-radius: 4px;
-  width: 100%;
-  max-width: 700px;
-  max-height: 80vh;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .slot-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid #333;
+  flex-shrink: 0;
 }
 
 .slot-modal-header h3 {
   margin: 0;
   color: #fff;
   font-family: 'Poppins', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   font-weight: 600;
 }
 
@@ -52,10 +53,10 @@
 }
 
 .slot-close-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   stroke: #666;
-  transition: stroke 0.2s ease;
+  transition: stroke 0.15s ease;
 }
 
 .slot-close-btn:hover svg {
@@ -63,7 +64,7 @@
 }
 
 .slot-modal-content {
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   flex: 1;
 }
@@ -73,7 +74,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 40px;
+  padding: 60px;
   color: #888;
 }
 
@@ -84,102 +85,90 @@
 
 .slot-empty {
   text-align: center;
-  padding: 20px;
+  padding: 40px;
   color: #888;
 }
 
 .slot-empty p {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  font-size: 1rem;
 }
 
 .slot-empty-actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-/* Table Layout */
+/* Table Layout using CSS Grid */
 .slot-table {
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
-.slot-table-header {
-  display: flex;
+.slot-table-header,
+.slot-table-row {
+  display: grid;
+  grid-template-columns: 44px 44px 1fr 70px 140px 44px;
+  gap: 12px;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #333;
-  color: #666;
+  padding: 14px 8px;
+}
+
+.slot-table-header {
+  border-bottom: 2px solid #333;
+  color: #888;
   font-size: 0.75rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .slot-table-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid #2a2a2a;
+  transition: background 0.15s ease;
 }
 
 .slot-table-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-/* Column widths */
-.slot-col-actions {
-  width: 32px;
-  flex-shrink: 0;
-}
-
-.slot-col-order {
-  width: 32px;
-  flex-shrink: 0;
-}
-
-.slot-col-name {
-  flex: 1;
-  min-width: 100px;
-}
-
-.slot-col-color {
-  width: 50px;
-  flex-shrink: 0;
-}
-
-.slot-col-preview {
-  width: 80px;
-  flex-shrink: 0;
-}
-
+/* Column styling */
+.slot-col-actions,
+.slot-col-order,
 .slot-col-delete {
-  width: 32px;
-  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.slot-col-name,
+.slot-col-color,
+.slot-col-preview {
+  min-width: 0; /* Allow shrinking */
 }
 
 /* Row buttons */
 .slot-row-btn {
-  background: transparent;
-  border: 1px solid #333;
-  border-radius: 4px;
-  width: 28px;
-  height: 28px;
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
   clip-path: none;
+  flex-shrink: 0;
 }
 
 .slot-row-btn svg {
-  width: 14px;
-  height: 14px;
-  stroke: #666;
+  width: 16px;
+  height: 16px;
+  stroke: #888;
 }
 
 .slot-row-btn:disabled {
@@ -189,7 +178,7 @@
 
 .slot-row-btn-add:hover:not(:disabled) {
   border-color: #22c55e;
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 197, 94, 0.15);
 }
 
 .slot-row-btn-add:hover:not(:disabled) svg {
@@ -198,7 +187,7 @@
 
 .slot-row-btn-delete:hover:not(:disabled) {
   border-color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.15);
 }
 
 .slot-row-btn-delete:hover:not(:disabled) svg {
@@ -213,10 +202,10 @@
 }
 
 .slot-order-btn {
-  background: transparent;
-  border: 1px solid #333;
-  border-radius: 3px;
-  padding: 1px;
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 2px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -226,14 +215,14 @@
 }
 
 .slot-order-btn svg {
-  width: 12px;
-  height: 12px;
-  stroke: #666;
+  width: 14px;
+  height: 14px;
+  stroke: #888;
 }
 
 .slot-order-btn:hover:not(:disabled) {
   border-color: #ff0844;
-  background: rgba(255, 8, 68, 0.1);
+  background: rgba(255, 8, 68, 0.15);
 }
 
 .slot-order-btn:hover:not(:disabled) svg {
@@ -249,17 +238,18 @@
 .slot-table-input {
   width: 100%;
   background: #0d0d0d;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 6px 10px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 10px 14px;
   color: #fff;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   outline: none;
   transition: border-color 0.15s ease;
+  box-sizing: border-box;
 }
 
 .slot-table-input:focus {
-  border-color: #555;
+  border-color: #666;
 }
 
 .slot-table-input:disabled {
@@ -268,12 +258,13 @@
 
 .slot-table-color {
   width: 100%;
-  height: 32px;
-  padding: 2px;
-  border: 1px solid #333;
-  border-radius: 4px;
+  height: 40px;
+  padding: 4px;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
   background: #0d0d0d;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .slot-table-color:disabled {
@@ -281,46 +272,49 @@
   cursor: not-allowed;
 }
 
-/* Preview badge */
+/* Preview badge - matching mappool table style */
 .slot-preview-badge {
   background: #fff;
   color: #000;
   font-family: 'Poppins', sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 4px 8px;
-  border-right: 8px solid #3b82f6;
-  box-shadow: 4px 0 0 0 #000;
+  padding: 8px 12px;
+  border-right: 10px solid #3b82f6;
+  box-shadow: 6px 0 0 0 #000;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-right: 6px;
 }
 
 /* Table footer */
 .slot-table-footer {
-  padding-top: 16px;
+  padding-top: 20px;
 }
 
 .slot-add-row-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  padding: 10px;
+  padding: 14px;
   background: transparent;
-  border: 1px dashed #444;
+  border: 2px dashed #3a3a3a;
   color: #888;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
-  border-radius: 4px;
+  border-radius: 8px;
   clip-path: none;
 }
 
 .slot-add-row-btn:hover:not(:disabled) {
   border-color: #22c55e;
   color: #22c55e;
+  background: rgba(34, 197, 94, 0.05);
 }
 
 .slot-add-row-btn:disabled {
@@ -329,23 +323,23 @@
 }
 
 .slot-add-row-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Buttons */
 .slot-btn {
-  padding: 8px 16px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
-  font-size: 0.875rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .slot-btn:disabled {
@@ -365,7 +359,7 @@
 .slot-btn-secondary {
   background: transparent;
   color: #888;
-  border: 1px solid #444;
+  border: 1px solid #3a3a3a;
 }
 
 .slot-btn-secondary:hover:not(:disabled) {
@@ -374,27 +368,42 @@
 }
 
 .slot-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .btn-loading-cat {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .slot-modal {
+    width: 100%;
     max-width: 100%;
-    margin: 10px;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+
+  .slot-table-header,
+  .slot-table-row {
+    grid-template-columns: 40px 40px 1fr 50px 40px;
+    gap: 8px;
+    padding: 10px 4px;
   }
 
   .slot-col-preview {
     display: none;
   }
 
-  .slot-col-name {
-    min-width: 80px;
+  .slot-row-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .slot-table-input {
+    padding: 8px 10px;
+    font-size: 0.85rem;
   }
 }
