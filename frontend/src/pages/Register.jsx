@@ -1,23 +1,26 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
+import DiscordModal from '../components/DiscordModal';
 import './Register.css';
 
 export default function Register({ user, setUser }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showDiscordModal, setShowDiscordModal] = useState(false);
 
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
   }, []);
 
-  const handleRegister = async () => {
+  const handleRegister = async (discordUsername) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await api.register();
+      const result = await api.register(discordUsername);
       setUser(result.user);
+      setShowDiscordModal(false);
       alert('¡Te has registrado exitosamente al torneo!');
     } catch (err) {
       setError(err.message);
@@ -57,6 +60,7 @@ export default function Register({ user, setUser }) {
             <h4>¡Estás registrado!</h4>
             <p>Usuario: <strong>{user.username}</strong></p>
             <p>País: <strong>{user.flag_code}</strong></p>
+            <p>Discord: <strong>@{user.discord_username || 'N/A'}</strong></p>
             <p>Número de Seed: <strong>{user.seed_number || 'Por Determinar'}</strong></p>
             <p>Registrado: <strong>{user.registered_at ? new Date(user.registered_at).toLocaleDateString('es-PE') : 'N/A'}</strong></p>
           </div>
@@ -78,9 +82,16 @@ export default function Register({ user, setUser }) {
             <p>Tu País: <strong>{user.flag_code}</strong></p>
           </div>
 
-          <button onClick={handleRegister} disabled={loading} style={{ marginTop: '1rem' }}>
-            {loading ? 'Registrando...' : 'Registrarse al Torneo'}
+          <button onClick={() => setShowDiscordModal(true)} disabled={loading} style={{ marginTop: '1rem' }}>
+            Registrarse al Torneo
           </button>
+
+          <DiscordModal
+            isOpen={showDiscordModal}
+            onClose={() => setShowDiscordModal(false)}
+            onSubmit={handleRegister}
+            loading={loading}
+          />
         </div>
       ) : (
         <div className="error">

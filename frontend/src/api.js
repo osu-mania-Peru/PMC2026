@@ -47,7 +47,10 @@ export const api = {
   // Tournament
   getTournamentStatus: () => api.fetch('/tournament/status'),
   getRegistrations: () => api.fetch('/tournament/registrations'),
-  register: () => api.fetch('/tournament/register', { method: 'POST' }),
+  register: (discordUsername) => api.fetch('/tournament/register', {
+    method: 'POST',
+    body: JSON.stringify({ discord_username: discordUsername }),
+  }),
   unregister: () => api.fetch('/tournament/register', { method: 'DELETE' }),
 
   // Brackets

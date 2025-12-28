@@ -36,6 +36,7 @@ async def get_all_users_public(db: Session = Depends(get_db)):
                 "osu_id": u.osu_id,
                 "username": u.username,
                 "flag_code": u.flag_code,
+                "discord_username": u.discord_username,
                 "is_staff": u.is_staff,
                 "is_registered": u.is_registered,
                 "seed_number": u.seed_number,

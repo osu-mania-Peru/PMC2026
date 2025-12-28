@@ -7,6 +7,7 @@ class UserResponse(BaseModel):
     osu_id: int
     username: str
     flag_code: str
+    discord_username: Optional[str] = None
     is_staff: bool
     is_registered: bool
     seed_number: Optional[int] = None

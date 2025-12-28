@@ -18,6 +18,7 @@ class User(Base):
         osu_id: osu! user ID from OAuth.
         username: osu! username.
         flag_code: ISO 3166-1 alpha-2 country code.
+        discord_username: Discord username for communication.
         is_staff: Whether user has staff privileges.
         is_registered: Whether user is registered for tournament.
         registered_at: Timestamp of tournament registration.
@@ -31,6 +32,7 @@ class User(Base):
     osu_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False, comment='osu! user ID from OAuth')
     username: Mapped[str] = mapped_column(String(100), nullable=False)
     flag_code: Mapped[str] = mapped_column(String(2), nullable=False, comment='ISO country code (e.g., PE, JP, US)')
+    discord_username: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, comment='Discord username for communication')
     is_staff: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     is_registered: Mapped[bool] = mapped_column(Boolean, default=False, comment='Registered for the tournament')
     registered_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, comment='When they registered')
