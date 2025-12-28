@@ -79,6 +79,13 @@ export const api = {
     body: JSON.stringify(events),
   }),
 
+  // News
+  getNews: () => api.fetch('/news'),
+  updateNews: (items) => api.fetch('/news', {
+    method: 'PUT',
+    body: JSON.stringify(items),
+  }),
+
   // Notifications
   getNotifications: (unreadOnly = false) =>
     api.fetch(`/notifications${unreadOnly ? '?unread_only=true' : ''}`),

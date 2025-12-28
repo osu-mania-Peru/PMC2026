@@ -4,15 +4,8 @@ import { Link } from 'react-router-dom';
 import DiscordModal from '../components/DiscordModal';
 import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
+import NewsEditModal from '../components/NewsEditModal';
 import './Home.css';
-
-const newsItems = [
-  { date: '25/12/2025', title: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.', id: 1 },
-  { date: '20/12/2025', title: 'Sed do eiusmod tempor incididunt ut labore.', id: 2 },
-  { date: '15/12/2025', title: 'Ut enim ad minim veniam quis nostrud.', id: 3 },
-  { date: '10/12/2025', title: 'Duis aute irure dolor in reprehenderit voluptate.', id: 4 },
-  { date: '05/12/2025', title: 'Excepteur sint occaecat cupidatat non proident sunt.', id: 5 },
-];
 
 export default function Home({ user, setUser }) {
   const [status, setStatus] = useState(null);
@@ -20,13 +13,17 @@ export default function Home({ user, setUser }) {
   const [showDiscordModal, setShowDiscordModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [showNewsModal, setShowNewsModal] = useState(false);
   const [timelineEvents, setTimelineEvents] = useState([]);
+  const [newsItems, setNewsItems] = useState([]);
   const [timelineSaving, setTimelineSaving] = useState(false);
+  const [newsSaving, setNewsSaving] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
     api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
+    api.getNews().then(data => setNewsItems(data.items)).catch(console.error);
   }, []);
 
   const handleSaveTimeline = async (events) => {
@@ -39,6 +36,19 @@ export default function Home({ user, setUser }) {
       console.error('Failed to save timeline:', err);
     } finally {
       setTimelineSaving(false);
+    }
+  };
+
+  const handleSaveNews = async (items) => {
+    setNewsSaving(true);
+    try {
+      const result = await api.updateNews(items);
+      setNewsItems(result.items);
+      setShowNewsModal(false);
+    } catch (err) {
+      console.error('Failed to save news:', err);
+    } finally {
+      setNewsSaving(false);
     }
   };
 
@@ -179,7 +189,17 @@ export default function Home({ user, setUser }) {
 
       {/* News Section */}
       <div className="news-section">
-        <h2 className="news-title">NOTICIAS</h2>
+        <div className="section-header">
+          <h2 className="news-title">NOTICIAS</h2>
+          {user?.is_staff && (
+            <button
+              className="news-edit-btn"
+              onClick={() => setShowNewsModal(true)}
+            >
+              Editar
+            </button>
+          )}
+        </div>
         <div className="news-list">
           {newsItems.map((item) => (
             <div key={item.id} className="news-item">
@@ -214,6 +234,14 @@ export default function Home({ user, setUser }) {
         onSave={handleSaveTimeline}
         events={timelineEvents}
         loading={timelineSaving}
+      />
+
+      <NewsEditModal
+        isOpen={showNewsModal}
+        onClose={() => setShowNewsModal(false)}
+        onSave={handleSaveNews}
+        items={newsItems}
+        loading={newsSaving}
       />
     </div>
   );

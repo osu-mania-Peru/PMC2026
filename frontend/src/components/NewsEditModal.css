@@ -1,0 +1,165 @@
+.news-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.news-modal {
+  background: #313338;
+  border-radius: 4px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.2);
+  animation: newsModalSlideIn 0.2s ease-out;
+  padding: 32px;
+}
+
+@keyframes newsModalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.news-modal-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.news-modal-header h3 {
+  margin: 0 0 8px 0;
+  color: #f2f3f5;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.news-modal-description {
+  color: #b5bac1;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.news-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.news-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.news-item-row {
+  display: flex;
+  gap: 10px;
+}
+
+.news-input {
+  background: #1e1f22;
+  border: none;
+  border-radius: 3px;
+  padding: 10px;
+  color: #dbdee1;
+  font-size: 14px;
+  outline: none;
+}
+
+.news-input::placeholder {
+  color: #87898c;
+}
+
+.news-input:focus {
+  outline: none;
+}
+
+.news-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.news-input.date-input {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.news-input.title-input {
+  flex: 1;
+}
+
+.news-modal-buttons {
+  margin-top: 8px;
+}
+
+.news-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.17s ease;
+  clip-path: none;
+}
+
+.news-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.news-btn.primary {
+  background: #5865f2;
+  color: #fff;
+}
+
+.news-btn.primary:hover:not(:disabled) {
+  background: #4752c4;
+}
+
+.news-btn.secondary {
+  background: transparent;
+  color: #00a8fc;
+  padding: 4px 0;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.news-btn.secondary:hover:not(:disabled) {
+  text-decoration: underline;
+  background: transparent;
+}
+
+@media (max-width: 480px) {
+  .news-modal {
+    max-width: 100%;
+    margin: 10px;
+    padding: 24px;
+  }
+
+  .news-item-row {
+    flex-direction: column;
+  }
+
+  .news-input.date-input {
+    width: 100%;
+  }
+}
