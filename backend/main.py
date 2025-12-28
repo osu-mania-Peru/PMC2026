@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import Config
-from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal
+from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline
 
 # Configure logging
 logging.basicConfig(
@@ -53,6 +53,7 @@ app.include_router(maps.router)
 app.include_router(matches.router)
 app.include_router(notifications.router)
 app.include_router(api_keys.router)
+app.include_router(timeline.router)
 
 # Internal routers (for inter-service communication)
 app.include_router(internal.router)

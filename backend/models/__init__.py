@@ -8,6 +8,7 @@ from models.session import Session
 from models.audit_log import AuditLog
 from models.notification import Notification
 from models.api_key import APIKey
+from models.timeline_event import TimelineEvent
 
 __all__ = [
     "Base",
@@ -20,4 +21,5 @@ __all__ = [
     "AuditLog",
     "Notification",
     "APIKey",
+    "TimelineEvent",
 ]

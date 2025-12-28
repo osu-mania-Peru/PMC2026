@@ -255,6 +255,30 @@ button.cta-button:disabled {
   flex-direction: column;
   gap: 0;
   margin-bottom: 2rem;
+  position: relative;
+}
+
+.timeline-edit-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  border: 1px solid #444;
+  color: #888;
+  padding: 0.4rem 1rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  clip-path: none;
+}
+
+.timeline-edit-btn:hover {
+  border-color: #ff0844;
+  color: #ff0844;
 }
 
 .section-header h2 {

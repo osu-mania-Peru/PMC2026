@@ -72,6 +72,13 @@ export const api = {
   // Maps
   getMaps: () => api.fetch('/maps'),
 
+  // Timeline
+  getTimeline: () => api.fetch('/timeline'),
+  updateTimeline: (events) => api.fetch('/timeline', {
+    method: 'PUT',
+    body: JSON.stringify(events),
+  }),
+
   // Notifications
   getNotifications: (unreadOnly = false) =>
     api.fetch(`/notifications${unreadOnly ? '?unread_only=true' : ''}`),

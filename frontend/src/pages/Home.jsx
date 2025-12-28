@@ -3,19 +3,8 @@ import { api } from '../api';
 import { Link } from 'react-router-dom';
 import DiscordModal from '../components/DiscordModal';
 import ConfirmModal from '../components/ConfirmModal';
+import TimelineEditModal from '../components/TimelineEditModal';
 import './Home.css';
-
-const timelineEvents = [
-  { date: '16/01 - 01/02', title: 'REGISTROS', id: 'registros' },
-  { date: '01/02 - 08/02', title: 'SCREENING', id: 'screening' },
-  { date: '08/02', title: 'QUALIFIERS SHOWCASE', id: 'showcase' },
-  { date: '13/02 - 15/02', title: 'QUALIFIERS', id: 'qualifiers' },
-  { date: '27/02 - 01/03', title: 'ROUND OF 16', id: 'ro16' },
-  { date: '06/03 - 08/03', title: 'QUARTERFINALS', id: 'quarters' },
-  { date: '13/03 - 15/03', title: 'SEMIFINALS', id: 'semis' },
-  { date: '20/03 - 22/03', title: 'FINALS', id: 'finals' },
-  { date: '27/03 - 29/03', title: 'GRANDFINALS', id: 'grandfinals' },
-];
 
 const newsItems = [
   { date: '25/12/2025', title: 'Lorem ipsum dolor sit amet consectetur adipiscing elit.', id: 1 },
@@ -30,11 +19,28 @@ export default function Home({ user, setUser }) {
   const [loading, setLoading] = useState(false);
   const [showDiscordModal, setShowDiscordModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [timelineEvents, setTimelineEvents] = useState([]);
+  const [timelineSaving, setTimelineSaving] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     api.getTournamentStatus().then(setStatus).catch(console.error);
+    api.getTimeline().then(data => setTimelineEvents(data.events)).catch(console.error);
   }, []);
+
+  const handleSaveTimeline = async (events) => {
+    setTimelineSaving(true);
+    try {
+      const result = await api.updateTimeline(events);
+      setTimelineEvents(result.events);
+      setShowTimelineModal(false);
+    } catch (err) {
+      console.error('Failed to save timeline:', err);
+    } finally {
+      setTimelineSaving(false);
+    }
+  };
 
   const handleRegister = async (discordUsername) => {
     setLoading(true);
@@ -129,10 +135,18 @@ export default function Home({ user, setUser }) {
         <div className="section-header">
           <h2>CRONOGRAMA</h2>
           <p className="section-subtitle">Cronologia del progreso del torneo actual.</p>
+          {user?.is_staff && (
+            <button
+              className="timeline-edit-btn"
+              onClick={() => setShowTimelineModal(true)}
+            >
+              Editar
+            </button>
+          )}
         </div>
         <div className="timeline-track">
           <div className="timeline-line"></div>
-          {timelineEvents.map((event, index) => (
+          {timelineEvents.map((event) => (
             <div
               key={event.id}
               className={`timeline-event ${event.id === 'registros' ? 'active' : ''}`}
@@ -192,6 +206,14 @@ export default function Home({ user, setUser }) {
         message="¿Estás seguro de que quieres cancelar tu registro del torneo?"
         loading={loading}
         error={error}
+      />
+
+      <TimelineEditModal
+        isOpen={showTimelineModal}
+        onClose={() => setShowTimelineModal(false)}
+        onSave={handleSaveTimeline}
+        events={timelineEvents}
+        loading={timelineSaving}
       />
     </div>
   );
