@@ -124,23 +124,22 @@
   border: none;
   padding: 8px;
   cursor: pointer;
-  transition: opacity 0.2s ease;
   flex-shrink: 0;
   clip-path: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.4;
-}
-
-.timeline-delete-btn:hover:not(:disabled) {
-  opacity: 1;
 }
 
 .timeline-delete-btn svg {
   width: 16px;
   height: 16px;
-  stroke: #fff;
+  stroke: #666;
+  transition: stroke 0.2s ease;
+}
+
+.timeline-delete-btn:hover:not(:disabled) svg {
+  stroke: #ff4444;
 }
 
 .timeline-delete-btn:disabled {
