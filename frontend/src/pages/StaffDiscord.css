@@ -1,0 +1,222 @@
+.staff-discord-page {
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* Header */
+.staff-discord-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.staff-discord-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.staff-discord-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.staff-discord-count {
+  background: #5865f2;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.staff-discord-badge {
+  background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+  color: #000;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+
+.staff-discord-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.staff-discord-header-icon {
+  width: 80px;
+  height: 80px;
+  color: #5865f2;
+  opacity: 0.9;
+}
+
+/* Subtitle */
+.staff-discord-subtitle {
+  color: #888;
+  font-size: 1rem;
+  margin: 0 0 1.5rem 0;
+}
+
+/* Search */
+.staff-discord-search {
+  margin-bottom: 1.5rem;
+}
+
+.staff-discord-search-input {
+  width: 100%;
+  max-width: 400px;
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.staff-discord-search-input:focus {
+  border-color: #5865f2;
+}
+
+.staff-discord-search-input::placeholder {
+  color: #666;
+}
+
+/* Grid */
+.staff-discord-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+}
+
+/* Card */
+.staff-discord-card {
+  background: #111;
+  border: 1px solid #222;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.staff-discord-card:hover {
+  background: #151515;
+  border-color: #333;
+}
+
+.staff-discord-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.staff-discord-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.staff-discord-osu-name {
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.2s ease;
+}
+
+.staff-discord-osu-name:hover {
+  color: #ff0844;
+}
+
+.staff-discord-discord-name {
+  color: #5865f2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-discord-copy {
+  background: #222;
+  border: none;
+  color: #666;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.staff-discord-copy:hover {
+  background: #5865f2;
+  color: #fff;
+}
+
+/* Empty state */
+.staff-discord-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: #666;
+  font-size: 1.1rem;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .staff-discord-page {
+    padding: 1.5rem;
+  }
+
+  .staff-discord-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .staff-discord-header-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .staff-discord-title {
+    font-size: 2rem;
+  }
+
+  .staff-discord-header-right {
+    display: none;
+  }
+
+  .staff-discord-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-discord-search-input {
+    max-width: 100%;
+  }
+}

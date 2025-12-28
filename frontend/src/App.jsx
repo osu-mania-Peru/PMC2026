@@ -13,6 +13,7 @@ import Brackets from "./pages/Brackets";
 import Matches from "./pages/Matches";
 import Players from "./pages/Players";
 import Mappool from "./pages/Mappool";
+import StaffDiscord from "./pages/StaffDiscord";
 
 // Components
 import AdminPanel from "./components/AdminPanel";
@@ -52,6 +53,11 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <NavLink to="/matches">PARTIDAS</NavLink>
             <NavLink to="/players">JUGADORES</NavLink>
             <NavLink to="/maps">MAPPOOL</NavLink>
+            {user?.is_staff && (
+              <NavLink to="/staff/discord" className="nav-staff-link">
+                DISCORD<span className="staff-badge">STAFF</span>
+              </NavLink>
+            )}
             {user ? (
               <>
                 <span className="nav-user">
@@ -129,6 +135,18 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <main className="main">
               <Mappool user={user} />
             </main>
+          }
+        />
+        <Route
+          path="/staff/discord"
+          element={
+            user?.is_staff ? (
+              <main className="main has-container">
+                <StaffDiscord />
+              </main>
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
       </Routes>

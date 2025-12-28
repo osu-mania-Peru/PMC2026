@@ -177,6 +177,16 @@ body {
   cursor: default;
 }
 
+.nav-staff-link {
+  display: flex !important;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nav-staff-link .staff-badge {
+  cursor: pointer;
+}
+
 /* Main content */
 .main {
   flex: 1;
