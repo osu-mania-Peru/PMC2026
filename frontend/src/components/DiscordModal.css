@@ -190,13 +190,12 @@
 }
 
 .discord-btn.primary {
-  background: linear-gradient(90deg, #ff2057 0%, #ff743e 50%, #e0ff00 100%);
-  color: #000;
+  background: #5865f2;
+  color: #fff;
 }
 
 .discord-btn.primary:hover:not(:disabled) {
-  background: #fff;
-  color: #000;
+  background: #4752c4;
 }
 
 @media (max-width: 480px) {
