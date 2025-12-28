@@ -3,8 +3,11 @@ Peru Mania Cup - Tournament Management System
 FastAPI Backend
 """
 import logging
-from fastapi import FastAPI
+import traceback
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import Config
 from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline, news, mappool, slot
@@ -45,6 +48,43 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Admin-Password", "X-API-Key"],
 )
+
+# Global exception handler for detailed error responses
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch all unhandled exceptions and return detailed error info."""
+    logger = logging.getLogger(__name__)
+
+    # Get full traceback
+    tb = traceback.format_exc()
+
+    # Log the error
+    logger.error(f"Unhandled exception on {request.method} {request.url.path}: {exc}")
+    logger.error(tb)
+
+    # Build detailed error response
+    error_response = {
+        "detail": str(exc),
+        "type": type(exc).__name__,
+        "path": str(request.url.path),
+        "method": request.method,
+        "traceback": tb if Config.DEBUG else None,
+        "query_params": dict(request.query_params) if request.query_params else None,
+    }
+
+    # Try to get request body for debugging (only in debug mode)
+    if Config.DEBUG:
+        try:
+            body = await request.body()
+            if body:
+                error_response["request_body"] = body.decode('utf-8')[:1000]  # Limit body size
+        except Exception:
+            pass
+
+    return JSONResponse(
+        status_code=500,
+        content=error_response
+    )
 
 # Include routers
 app.include_router(auth.router)

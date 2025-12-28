@@ -2,6 +2,25 @@
 const AUTH_URL = import.meta.env.VITE_AUTH_URL || 'https://auth.perumaniacup.info';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Custom error class with additional context
+class APIError extends Error {
+  constructor(message, details = {}) {
+    super(message);
+    this.name = 'APIError';
+    this.endpoint = details.endpoint || null;
+    this.status = details.status || null;
+    this.statusText = details.statusText || null;
+    this.responseBody = details.responseBody || null;
+  }
+}
+
+// Global error handler - can be set by ErrorProvider
+let globalErrorHandler = null;
+
+export const setGlobalErrorHandler = (handler) => {
+  globalErrorHandler = handler;
+};
+
 export const api = {
   // Auth
   login: () => {
@@ -28,17 +47,57 @@ export const api = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ detail: 'Request failed' }));
-      throw new Error(error.detail || 'Request failed');
+      if (!response.ok) {
+        const responseBody = await response.json().catch(() => ({ detail: 'Request failed' }));
+        const error = new APIError(
+          responseBody.detail || responseBody.message || `Request failed: ${response.status}`,
+          {
+            endpoint: `${options.method || 'GET'} ${endpoint}`,
+            status: response.status,
+            statusText: response.statusText,
+            responseBody,
+          }
+        );
+
+        // Call global error handler if set
+        if (globalErrorHandler) {
+          globalErrorHandler(error);
+        }
+
+        throw error;
+      }
+
+      return response.json();
+    } catch (err) {
+      // If it's already an APIError, rethrow
+      if (err instanceof APIError) {
+        throw err;
+      }
+
+      // Network or other errors
+      const error = new APIError(
+        err.message || 'Network error',
+        {
+          endpoint: `${options.method || 'GET'} ${endpoint}`,
+          status: null,
+          statusText: 'Network Error',
+          responseBody: null,
+        }
+      );
+
+      // Call global error handler if set
+      if (globalErrorHandler) {
+        globalErrorHandler(error);
+      }
+
+      throw error;
     }
-
-    return response.json();
   },
 
   // Auth endpoints
