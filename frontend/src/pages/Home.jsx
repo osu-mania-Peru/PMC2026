@@ -275,9 +275,6 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     <div className="home-page">
       {/* Video Background Section */}
       <div className={`video-section ${user ? 'logged-in' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
-        <video ref={videoRef} className="video-bg" autoPlay loop playsInline>
-          <source src="/pmcvideo.webm" type="video/webm" />
-        </video>
         <div className="video-overlay"></div>
 
         {/* Hero Section */}
