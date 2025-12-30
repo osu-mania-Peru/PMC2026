@@ -100,7 +100,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap })
                           onClick={() => onEditMap(map, pool.id)}
                           title="Editar mapa"
                         >
-                          <PencilIcon />
+                          <PencilIcon /> Editar
                         </button>
                       </td>
                     )}

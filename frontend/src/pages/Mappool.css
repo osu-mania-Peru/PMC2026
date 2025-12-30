@@ -228,30 +228,37 @@
 
 /* Actions column */
 .col-actions {
-  width: 40px;
+  width: 90px;
   padding: 0 8px !important;
 }
 
 .map-edit-icon-btn {
   background: transparent;
-  border: none;
-  padding: 6px;
+  border: 1px solid #444;
+  padding: 6px 10px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   border-radius: 4px;
   transition: all 0.2s ease;
   clip-path: none;
+  color: #888;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .map-edit-icon-btn svg {
-  stroke: #666;
+  stroke: #888;
   transition: stroke 0.2s ease;
 }
 
 .map-edit-icon-btn:hover {
   background: rgba(255, 8, 68, 0.1);
+  border-color: #ff0844;
+  color: #ff0844;
 }
 
 .map-edit-icon-btn:hover svg {
