@@ -101,6 +101,17 @@ async def delete_slot(
     return {"message": "Slot deleted"}
 
 
+@router.delete("/purge")
+async def purge_all_slots(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Delete all slots (staff only)."""
+    count = db.query(Slot).delete()
+    db.commit()
+    return {"message": f"Deleted {count} slots"}
+
+
 @router.post("/seed")
 async def seed_default_slots(
     db: Session = Depends(get_db),
