@@ -21,38 +21,54 @@ const toDisplayFormat = (inputDate) => {
   return `${day}/${month}/${year}`;
 };
 
-export default function NewsEditModal({ isOpen, onClose, onSave, items, loading, onRefresh }) {
-  const [localEdits, setLocalEdits] = useState({});
+export default function NewsEditModal({ isOpen, onClose, items, onRefresh }) {
+  const [savingId, setSavingId] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [editValues, setEditValues] = useState({});
 
   if (!isOpen) return null;
 
-  const editedItems = (items || []).map((item, index) => ({
-    ...item,
-    ...localEdits[index],
-  }));
-
-  const handleChange = (index, field, value) => {
-    setLocalEdits(prev => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        [field]: value,
-      },
-    }));
+  const getEditValue = (itemId, field) => {
+    const key = `${itemId}-${field}`;
+    if (key in editValues) return editValues[key];
+    const item = items.find(i => i.id === itemId);
+    return item ? item[field] : '';
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(editedItems.map(item => ({
-      date: item.date,
-      title: item.title,
-    })));
+  const handleChange = (itemId, field, value) => {
+    const key = `${itemId}-${field}`;
+    setEditValues(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleBlur = async (item, field) => {
+    const key = `${item.id}-${field}`;
+    const newValue = editValues[key];
+
+    // No change or no edit made
+    if (newValue === undefined || newValue === item[field]) {
+      return;
+    }
+
+    setSavingId(`${item.id}-${field}`);
+    try {
+      await api.updateNewsItem(item.id, { [field]: newValue });
+      // Clear the edit value and refresh to get updated data
+      setEditValues(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to update news item:', err);
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const handleClose = () => {
-    setLocalEdits({});
+    setEditValues({});
     onClose();
   };
 
@@ -87,32 +103,45 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
       <div className="news-modal" onClick={(e) => e.stopPropagation()}>
         <div className="news-modal-header">
           <h3>Editar Noticias</h3>
+          <span className="news-modal-hint">Los cambios se guardan automáticamente</span>
         </div>
 
-        <form onSubmit={handleSubmit} className="news-modal-content">
+        <div className="news-modal-content">
           <div className="news-items-list">
-            {editedItems.map((item, index) => (
+            {(items || []).map((item) => (
               <div key={item.id} className="news-item-row">
-                <input
-                  type="date"
-                  value={toInputFormat(item.date)}
-                  onChange={(e) => handleChange(index, 'date', toDisplayFormat(e.target.value))}
-                  className="news-input date-input"
-                  disabled={loading || deleting === item.id}
-                />
-                <input
-                  type="text"
-                  value={item.title}
-                  onChange={(e) => handleChange(index, 'title', e.target.value)}
-                  className="news-input title-input"
-                  placeholder="Título de la noticia"
-                  disabled={loading || deleting === item.id}
-                />
+                <div className="news-field-wrapper">
+                  <input
+                    type="date"
+                    value={toInputFormat(getEditValue(item.id, 'date'))}
+                    onChange={(e) => handleChange(item.id, 'date', toDisplayFormat(e.target.value))}
+                    onBlur={() => handleBlur(item, 'date')}
+                    className="news-input date-input"
+                    disabled={deleting === item.id}
+                  />
+                  {savingId === `${item.id}-date` && (
+                    <img src={catGif} alt="" className="field-saving-indicator" />
+                  )}
+                </div>
+                <div className="news-field-wrapper news-field-grow">
+                  <input
+                    type="text"
+                    value={getEditValue(item.id, 'title')}
+                    onChange={(e) => handleChange(item.id, 'title', e.target.value)}
+                    onBlur={() => handleBlur(item, 'title')}
+                    className="news-input title-input"
+                    placeholder="Título de la noticia"
+                    disabled={deleting === item.id}
+                  />
+                  {savingId === `${item.id}-title` && (
+                    <img src={catGif} alt="" className="field-saving-indicator" />
+                  )}
+                </div>
                 <button
                   type="button"
                   className="news-delete-btn"
                   onClick={() => handleDelete(item.id)}
-                  disabled={loading || deleting === item.id}
+                  disabled={deleting === item.id}
                 >
                   {deleting === item.id ? (
                     <img src={catGif} alt="" className="btn-loading-cat-small" />
@@ -131,7 +160,7 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
             type="button"
             className="news-add-btn"
             onClick={handleAdd}
-            disabled={loading || adding}
+            disabled={adding}
           >
             {adding ? (
               <><img src={catGif} alt="" className="btn-loading-cat" /> Agregando...</>
@@ -140,24 +169,14 @@ export default function NewsEditModal({ isOpen, onClose, onSave, items, loading,
 
           <div className="news-modal-buttons">
             <button
-              type="submit"
-              className="news-btn primary"
-              disabled={loading}
-            >
-              {loading ? (
-                <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
-              ) : 'Guardar Cambios'}
-            </button>
-            <button
               type="button"
               className="news-btn secondary"
               onClick={handleClose}
-              disabled={loading}
             >
-              Cancelar
+              Cerrar
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

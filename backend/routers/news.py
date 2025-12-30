@@ -104,6 +104,30 @@ async def add_news_item(
     }
 
 
+@router.patch("/{item_id}")
+async def update_news_item(
+    item_id: int,
+    data: NewsItemUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Update a single news item (staff only)."""
+    item = db.query(NewsItem).filter(NewsItem.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="News item not found")
+
+    for key, value in data.model_dump(exclude_unset=True).items():
+        setattr(item, key, value)
+
+    db.commit()
+    db.refresh(item)
+    return {
+        "id": item.id,
+        "date": item.date,
+        "title": item.title,
+    }
+
+
 @router.delete("/{item_id}")
 async def delete_news_item(
     item_id: int,

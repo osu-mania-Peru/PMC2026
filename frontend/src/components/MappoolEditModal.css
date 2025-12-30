@@ -199,6 +199,12 @@
   text-overflow: ellipsis;
 }
 
+.mpm-map-diff {
+  color: #666;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
 /* Icon Buttons */
 .mpm-icon-btn {
   background: transparent;
@@ -216,6 +222,11 @@
 .mpm-icon-btn svg {
   width: 16px;
   height: 16px;
+  stroke: #666;
+}
+
+.mpm-icon-btn:hover:not(:disabled) svg {
+  stroke: #ff0844;
 }
 
 .mpm-icon-btn-danger svg {
@@ -282,7 +293,8 @@
   gap: 16px;
 }
 
-.add-map-form {
+.add-map-form,
+.edit-map-form {
   margin: 16px;
   display: flex;
   flex-direction: column;

@@ -137,6 +137,10 @@ export const api = {
     method: 'PUT',
     body: JSON.stringify(events),
   }),
+  updateTimelineEvent: (eventId, data) => api.fetch(`/timeline/${eventId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
   addTimelineEvent: (data) => api.fetch('/timeline', {
     method: 'POST',
     body: JSON.stringify(data),
@@ -150,6 +154,10 @@ export const api = {
   updateNews: (items) => api.fetch('/news', {
     method: 'PUT',
     body: JSON.stringify(items),
+  }),
+  updateNewsItem: (itemId, data) => api.fetch(`/news/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
   }),
   addNewsItem: (data) => api.fetch('/news', {
     method: 'POST',

@@ -62,8 +62,6 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const [newsItems, setNewsItems] = useState([]);
   const [timelineLoading, setTimelineLoading] = useState(true);
   const [newsLoading, setNewsLoading] = useState(true);
-  const [timelineSaving, setTimelineSaving] = useState(false);
-  const [newsSaving, setNewsSaving] = useState(false);
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -212,32 +210,6 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     refreshTimeline();
     refreshNews();
   }, []);
-
-  const handleSaveTimeline = async (events) => {
-    setTimelineSaving(true);
-    try {
-      const result = await api.updateTimeline(events);
-      setTimelineEvents(result.events);
-      setShowTimelineModal(false);
-    } catch (err) {
-      console.error('Failed to save timeline:', err);
-    } finally {
-      setTimelineSaving(false);
-    }
-  };
-
-  const handleSaveNews = async (items) => {
-    setNewsSaving(true);
-    try {
-      const result = await api.updateNews(items);
-      setNewsItems(result.items);
-      setShowNewsModal(false);
-    } catch (err) {
-      console.error('Failed to save news:', err);
-    } finally {
-      setNewsSaving(false);
-    }
-  };
 
   const handleRegister = async (discordUsername) => {
     setLoading(true);
@@ -438,18 +410,14 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       <TimelineEditModal
         isOpen={showTimelineModal}
         onClose={() => setShowTimelineModal(false)}
-        onSave={handleSaveTimeline}
         events={timelineEvents}
-        loading={timelineSaving}
         onRefresh={refreshTimeline}
       />
 
       <NewsEditModal
         isOpen={showNewsModal}
         onClose={() => setShowNewsModal(false)}
-        onSave={handleSaveNews}
         items={newsItems}
-        loading={newsSaving}
         onRefresh={refreshNews}
       />
     </div>

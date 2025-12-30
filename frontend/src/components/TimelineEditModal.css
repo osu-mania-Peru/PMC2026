@@ -49,6 +49,13 @@
   text-transform: uppercase;
 }
 
+.timeline-modal-hint {
+  display: block;
+  color: #666;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 .timeline-modal-content {
   display: flex;
   flex-direction: column;
@@ -72,6 +79,25 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
+  position: relative;
+}
+
+.timeline-field-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-field-wrapper.timeline-field-grow {
+  flex: 1;
+}
+
+.field-saving-indicator {
+  position: absolute;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 .timeline-date-separator {
@@ -118,6 +144,7 @@
 
 .timeline-input.title-input {
   flex: 1;
+  width: 100%;
 }
 
 .timeline-delete-btn {
