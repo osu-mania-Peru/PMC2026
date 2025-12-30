@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { Check } from 'lucide-react';
+import { Check, LogOut, UserX } from 'lucide-react';
 import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
 
-export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user }) {
+export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, onLogout, loading, user }) {
   const [discordUsername, setDiscordUsername] = useState('');
   const [nationalityConfirmed, setNationalityConfirmed] = useState(false);
   const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState(null);
 
   if (!isOpen) return null;
 
   const bypassUsers = ['Shaamii', 'guden'];
   const isWhitelisted = bypassUsers.includes(user?.username);
   const isPeruvian = user?.flag_code === 'PE' || isWhitelisted;
+  const isRegistered = user?.is_registered;
 
   const validateUsername = (username) => {
     const trimmed = username.trim();
@@ -45,8 +47,97 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, loading, user 
     setDiscordUsername('');
     setNationalityConfirmed(false);
     setError('');
+    setActionLoading(null);
     onClose();
   };
+
+  const handleUnregister = async () => {
+    setActionLoading('unregister');
+    try {
+      await onUnregister();
+      handleClose();
+    } catch (err) {
+      setError(err.message || 'Error al cancelar registro');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    handleClose();
+  };
+
+  // Registered user - show account actions
+  if (isRegistered) {
+    return (
+      <div className="discord-modal-overlay" onClick={handleClose}>
+        <div className="discord-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="discord-modal-header">
+            <h3>Mi Cuenta</h3>
+            <p className="discord-modal-description">
+              Gestiona tu registro en el torneo.
+            </p>
+          </div>
+
+          <div className="discord-modal-content">
+            <div className="discord-account-info">
+              <div className="discord-account-row">
+                <span className="discord-account-label">Usuario osu!</span>
+                <span className="discord-account-value">{user?.username}</span>
+              </div>
+              <div className="discord-account-row">
+                <span className="discord-account-label">Discord</span>
+                <span className="discord-account-value">{user?.discord_username || 'No registrado'}</span>
+              </div>
+              <div className="discord-account-row">
+                <span className="discord-account-label">Estado</span>
+                <span className="discord-account-value discord-registered">
+                  <Check size={14} /> Registrado
+                </span>
+              </div>
+            </div>
+
+            {error && <div className="discord-error">{error}</div>}
+
+            <div className="discord-modal-buttons discord-action-buttons">
+              <button
+                type="button"
+                className="discord-btn danger"
+                onClick={handleUnregister}
+                disabled={actionLoading}
+              >
+                {actionLoading === 'unregister' ? (
+                  <><img src={catGif} alt="" className="btn-loading-cat" /> Cancelando...</>
+                ) : (
+                  <><UserX size={16} /> Cancelar Registro</>
+                )}
+              </button>
+              <button
+                type="button"
+                className="discord-btn secondary"
+                onClick={handleLogout}
+                disabled={actionLoading}
+              >
+                <LogOut size={16} /> Cerrar Sesión
+              </button>
+            </div>
+
+            <div className="discord-modal-buttons">
+              <button
+                type="button"
+                className="discord-btn tertiary"
+                onClick={handleClose}
+                disabled={actionLoading}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="discord-modal-overlay" onClick={handleClose}>

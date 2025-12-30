@@ -243,6 +243,11 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     }
   };
 
+  const handleLogout = () => {
+    api.logout();
+    setUser(null);
+  };
+
   return (
     <div className="home-page">
       {/* Video Background Section */}
@@ -393,6 +398,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         isOpen={showDiscordModal}
         onClose={() => setShowDiscordModal(false)}
         onSubmit={handleRegister}
+        onUnregister={handleUnregister}
+        onLogout={handleLogout}
         loading={loading}
         user={user}
       />

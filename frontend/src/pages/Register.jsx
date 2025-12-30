@@ -31,20 +31,23 @@ export default function Register({ user, setUser }) {
   };
 
   const handleUnregister = async () => {
-    if (!confirm('¿Estás seguro de que quieres cancelar tu registro?')) return;
-
     setLoading(true);
     setError(null);
     try {
       await api.unregister();
       const updatedUser = await api.getMe();
       setUser(updatedUser);
-      alert('Has cancelado tu registro del torneo exitosamente.');
     } catch (err) {
       setError(err.message);
+      throw err;
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setUser(null);
   };
 
   if (!status) return <Spinner size="large" text="Cargando estado del torneo..." />;
@@ -91,6 +94,8 @@ export default function Register({ user, setUser }) {
             isOpen={showDiscordModal}
             onClose={() => setShowDiscordModal(false)}
             onSubmit={handleRegister}
+            onUnregister={handleUnregister}
+            onLogout={handleLogout}
             loading={loading}
             user={user}
           />

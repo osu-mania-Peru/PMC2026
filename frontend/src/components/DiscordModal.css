@@ -236,3 +236,87 @@
   vertical-align: middle;
   margin-right: 4px;
 }
+
+/* Account info section */
+.discord-account-info {
+  background: #1e1f22;
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.discord-account-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.discord-account-label {
+  color: #87898c;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.discord-account-value {
+  color: #f2f3f5;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.discord-registered {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #3ba55c;
+}
+
+/* Action buttons */
+.discord-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.discord-btn.danger {
+  background: #f23f42;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.discord-btn.danger:hover:not(:disabled) {
+  background: #da373c;
+}
+
+.discord-btn.secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #4e5058;
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 16px;
+  margin-top: 0;
+}
+
+.discord-btn.secondary:hover:not(:disabled) {
+  background: #6d6f78;
+  text-decoration: none;
+}
+
+.discord-btn.tertiary {
+  background: transparent;
+  color: #b5bac1;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.discord-btn.tertiary:hover:not(:disabled) {
+  color: #f2f3f5;
+  background: transparent;
+}
