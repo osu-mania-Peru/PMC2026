@@ -226,6 +226,38 @@
   background: #111;
 }
 
+/* Actions column */
+.col-actions {
+  width: 40px;
+  padding: 0 8px !important;
+}
+
+.map-edit-icon-btn {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  clip-path: none;
+}
+
+.map-edit-icon-btn svg {
+  stroke: #666;
+  transition: stroke 0.2s ease;
+}
+
+.map-edit-icon-btn:hover {
+  background: rgba(255, 8, 68, 0.1);
+}
+
+.map-edit-icon-btn:hover svg {
+  stroke: #ff0844;
+}
+
 /* Column widths */
 .mappool-table td.col-slot {
   width: 60px;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
+import MapEditModal from '../components/MapEditModal';
 import './Mappool.css';
 
 // Icons as SVG components
@@ -35,6 +36,12 @@ const ChevronIcon = ({ isOpen }) => (
   </svg>
 );
 
+const PencilIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+  </svg>
+);
+
 // Format stage name to title case
 const formatStageName = (name) => {
   if (!name) return '';
@@ -46,7 +53,7 @@ const formatStageName = (name) => {
 };
 
 // Accordion component for each stage
-function MappoolAccordion({ pool, slots, defaultOpen = false }) {
+function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const getSlotColor = (slotName) => {
@@ -70,6 +77,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false }) {
             <table className="mappool-table">
               <thead>
                 <tr>
+                  {user?.is_staff && <th className="col-actions"></th>}
                   <th className="col-slot">Slot#</th>
                   <th className="col-banner">Banner</th>
                   <th className="col-title">Artist - Title [Difficulty]</th>
@@ -85,6 +93,17 @@ function MappoolAccordion({ pool, slots, defaultOpen = false }) {
               <tbody>
                 {pool.maps.map((map) => (
                   <tr key={map.id} className="mappool-row">
+                    {user?.is_staff && (
+                      <td className="col-actions">
+                        <button
+                          className="map-edit-icon-btn"
+                          onClick={() => onEditMap(map, pool.id)}
+                          title="Editar mapa"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </td>
+                    )}
                     <td className="col-slot">
                       <span className="slot-badge" style={{ borderRightColor: getSlotColor(map.slot) }}>{map.slot}</span>
                     </td>
@@ -148,6 +167,8 @@ export default function Mappool({ user }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMap, setEditingMap] = useState(null);
+  const [editingPoolId, setEditingPoolId] = useState(null);
 
   const fetchMappools = () => {
     const fetchFn = user?.is_staff ? api.getMappoolsAdmin : api.getMappools;
@@ -167,6 +188,23 @@ export default function Mappool({ user }) {
     fetchMappools();
     fetchSlots();
   }, [user]);
+
+  const handleEditMap = (map, poolId) => {
+    setEditingMap(map);
+    setEditingPoolId(poolId);
+  };
+
+  const handleSaveMap = async (mapId, formData) => {
+    await api.updateMappoolMap(editingPoolId, mapId, formData);
+    setEditingMap(null);
+    setEditingPoolId(null);
+    fetchMappools();
+  };
+
+  const handleCloseMapEdit = () => {
+    setEditingMap(null);
+    setEditingPoolId(null);
+  };
 
   if (loading) {
     return (
@@ -225,6 +263,8 @@ export default function Mappool({ user }) {
               pool={pool}
               slots={slots}
               defaultOpen={index === 0}
+              user={user}
+              onEditMap={handleEditMap}
             />
           ))
         )}
@@ -236,6 +276,15 @@ export default function Mappool({ user }) {
         onClose={() => setShowEditModal(false)}
         pools={data.pools}
         onRefresh={fetchMappools}
+      />
+
+      {/* Map Edit Modal */}
+      <MapEditModal
+        isOpen={!!editingMap}
+        map={editingMap}
+        onSave={handleSaveMap}
+        onClose={handleCloseMapEdit}
+        slots={slots}
       />
     </div>
   );

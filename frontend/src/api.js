@@ -130,6 +130,10 @@ export const api = {
 
   // Maps
   getMaps: () => api.fetch('/maps'),
+  updateMap: (mapId, data) => api.fetch(`/maps/${mapId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
 
   // Timeline
   getTimeline: () => api.fetch('/timeline'),
