@@ -127,6 +127,8 @@ export const api = {
   // Users
   getRegisteredPlayers: () => api.fetch('/users/registered'),
   getAllUsers: () => api.fetch('/users/all'),
+  adminUnregisterUser: (userId) => api.fetch(`/users/${userId}/registration`, { method: 'DELETE' }),
+  adminDeleteUser: (userId) => api.fetch(`/users/${userId}`, { method: 'DELETE' }),
 
   // Maps
   getMaps: () => api.fetch('/maps'),

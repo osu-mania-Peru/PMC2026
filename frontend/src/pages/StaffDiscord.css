@@ -158,7 +158,26 @@
   text-overflow: ellipsis;
 }
 
-.staff-discord-copy {
+/* Registered badge */
+.staff-discord-registered-badge {
+  background: #3ba55c;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+/* Actions */
+.staff-discord-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.staff-discord-action-btn {
   background: #222;
   border: none;
   color: #666;
@@ -169,11 +188,33 @@
   align-items: center;
   justify-content: center;
   clip-path: none;
+  border-radius: 4px;
 }
 
-.staff-discord-copy:hover {
+.staff-discord-action-btn:hover {
   background: #5865f2;
   color: #fff;
+}
+
+.staff-discord-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.staff-discord-action-warning:hover {
+  background: #f0a020;
+  color: #fff;
+}
+
+.staff-discord-action-danger:hover {
+  background: #f23f42;
+  color: #fff;
+}
+
+.btn-loading-cat-small {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
 }
 
 /* Empty state */

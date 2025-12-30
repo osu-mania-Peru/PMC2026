@@ -1,21 +1,53 @@
 import { useEffect, useState } from 'react';
-import { MessageCircle, Copy } from 'lucide-react';
+import { Copy, UserX, Trash2 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
+import catGif from '../assets/cat.gif';
 import './StaffDiscord.css';
 
 export default function StaffDiscord() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [actionLoading, setActionLoading] = useState(null);
 
-  useEffect(() => {
+  const fetchUsers = () => {
     api.getAllUsers()
       .then(data => setPlayers(data.users))
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchUsers();
   }, []);
+
+  const handleUnregister = async (userId, username) => {
+    if (!confirm(`¿Cancelar registro de ${username}?`)) return;
+    setActionLoading(`unreg-${userId}`);
+    try {
+      await api.adminUnregisterUser(userId);
+      fetchUsers();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (userId, username) => {
+    if (!confirm(`¿Eliminar usuario ${username}? Esta acción no se puede deshacer.`)) return;
+    setActionLoading(`del-${userId}`);
+    try {
+      await api.adminDeleteUser(userId);
+      fetchUsers();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   if (loading) return <Spinner size="large" text="Cargando usuarios..." />;
 
@@ -76,16 +108,47 @@ export default function StaffDiscord() {
                 <span className="staff-discord-discord-name">
                   @{player.discord_username || 'No registrado'}
                 </span>
+                {player.is_registered && (
+                  <span className="staff-discord-registered-badge">Registrado</span>
+                )}
               </div>
-              {player.discord_username && (
+              <div className="staff-discord-actions">
+                {player.discord_username && (
+                  <button
+                    className="staff-discord-action-btn"
+                    onClick={() => navigator.clipboard.writeText(player.discord_username)}
+                    title="Copiar Discord"
+                  >
+                    <Copy size={16} />
+                  </button>
+                )}
+                {player.is_registered && (
+                  <button
+                    className="staff-discord-action-btn staff-discord-action-warning"
+                    onClick={() => handleUnregister(player.id, player.username)}
+                    disabled={actionLoading === `unreg-${player.id}`}
+                    title="Cancelar registro"
+                  >
+                    {actionLoading === `unreg-${player.id}` ? (
+                      <img src={catGif} alt="" className="btn-loading-cat-small" />
+                    ) : (
+                      <UserX size={16} />
+                    )}
+                  </button>
+                )}
                 <button
-                  className="staff-discord-copy"
-                  onClick={() => navigator.clipboard.writeText(player.discord_username)}
-                  title="Copiar Discord"
+                  className="staff-discord-action-btn staff-discord-action-danger"
+                  onClick={() => handleDelete(player.id, player.username)}
+                  disabled={actionLoading === `del-${player.id}`}
+                  title="Eliminar usuario"
                 >
-                  <Copy size={16} />
+                  {actionLoading === `del-${player.id}` ? (
+                    <img src={catGif} alt="" className="btn-loading-cat-small" />
+                  ) : (
+                    <Trash2 size={16} />
+                  )}
                 </button>
-              )}
+              </div>
             </div>
           ))}
         </div>

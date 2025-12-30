@@ -85,3 +85,44 @@ async def update_user_staff(
     db.commit()
     db.refresh(user)
     return user
+
+
+@router.delete("/{user_id}/registration")
+async def admin_unregister_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Cancelar registro de un usuario del torneo (solo staff)"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.is_registered:
+        raise HTTPException(status_code=400, detail="User is not registered")
+
+    user.is_registered = False
+    user.registered_at = None
+    user.discord_username = None
+    db.commit()
+    return {"message": f"User {user.username} unregistered successfully"}
+
+
+@router.delete("/{user_id}")
+async def admin_delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Eliminar un usuario completamente (solo staff)"""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == current_user.id:
+        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    username = user.username
+    db.delete(user)
+    db.commit()
+    return {"message": f"User {username} deleted successfully"}
