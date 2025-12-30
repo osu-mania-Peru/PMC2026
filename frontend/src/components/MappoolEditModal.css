@@ -293,8 +293,7 @@
   gap: 16px;
 }
 
-.add-map-form,
-.edit-map-form {
+.add-map-form {
   margin: 16px;
   display: flex;
   flex-direction: column;
