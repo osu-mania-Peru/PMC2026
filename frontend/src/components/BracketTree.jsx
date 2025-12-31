@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { Bracket } from 'react-tournament-bracket';
+import { Pencil } from 'lucide-react';
 import Spinner from './Spinner';
 import './BracketTree.css';
 
 // Custom game component matching the design
-function CustomGame({ game, x, y, homeOnTop }) {
+function CustomGame({ game, x, y, homeOnTop, onEditMatch, isStaff }) {
   const home = game.sides?.home;
   const visitor = game.sides?.visitor;
   const homeTeam = home?.team;
@@ -19,10 +20,24 @@ function CustomGame({ game, x, y, homeOnTop }) {
   const width = 310;
   const height = 160;
 
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    if (onEditMatch && game._matchData) {
+      onEditMatch(game._matchData);
+    }
+  };
+
   return (
     <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: 'visible' }}>
       <div xmlns="http://www.w3.org/1999/xhtml" className="custom-match">
-        <div className="bracket-date">{game.scheduled ? new Date(game.scheduled).toLocaleDateString('es-PE') : 'TBD'}</div>
+        <div className="bracket-date">
+          {game.scheduled ? new Date(game.scheduled).toLocaleDateString('es-PE') : 'TBD'}
+          {isStaff && game._matchData && (
+            <button className="bracket-edit-btn" onClick={handleEditClick} title="Editar partida">
+              <Pencil size={12} />
+            </button>
+          )}
+        </div>
         <div className="bracket-player-row">
           <span className="bracket-seed">TBD</span>
           <span className="bracket-player-name">{homeTeam?.name || 'TBD'}</span>
@@ -39,7 +54,7 @@ function CustomGame({ game, x, y, homeOnTop }) {
   );
 }
 
-export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false }) {
+export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false, user, onEditMatch }) {
   const [data, setData] = useState(() => {
     if (!bracketId) {
       return { bracket: defaultBracket, matches: [] };
@@ -156,7 +171,8 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
           },
           _round: round,
           _position: m,
-          _winnerId: apiMatch?.winner_id
+          _winnerId: apiMatch?.winner_id,
+          _matchData: apiMatch || null
         });
         matchIndex++;
       }
@@ -209,12 +225,25 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   // For single match (like Grand Finals), render a simple view
   if (bracketSize <= 2) {
+    const handleSingleMatchEdit = () => {
+      if (onEditMatch && finalGame._matchData) {
+        onEditMatch(finalGame._matchData);
+      }
+    };
+
     return (
       <div className="bracket-tree" ref={containerRef}>
         <div className="bracket-section">
           <div className="single-match-view">
             <div className="styled-match single">
-              <div className="match-round-text">{finalGame.name}</div>
+              <div className="match-round-text">
+                {finalGame.name}
+                {user?.is_staff && finalGame._matchData && (
+                  <button className="bracket-edit-btn" onClick={handleSingleMatchEdit} title="Editar partida">
+                    <Pencil size={12} />
+                  </button>
+                )}
+              </div>
               <div className={`match-team ${finalGame._winnerId === finalGame.sides.home.team?.id ? 'winner' : ''}`}>
                 <span className="team-name">{finalGame.sides.home.team?.name || 'TBD'}</span>
                 <span className="team-score">{finalGame.sides.home.score?.score ?? ''}</span>
@@ -230,12 +259,17 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     );
   }
 
+  // Wrapper component to pass additional props to CustomGame
+  const GameWithProps = (props) => (
+    <CustomGame {...props} onEditMatch={onEditMatch} isStaff={user?.is_staff} />
+  );
+
   return (
     <div className="bracket-tree" ref={containerRef}>
       <div className="bracket-section">
         <Bracket
           game={finalGame}
-          GameComponent={CustomGame}
+          GameComponent={GameWithProps}
           gameDimensions={{ width: 310, height: 160 }}
           roundSeparatorWidth={80}
           svgPadding={30}

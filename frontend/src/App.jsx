@@ -109,7 +109,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/brackets/:bracketType"
           element={
             <main className="main">
-              <Brackets />
+              <Brackets user={user} />
             </main>
           }
         />

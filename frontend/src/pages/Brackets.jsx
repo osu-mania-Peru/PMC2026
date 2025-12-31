@@ -2,21 +2,46 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import BracketTree from '../components/BracketTree';
+import MatchEditModal from '../components/MatchEditModal';
 import Spinner from '../components/Spinner';
 import './Brackets.css'
 
-export default function Brackets() {
+export default function Brackets({ user }) {
   const { bracketType } = useParams();
   const navigate = useNavigate();
   const [brackets, setBrackets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingMatch, setEditingMatch] = useState(null);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     api.getBrackets()
       .then(data => setBrackets(data.brackets))
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+
+    // Load users for staff modal
+    if (user?.is_staff) {
+      api.getAllUsers()
+        .then(data => setUsers(data.users || []))
+        .catch(console.error);
+    }
+  }, [user?.is_staff]);
+
+  const handleEditMatch = (match) => {
+    setEditingMatch(match);
+  };
+
+  const handleSaveMatch = async (matchId, data) => {
+    await api.updateMatch(matchId, data);
+    // Refresh brackets data
+    const bracketsData = await api.getBrackets();
+    setBrackets(bracketsData.brackets);
+  };
+
+  const handleCloseModal = () => {
+    setEditingMatch(null);
+  };
 
   // Find brackets by type
   const winnerBracket = brackets.find(b => b.bracket_type === 'winner');
@@ -91,9 +116,20 @@ export default function Brackets() {
             api={api}
             defaultBracket={currentBracket.default}
             hideTitle
+            user={user}
+            onEditMatch={handleEditMatch}
           />
         </div>
       )}
+
+      {/* Match Edit Modal for Staff */}
+      <MatchEditModal
+        isOpen={!!editingMatch}
+        match={editingMatch}
+        users={users}
+        onSave={handleSaveMatch}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }

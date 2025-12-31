@@ -30,6 +30,20 @@ class ScoreUpdate(BaseModel):
     winner_id: int
 
 
+class MatchUpdate(BaseModel):
+    """Schema for updating match details (staff only)."""
+    player1_id: Optional[int] = None
+    player2_id: Optional[int] = None
+    player1_score: Optional[int] = None
+    player2_score: Optional[int] = None
+    winner_id: Optional[int] = None
+    scheduled_time: Optional[datetime] = None
+    match_status: Optional[str] = None
+    round_name: Optional[str] = None
+    forfeit_reason: Optional[str] = None
+    no_show_player_id: Optional[int] = None
+
+
 @router.get("")
 async def get_matches(
     bracket_id: Optional[int] = Query(None),
@@ -68,6 +82,56 @@ async def get_match(match_id: int, db: Session = Depends(get_db)):
     match = db.query(Match).filter(Match.id == match_id).first()
     if not match:
         raise HTTPException(status_code=404, detail="Match not found")
+    return match
+
+
+@router.put("/{match_id}")
+async def update_match(
+    match_id: int,
+    data: MatchUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """
+    Update match details (staff only).
+
+    Allows editing players, scores, status, scheduling, and other match fields.
+    """
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    # Validate match_status if provided
+    valid_statuses = {'scheduled', 'in_progress', 'completed', 'cancelled', 'forfeit'}
+    if data.match_status and data.match_status not in valid_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid match_status. Must be one of: {', '.join(valid_statuses)}"
+        )
+
+    # Validate player IDs if provided
+    if data.player1_id:
+        player1 = db.query(User).filter(User.id == data.player1_id).first()
+        if not player1:
+            raise HTTPException(status_code=400, detail="Player 1 not found")
+    if data.player2_id:
+        player2 = db.query(User).filter(User.id == data.player2_id).first()
+        if not player2:
+            raise HTTPException(status_code=400, detail="Player 2 not found")
+
+    # Update only provided fields
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(match, key, value)
+
+    # Auto-set is_completed if status is completed
+    if data.match_status == 'completed':
+        match.is_completed = True
+    elif data.match_status in {'scheduled', 'in_progress'}:
+        match.is_completed = False
+
+    db.commit()
+    db.refresh(match)
     return match
 
 

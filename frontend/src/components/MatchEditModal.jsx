@@ -1,0 +1,295 @@
+import { useState, useEffect } from 'react';
+import catGif from '../assets/cat.gif';
+import './MatchEditModal.css';
+
+// SVG Icons
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
+
+const MATCH_STATUSES = [
+  { value: 'scheduled', label: 'Programado' },
+  { value: 'in_progress', label: 'En Progreso' },
+  { value: 'completed', label: 'Completado' },
+  { value: 'cancelled', label: 'Cancelado' },
+  { value: 'forfeit', label: 'Forfeit' },
+];
+
+export default function MatchEditModal({ isOpen, match, users, onSave, onClose }) {
+  const [formData, setFormData] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Initialize form data when match changes
+  useEffect(() => {
+    if (isOpen && match) {
+      setFormData({
+        player1_id: match.player1_id,
+        player2_id: match.player2_id,
+        player1_score: match.player1_score ?? '',
+        player2_score: match.player2_score ?? '',
+        winner_id: match.winner_id ?? '',
+        match_status: match.match_status || 'scheduled',
+        scheduled_time: match.scheduled_time ? formatDatetimeLocal(match.scheduled_time) : '',
+        round_name: match.round_name || '',
+        forfeit_reason: match.forfeit_reason || '',
+      });
+      setError(null);
+    }
+  }, [isOpen, match]);
+
+  if (!isOpen || !match || !formData) return null;
+
+  function formatDatetimeLocal(isoString) {
+    const date = new Date(isoString);
+    // Format as YYYY-MM-DDTHH:MM for datetime-local input
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setError(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    try {
+      // Build update payload with only changed/valid fields
+      const payload = {};
+
+      if (formData.player1_id) payload.player1_id = parseInt(formData.player1_id);
+      if (formData.player2_id) payload.player2_id = parseInt(formData.player2_id);
+      if (formData.player1_score !== '' && formData.player1_score !== null) {
+        payload.player1_score = parseInt(formData.player1_score);
+      }
+      if (formData.player2_score !== '' && formData.player2_score !== null) {
+        payload.player2_score = parseInt(formData.player2_score);
+      }
+      if (formData.winner_id) payload.winner_id = parseInt(formData.winner_id);
+      if (formData.match_status) payload.match_status = formData.match_status;
+      if (formData.scheduled_time) {
+        payload.scheduled_time = new Date(formData.scheduled_time).toISOString();
+      }
+      if (formData.round_name) payload.round_name = formData.round_name;
+      if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
+
+      await onSave(match.id, payload);
+      onClose();
+    } catch (err) {
+      setError(err.message || 'Error al guardar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClose = () => {
+    setFormData(null);
+    setError(null);
+    onClose();
+  };
+
+  // Get player name by ID
+  const getPlayerName = (playerId) => {
+    if (!playerId) return 'TBD';
+    const user = users?.find(u => u.id === playerId);
+    return user?.osu_username || user?.discord_username || `ID: ${playerId}`;
+  };
+
+  // Filter registered users for player dropdowns
+  const registeredUsers = users?.filter(u => u.is_registered) || [];
+
+  return (
+    <div className="match-edit-modal-overlay" onClick={handleClose}>
+      <div className="match-edit-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="match-edit-modal-header">
+          <h3>Editar Partida #{match.id}</h3>
+          <button className="match-edit-close-btn" onClick={handleClose}>
+            <CloseIcon />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="match-edit-modal-content">
+          {/* Match Info */}
+          <div className="match-edit-info">
+            <span className="match-edit-round">{match.round_name || 'Round'}</span>
+            <span className="match-edit-bracket">Bracket ID: {match.bracket_id}</span>
+          </div>
+
+          {/* Players Row */}
+          <div className="match-edit-row">
+            <div className="match-edit-field">
+              <label className="match-edit-label">Jugador 1</label>
+              <select
+                value={formData.player1_id || ''}
+                onChange={(e) => handleChange('player1_id', e.target.value)}
+                className="match-edit-input"
+                disabled={saving}
+              >
+                <option value="">-- Seleccionar --</option>
+                {registeredUsers.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.osu_username || user.discord_username}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="match-edit-field">
+              <label className="match-edit-label">Jugador 2</label>
+              <select
+                value={formData.player2_id || ''}
+                onChange={(e) => handleChange('player2_id', e.target.value)}
+                className="match-edit-input"
+                disabled={saving}
+              >
+                <option value="">-- Seleccionar --</option>
+                {registeredUsers.map(user => (
+                  <option key={user.id} value={user.id}>
+                    {user.osu_username || user.discord_username}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Scores Row */}
+          <div className="match-edit-row">
+            <div className="match-edit-field">
+              <label className="match-edit-label">Score P1</label>
+              <input
+                type="number"
+                min="0"
+                value={formData.player1_score}
+                onChange={(e) => handleChange('player1_score', e.target.value)}
+                className="match-edit-input"
+                placeholder="0"
+                disabled={saving}
+              />
+            </div>
+            <div className="match-edit-field">
+              <label className="match-edit-label">Score P2</label>
+              <input
+                type="number"
+                min="0"
+                value={formData.player2_score}
+                onChange={(e) => handleChange('player2_score', e.target.value)}
+                className="match-edit-input"
+                placeholder="0"
+                disabled={saving}
+              />
+            </div>
+          </div>
+
+          {/* Winner & Status Row */}
+          <div className="match-edit-row">
+            <div className="match-edit-field">
+              <label className="match-edit-label">Ganador</label>
+              <select
+                value={formData.winner_id || ''}
+                onChange={(e) => handleChange('winner_id', e.target.value)}
+                className="match-edit-input"
+                disabled={saving}
+              >
+                <option value="">-- Sin ganador --</option>
+                {formData.player1_id && (
+                  <option value={formData.player1_id}>
+                    {getPlayerName(parseInt(formData.player1_id))}
+                  </option>
+                )}
+                {formData.player2_id && (
+                  <option value={formData.player2_id}>
+                    {getPlayerName(parseInt(formData.player2_id))}
+                  </option>
+                )}
+              </select>
+            </div>
+            <div className="match-edit-field">
+              <label className="match-edit-label">Estado</label>
+              <select
+                value={formData.match_status}
+                onChange={(e) => handleChange('match_status', e.target.value)}
+                className="match-edit-input"
+                disabled={saving}
+              >
+                {MATCH_STATUSES.map(status => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Schedule & Round Row */}
+          <div className="match-edit-row">
+            <div className="match-edit-field">
+              <label className="match-edit-label">Fecha/Hora</label>
+              <input
+                type="datetime-local"
+                value={formData.scheduled_time}
+                onChange={(e) => handleChange('scheduled_time', e.target.value)}
+                className="match-edit-input"
+                disabled={saving}
+              />
+            </div>
+            <div className="match-edit-field">
+              <label className="match-edit-label">Ronda</label>
+              <input
+                type="text"
+                value={formData.round_name}
+                onChange={(e) => handleChange('round_name', e.target.value)}
+                className="match-edit-input"
+                placeholder="Quarterfinals"
+                disabled={saving}
+              />
+            </div>
+          </div>
+
+          {/* Forfeit Reason (shown only for forfeit/cancelled status) */}
+          {(formData.match_status === 'forfeit' || formData.match_status === 'cancelled') && (
+            <div className="match-edit-row">
+              <div className="match-edit-field match-edit-field-full">
+                <label className="match-edit-label">Motivo de Forfeit/Cancelación</label>
+                <input
+                  type="text"
+                  value={formData.forfeit_reason}
+                  onChange={(e) => handleChange('forfeit_reason', e.target.value)}
+                  className="match-edit-input"
+                  placeholder="Razón..."
+                  disabled={saving}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="match-edit-error">{error}</div>
+          )}
+
+          {/* Actions */}
+          <div className="match-edit-actions">
+            <button type="submit" className="match-edit-btn match-edit-btn-primary" disabled={saving}>
+              {saving ? (
+                <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
+              ) : 'Guardar Cambios'}
+            </button>
+            <button type="button" className="match-edit-btn match-edit-btn-secondary" onClick={handleClose} disabled={saving}>
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
