@@ -18,17 +18,22 @@ const MATCH_STATUSES = [
   { value: 'forfeit', label: 'Forfeit' },
 ];
 
-export default function MatchEditModal({ isOpen, match, users, onSave, onClose }) {
+export default function MatchEditModal({ isOpen, match, users, maps, onSave, onCreate, onClose }) {
   const [formData, setFormData] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  // Determine if we're in create mode (no match.id means creating new)
+  const isCreateMode = match && !match.id;
 
   // Initialize form data when match changes
   useEffect(() => {
     if (isOpen && match) {
       setFormData({
-        player1_id: match.player1_id,
-        player2_id: match.player2_id,
+        bracket_id: match.bracket_id,
+        player1_id: match.player1_id || '',
+        player2_id: match.player2_id || '',
+        map_id: match.map_id || '',
         player1_score: match.player1_score ?? '',
         player2_score: match.player2_score ?? '',
         winner_id: match.winner_id ?? '',
@@ -65,26 +70,48 @@ export default function MatchEditModal({ isOpen, match, users, onSave, onClose }
     setError(null);
 
     try {
-      // Build update payload with only changed/valid fields
-      const payload = {};
+      if (isCreateMode) {
+        // Validate required fields for creation
+        if (!formData.player1_id || !formData.player2_id) {
+          throw new Error('Debes seleccionar ambos jugadores');
+        }
+        if (!formData.map_id) {
+          throw new Error('Debes seleccionar un mapa');
+        }
 
-      if (formData.player1_id) payload.player1_id = parseInt(formData.player1_id);
-      if (formData.player2_id) payload.player2_id = parseInt(formData.player2_id);
-      if (formData.player1_score !== '' && formData.player1_score !== null) {
-        payload.player1_score = parseInt(formData.player1_score);
-      }
-      if (formData.player2_score !== '' && formData.player2_score !== null) {
-        payload.player2_score = parseInt(formData.player2_score);
-      }
-      if (formData.winner_id) payload.winner_id = parseInt(formData.winner_id);
-      if (formData.match_status) payload.match_status = formData.match_status;
-      if (formData.scheduled_time) {
-        payload.scheduled_time = new Date(formData.scheduled_time).toISOString();
-      }
-      if (formData.round_name) payload.round_name = formData.round_name;
-      if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
+        const createPayload = {
+          bracket_id: formData.bracket_id,
+          player1_id: parseInt(formData.player1_id),
+          player2_id: parseInt(formData.player2_id),
+          map_id: parseInt(formData.map_id),
+        };
+        if (formData.scheduled_time) {
+          createPayload.scheduled_time = new Date(formData.scheduled_time).toISOString();
+        }
 
-      await onSave(match.id, payload);
+        await onCreate(createPayload);
+      } else {
+        // Build update payload with only changed/valid fields
+        const payload = {};
+
+        if (formData.player1_id) payload.player1_id = parseInt(formData.player1_id);
+        if (formData.player2_id) payload.player2_id = parseInt(formData.player2_id);
+        if (formData.player1_score !== '' && formData.player1_score !== null) {
+          payload.player1_score = parseInt(formData.player1_score);
+        }
+        if (formData.player2_score !== '' && formData.player2_score !== null) {
+          payload.player2_score = parseInt(formData.player2_score);
+        }
+        if (formData.winner_id) payload.winner_id = parseInt(formData.winner_id);
+        if (formData.match_status) payload.match_status = formData.match_status;
+        if (formData.scheduled_time) {
+          payload.scheduled_time = new Date(formData.scheduled_time).toISOString();
+        }
+        if (formData.round_name) payload.round_name = formData.round_name;
+        if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
+
+        await onSave(match.id, payload);
+      }
       onClose();
     } catch (err) {
       setError(err.message || 'Error al guardar');
@@ -113,7 +140,7 @@ export default function MatchEditModal({ isOpen, match, users, onSave, onClose }
     <div className="match-edit-modal-overlay" onClick={handleClose}>
       <div className="match-edit-modal" onClick={(e) => e.stopPropagation()}>
         <div className="match-edit-modal-header">
-          <h3>Editar Partida #{match.id}</h3>
+          <h3>{isCreateMode ? 'Crear Partida' : `Editar Partida #${match.id}`}</h3>
           <button className="match-edit-close-btn" onClick={handleClose}>
             <CloseIcon />
           </button>
@@ -125,6 +152,29 @@ export default function MatchEditModal({ isOpen, match, users, onSave, onClose }
             <span className="match-edit-round">{match.round_name || 'Round'}</span>
             <span className="match-edit-bracket">Bracket ID: {match.bracket_id}</span>
           </div>
+
+          {/* Map Selector (required for create mode) */}
+          {isCreateMode && (
+            <div className="match-edit-row">
+              <div className="match-edit-field match-edit-field-full">
+                <label className="match-edit-label">Mapa *</label>
+                <select
+                  value={formData.map_id || ''}
+                  onChange={(e) => handleChange('map_id', e.target.value)}
+                  className="match-edit-input"
+                  disabled={saving}
+                  required
+                >
+                  <option value="">-- Seleccionar Mapa --</option>
+                  {maps?.map(map => (
+                    <option key={map.id} value={map.id}>
+                      {map.artist} - {map.title} [{map.difficulty_name}]
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Players Row */}
           <div className="match-edit-row">
@@ -281,8 +331,8 @@ export default function MatchEditModal({ isOpen, match, users, onSave, onClose }
           <div className="match-edit-actions">
             <button type="submit" className="match-edit-btn match-edit-btn-primary" disabled={saving}>
               {saving ? (
-                <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
-              ) : 'Guardar Cambios'}
+                <><img src={catGif} alt="" className="btn-loading-cat" /> {isCreateMode ? 'Creando...' : 'Guardando...'}</>
+              ) : (isCreateMode ? 'Crear Partida' : 'Guardar Cambios')}
             </button>
             <button type="button" className="match-edit-btn match-edit-btn-secondary" onClick={handleClose} disabled={saving}>
               Cancelar

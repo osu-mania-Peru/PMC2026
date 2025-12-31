@@ -123,6 +123,10 @@ export const api = {
     return api.fetch(`/matches${query ? '?' + query : ''}`);
   },
   getMatch: (id) => api.fetch(`/matches/${id}`),
+  createMatch: (data) => api.fetch('/matches', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
   updateMatch: (id, data) => api.fetch(`/matches/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),

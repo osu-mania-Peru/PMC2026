@@ -13,6 +13,7 @@ export default function Brackets({ user }) {
   const [loading, setLoading] = useState(true);
   const [editingMatch, setEditingMatch] = useState(null);
   const [users, setUsers] = useState([]);
+  const [maps, setMaps] = useState([]);
 
   useEffect(() => {
     api.getBrackets()
@@ -20,10 +21,13 @@ export default function Brackets({ user }) {
       .catch(console.error)
       .finally(() => setLoading(false));
 
-    // Load users for staff modal
+    // Load users and maps for staff modal
     if (user?.is_staff) {
       api.getAllUsers()
         .then(data => setUsers(data.users || []))
+        .catch(console.error);
+      api.getMaps()
+        .then(data => setMaps(data.maps || []))
         .catch(console.error);
     }
   }, [user?.is_staff]);
@@ -32,8 +36,20 @@ export default function Brackets({ user }) {
     setEditingMatch(match);
   };
 
+  const handleCreateMatch = (matchTemplate) => {
+    // matchTemplate has bracket_id, round_name, and _slotInfo
+    setEditingMatch(matchTemplate);
+  };
+
   const handleSaveMatch = async (matchId, data) => {
     await api.updateMatch(matchId, data);
+    // Refresh brackets data
+    const bracketsData = await api.getBrackets();
+    setBrackets(bracketsData.brackets);
+  };
+
+  const handleCreateNewMatch = async (data) => {
+    await api.createMatch(data);
     // Refresh brackets data
     const bracketsData = await api.getBrackets();
     setBrackets(bracketsData.brackets);
@@ -118,6 +134,7 @@ export default function Brackets({ user }) {
             hideTitle
             user={user}
             onEditMatch={handleEditMatch}
+            onCreateMatch={handleCreateMatch}
           />
         </div>
       )}
@@ -127,7 +144,9 @@ export default function Brackets({ user }) {
         isOpen={!!editingMatch}
         match={editingMatch}
         users={users}
+        maps={maps}
         onSave={handleSaveMatch}
+        onCreate={handleCreateNewMatch}
         onClose={handleCloseModal}
       />
     </div>

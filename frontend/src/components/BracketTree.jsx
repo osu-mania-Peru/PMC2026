@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { Bracket } from 'react-tournament-bracket';
-import { Pencil } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import Spinner from './Spinner';
 import './BracketTree.css';
 
 // Custom game component matching the design
-function CustomGame({ game, x, y, homeOnTop, onEditMatch, isStaff }) {
+function CustomGame({ game, x, y, homeOnTop, onEditMatch, onCreateMatch, isStaff, bracketId }) {
   const home = game.sides?.home;
   const visitor = game.sides?.visitor;
   const homeTeam = home?.team;
@@ -27,6 +27,17 @@ function CustomGame({ game, x, y, homeOnTop, onEditMatch, isStaff }) {
     }
   };
 
+  const handleCreateClick = (e) => {
+    e.stopPropagation();
+    if (onCreateMatch) {
+      onCreateMatch({
+        bracket_id: bracketId,
+        round_name: game.name,
+        _slotInfo: { round: game._round, position: game._position }
+      });
+    }
+  };
+
   return (
     <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: 'visible' }}>
       <div xmlns="http://www.w3.org/1999/xhtml" className="custom-match">
@@ -35,6 +46,11 @@ function CustomGame({ game, x, y, homeOnTop, onEditMatch, isStaff }) {
           {isStaff && game._matchData && (
             <button className="bracket-edit-btn" onClick={handleEditClick} title="Editar partida">
               <Pencil size={12} />
+            </button>
+          )}
+          {isStaff && !game._matchData && bracketId && (
+            <button className="bracket-edit-btn bracket-add-btn" onClick={handleCreateClick} title="Crear partida">
+              <Plus size={14} />
             </button>
           )}
         </div>
@@ -54,7 +70,7 @@ function CustomGame({ game, x, y, homeOnTop, onEditMatch, isStaff }) {
   );
 }
 
-export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false, user, onEditMatch }) {
+export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false, user, onEditMatch, onCreateMatch }) {
   const [data, setData] = useState(() => {
     if (!bracketId) {
       return { bracket: defaultBracket, matches: [] };
@@ -231,6 +247,16 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       }
     };
 
+    const handleSingleMatchCreate = () => {
+      if (onCreateMatch) {
+        onCreateMatch({
+          bracket_id: bracketId,
+          round_name: finalGame.name,
+          _slotInfo: { round: finalGame._round, position: finalGame._position }
+        });
+      }
+    };
+
     return (
       <div className="bracket-tree" ref={containerRef}>
         <div className="bracket-section">
@@ -241,6 +267,11 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                 {user?.is_staff && finalGame._matchData && (
                   <button className="bracket-edit-btn" onClick={handleSingleMatchEdit} title="Editar partida">
                     <Pencil size={12} />
+                  </button>
+                )}
+                {user?.is_staff && !finalGame._matchData && bracketId && (
+                  <button className="bracket-edit-btn bracket-add-btn" onClick={handleSingleMatchCreate} title="Crear partida">
+                    <Plus size={14} />
                   </button>
                 )}
               </div>
@@ -261,7 +292,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   // Wrapper component to pass additional props to CustomGame
   const GameWithProps = (props) => (
-    <CustomGame {...props} onEditMatch={onEditMatch} isStaff={user?.is_staff} />
+    <CustomGame {...props} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} isStaff={user?.is_staff} bracketId={bracketId} />
   );
 
   return (

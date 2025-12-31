@@ -206,6 +206,14 @@
   color: #ff0844;
 }
 
+.bracket-add-btn {
+  color: #888;
+}
+
+.bracket-add-btn:hover {
+  color: #4ade80;
+}
+
 .styled-match.single .match-round-text .bracket-edit-btn {
   margin-left: 8px;
 }
