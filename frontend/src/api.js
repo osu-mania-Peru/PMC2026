@@ -116,6 +116,10 @@ export const api = {
   getBrackets: () => api.fetch('/brackets'),
   getBracket: (id) => api.fetch(`/brackets/${id}`),
   getBracketMatches: (id) => api.fetch(`/brackets/${id}/matches`),
+  generateBrackets: (bracketSize = 8) => api.fetch('/brackets/generate', {
+    method: 'POST',
+    body: JSON.stringify({ bracket_size: bracketSize }),
+  }),
 
   // Matches
   getMatches: (params) => {

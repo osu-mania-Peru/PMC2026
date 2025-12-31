@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Trophy } from 'lucide-react';
 import { api } from '../api';
 import BracketTree from '../components/BracketTree';
 import MatchEditModal from '../components/MatchEditModal';
 import Spinner from '../components/Spinner';
+import catGif from '../assets/cat.gif';
 import './Brackets.css'
 
 export default function Brackets({ user }) {
@@ -14,6 +16,8 @@ export default function Brackets({ user }) {
   const [editingMatch, setEditingMatch] = useState(null);
   const [users, setUsers] = useState([]);
   const [maps, setMaps] = useState([]);
+  const [generating, setGenerating] = useState(false);
+  const [bracketSize, setBracketSize] = useState(8);
 
   useEffect(() => {
     api.getBrackets()
@@ -57,6 +61,22 @@ export default function Brackets({ user }) {
 
   const handleCloseModal = () => {
     setEditingMatch(null);
+  };
+
+  const handleGenerateBrackets = async () => {
+    if (!window.confirm(`¿Generar brackets de ${bracketSize} jugadores? Esto eliminará brackets existentes.`)) {
+      return;
+    }
+    setGenerating(true);
+    try {
+      await api.generateBrackets(bracketSize);
+      const data = await api.getBrackets();
+      setBrackets(data.brackets);
+    } catch (err) {
+      alert(err.message || 'Error generando brackets');
+    } finally {
+      setGenerating(false);
+    }
   };
 
   // Find brackets by type
@@ -125,6 +145,36 @@ export default function Brackets({ user }) {
 
       {loading ? (
         <Spinner size="large" text="Cargando brackets..." />
+      ) : brackets.length === 0 && user?.is_staff ? (
+        <div className="no-brackets-container">
+          <div className="no-brackets-card">
+            <Trophy size={48} className="no-brackets-icon" />
+            <h2>No hay brackets</h2>
+            <p>Genera brackets para comenzar el torneo</p>
+            <div className="generate-brackets-form">
+              <select
+                value={bracketSize}
+                onChange={(e) => setBracketSize(parseInt(e.target.value))}
+                disabled={generating}
+                className="bracket-size-select"
+              >
+                <option value={4}>4 jugadores</option>
+                <option value={8}>8 jugadores</option>
+                <option value={16}>16 jugadores</option>
+                <option value={32}>32 jugadores</option>
+              </select>
+              <button
+                onClick={handleGenerateBrackets}
+                disabled={generating}
+                className="generate-brackets-btn"
+              >
+                {generating ? (
+                  <><img src={catGif} alt="" className="btn-loading-cat" /> Generando...</>
+                ) : 'Generar Brackets'}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className='bracket-container' data-bracket-type={bracketType || 'winner'}>
           <BracketTree

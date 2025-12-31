@@ -78,6 +78,99 @@
     background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
 }
 
+/* No Brackets - Generate UI */
+.no-brackets-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #080808;
+    background-image:
+        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
+        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e),
+        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e);
+    background-size: 40px 70px;
+    background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
+}
+
+.no-brackets-card {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 3rem;
+    text-align: center;
+    max-width: 400px;
+}
+
+.no-brackets-icon {
+    color: #ff0844;
+    margin-bottom: 1rem;
+}
+
+.no-brackets-card h2 {
+    color: #fff;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.no-brackets-card p {
+    color: #888;
+    margin: 0 0 1.5rem 0;
+}
+
+.generate-brackets-form {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.bracket-size-select {
+    background: #0d0d0d;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.bracket-size-select:focus {
+    outline: none;
+    border-color: #ff0844;
+}
+
+.generate-brackets-btn {
+    background: #ff0844;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    clip-path: none !important;
+}
+
+.generate-brackets-btn:hover:not(:disabled) {
+    background: #cc0636;
+}
+
+.generate-brackets-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.generate-brackets-btn .btn-loading-cat {
+    width: 20px;
+    height: 20px;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
     .bracket-nav {
@@ -89,5 +182,14 @@
         padding: 0.6rem 1rem;
         font-size: 0.65rem;
         clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+    }
+
+    .no-brackets-card {
+        margin: 1rem;
+        padding: 2rem;
+    }
+
+    .generate-brackets-form {
+        flex-direction: column;
     }
 }
