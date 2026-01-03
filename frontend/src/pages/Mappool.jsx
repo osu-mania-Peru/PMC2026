@@ -3,6 +3,7 @@ import { api } from '../api';
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
+import SlotEditModal from '../components/SlotEditModal';
 import './Mappool.css';
 
 // Icons as SVG components
@@ -167,6 +168,7 @@ export default function Mappool({ user }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showSlotModal, setShowSlotModal] = useState(false);
   const [editingMap, setEditingMap] = useState(null);
   const [editingPoolId, setEditingPoolId] = useState(null);
 
@@ -285,6 +287,14 @@ export default function Mappool({ user }) {
         onSave={handleSaveMap}
         onClose={handleCloseMapEdit}
         slots={slots}
+        onEditSlots={() => setShowSlotModal(true)}
+      />
+
+      {/* Slot Edit Modal */}
+      <SlotEditModal
+        isOpen={showSlotModal}
+        onClose={() => setShowSlotModal(false)}
+        onSlotsChange={fetchSlots}
       />
     </div>
   );
