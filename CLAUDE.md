@@ -77,3 +77,34 @@ The horse racing mini-game at `/horse` route needs significant fixes:
 - Horse positioning and avatar overlay sync issues
 - General game logic needs debugging
 - Originally ported from `../umasim` project
+
+## Future Project: Tournament Entrance Horse Race
+
+Quick multiplayer horse racing gimmick for PMC tournament entrance/opening ceremony.
+
+### Purpose
+- Fun mini-game before the osu!mania tournament starts
+- Entertainment while players wait
+- Bragging rights for winner
+- NOT a deep standalone game - just a quick gimmick
+
+### Core Concept
+- **Multiplayer only** - real players in waiting room
+- **One race, 30-60 seconds** - quick and chaotic
+- **Hidden stamina** - no one sees others' stamina (the mind game)
+- **Same stats for everyone** - no horse types, pure skill/luck
+
+### Controls
+- Hold/release or up/down to control acceleration
+- Higher acceleration = faster stamina drain
+- That's it. Keep it stupid simple.
+
+### Tech Stack
+- **Frontend**: Three.js (3D) or reuse existing `/horse` canvas game
+- **Backend**: WebSocket for room sync (can reuse PMC backend infra)
+- **Sync**: Position broadcasting, race start countdown, finish detection
+
+### Scope
+- ~1 week to prototype
+- One track, one horse model, one race mode
+- Maximum fun, minimum complexity

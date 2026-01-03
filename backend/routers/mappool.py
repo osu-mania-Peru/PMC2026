@@ -87,7 +87,7 @@ class MapCreate(BaseModel):
     length_seconds: int
     od: float
     hp: float
-    ln_percent: int = 0
+    ln_percent: str = '0'
     mapper: str
     is_custom_map: bool = False
     is_custom_song: bool = False
@@ -106,7 +106,7 @@ class MapUpdate(BaseModel):
     length_seconds: int | None = None
     od: float | None = None
     hp: float | None = None
-    ln_percent: int | None = None
+    ln_percent: str | None = None
     mapper: str | None = None
     is_custom_map: bool | None = None
     is_custom_song: bool | None = None

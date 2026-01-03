@@ -195,7 +195,7 @@ export default function Mappool({ user }) {
   };
 
   const handleSaveMap = async (mapId, formData) => {
-    await api.updateMappoolMap(editingPoolId, mapId, formData);
+    await api.updatePoolMap(mapId, formData);
     setEditingMap(null);
     setEditingPoolId(null);
     fetchMappools();

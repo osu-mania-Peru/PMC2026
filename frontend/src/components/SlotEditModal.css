@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: 1200;
   padding: 20px;
 }
 
@@ -30,6 +30,7 @@
   padding: 20px 24px;
   border-bottom: 1px solid #333;
   flex-shrink: 0;
+  position: relative;
 }
 
 .slot-modal-header h3 {
@@ -38,6 +39,57 @@
   font-family: 'Poppins', sans-serif;
   font-size: 1.2rem;
   font-weight: 600;
+}
+
+.slot-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slot-header-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #252525;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  color: #888;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none;
+}
+
+.slot-header-btn:hover:not(:disabled) {
+  border-color: #666;
+  color: #fff;
+}
+
+.slot-header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.slot-copy-feedback {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #22c55e;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  z-index: 10;
+  animation: feedbackFade 0.2s ease;
+}
+
+@keyframes feedbackFade {
+  from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .slot-close-btn {
@@ -106,7 +158,7 @@
 .slot-table-header,
 .slot-table-row {
   display: grid;
-  grid-template-columns: 36px 36px minmax(0, 1fr) 60px 100px 36px;
+  grid-template-columns: auto 36px minmax(0, 1fr) 60px 100px auto;
   gap: 8px;
   align-items: center;
   padding: 10px 0;
@@ -131,12 +183,25 @@
 }
 
 /* Column styling */
-.slot-col-actions,
-.slot-col-order,
-.slot-col-delete {
+.slot-col-actions {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-width: 55px;
+}
+
+.slot-col-order {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.slot-col-actions-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  min-width: 130px;
 }
 
 .slot-col-name,
@@ -183,12 +248,70 @@
   color: #22c55e;
 }
 
+.slot-row-btn-copy:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.15);
+}
+
+.slot-row-btn-copy:hover:not(:disabled) svg {
+  color: #3b82f6;
+}
+
 .slot-row-btn-delete:hover:not(:disabled) {
   border-color: #ef4444;
   background: rgba(239, 68, 68, 0.15);
 }
 
 .slot-row-btn-delete:hover:not(:disabled) svg {
+  color: #ef4444;
+}
+
+/* Text buttons for copy/delete/add */
+.slot-row-btn-text {
+  display: flex !important;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px !important;
+  background: #252525 !important;
+  border: 1px solid #3a3a3a !important;
+  border-radius: 4px !important;
+  color: #888;
+  font-size: 0.65rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  white-space: nowrap;
+  width: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  min-height: auto !important;
+}
+
+.slot-row-btn-text svg {
+  width: 12px;
+  height: 12px;
+}
+
+.slot-row-btn-text:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.slot-row-btn-text.slot-row-btn-add:hover:not(:disabled) {
+  border-color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.15) !important;
+  color: #22c55e;
+}
+
+.slot-row-btn-text.slot-row-btn-copy:hover:not(:disabled) {
+  border-color: #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: #3b82f6;
+}
+
+.slot-row-btn-text.slot-row-btn-delete:hover:not(:disabled) {
+  border-color: #ef4444 !important;
+  background: rgba(239, 68, 68, 0.15) !important;
   color: #ef4444;
 }
 
@@ -290,6 +413,8 @@
 /* Table footer */
 .slot-table-footer {
   padding-top: 20px;
+  display: flex;
+  gap: 12px;
 }
 
 .slot-add-row-btn {
@@ -314,6 +439,17 @@
   border-color: #22c55e;
   color: #22c55e;
   background: rgba(34, 197, 94, 0.05);
+}
+
+.slot-paste-row-btn {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.slot-paste-row-btn:hover:not(:disabled) {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .slot-add-row-btn:disabled {
@@ -385,9 +521,13 @@
     border-radius: 0;
   }
 
+  .slot-header-btn span {
+    display: none;
+  }
+
   .slot-table-header,
   .slot-table-row {
-    grid-template-columns: 32px 32px minmax(0, 1fr) 44px 32px;
+    grid-template-columns: 32px 32px minmax(0, 1fr) 44px 68px;
     gap: 6px;
     padding: 8px 0;
   }

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Plus, Trash2, ChevronUp, ChevronDown, Copy, ClipboardPaste } from 'lucide-react';
 import { api } from '../api';
 import catGif from '../assets/cat.gif';
 import './SlotEditModal.css';
@@ -9,12 +9,27 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editedSlots, setEditedSlots] = useState({});
+  const [copyFeedback, setCopyFeedback] = useState(null);
+  const [hasClipboard, setHasClipboard] = useState(false);
+  const colorDebounceRef = useRef({});
 
   useEffect(() => {
     if (isOpen) {
       fetchSlots();
+      setHasClipboard(!!localStorage.getItem('pmc_slot_clipboard'));
+    } else {
+      // Clear any pending debounced saves when modal closes
+      Object.values(colorDebounceRef.current).forEach(clearTimeout);
+      colorDebounceRef.current = {};
     }
   }, [isOpen]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(colorDebounceRef.current).forEach(clearTimeout);
+    };
+  }, []);
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -68,21 +83,28 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     }
   };
 
-  const handleColorChange = async (slot, newColor) => {
+  const handleColorChange = (slot, newColor) => {
     // Update local state for immediate visual feedback
     handleFieldChange(slot.id, 'color', newColor);
 
-    // Save immediately
-    setSaving(true);
-    try {
-      await api.updateSlot(slot.id, { color: newColor });
-      await fetchSlots();
-      onSlotsChange?.();
-    } catch (err) {
-      console.error('Failed to update slot color:', err);
-    } finally {
-      setSaving(false);
+    // Also update the slots array directly so preview updates
+    setSlots(prev => prev.map(s =>
+      s.id === slot.id ? { ...s, color: newColor } : s
+    ));
+
+    // Debounce the API save to avoid spamming during drag
+    if (colorDebounceRef.current[slot.id]) {
+      clearTimeout(colorDebounceRef.current[slot.id]);
     }
+
+    colorDebounceRef.current[slot.id] = setTimeout(async () => {
+      try {
+        await api.updateSlot(slot.id, { color: newColor });
+        onSlotsChange?.();
+      } catch (err) {
+        console.error('Failed to update slot color:', err);
+      }
+    }, 300);
   };
 
   const handleAddSlot = async (afterIndex = -1) => {
@@ -158,6 +180,72 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     }
   };
 
+  const handleCopySlot = async (slot) => {
+    const data = { name: slot.name, color: slot.color };
+    const json = JSON.stringify(data);
+    localStorage.setItem('pmc_slot_clipboard', json);
+    setHasClipboard(true);
+    try { await navigator.clipboard.writeText(json); } catch {}
+    setCopyFeedback('Slot copiado');
+    setTimeout(() => setCopyFeedback(null), 1500);
+  };
+
+  const handleCopyAll = async () => {
+    const data = slots.map(s => ({ name: s.name, color: s.color }));
+    const json = JSON.stringify(data, null, 2);
+    localStorage.setItem('pmc_slot_clipboard', json);
+    setHasClipboard(true);
+    try { await navigator.clipboard.writeText(json); } catch {}
+    setCopyFeedback('Todos los slots copiados');
+    setTimeout(() => setCopyFeedback(null), 1500);
+  };
+
+  const handlePaste = async () => {
+    const text = localStorage.getItem('pmc_slot_clipboard');
+    if (!text) {
+      setCopyFeedback('Nada que pegar');
+      setTimeout(() => setCopyFeedback(null), 1500);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const parsed = JSON.parse(text);
+      const slotsToAdd = Array.isArray(parsed) ? parsed : [parsed];
+      let addedCount = 0;
+
+      for (let i = 0; i < slotsToAdd.length; i++) {
+        const slot = slotsToAdd[i];
+        if (slot.name && slot.color) {
+          let name = slot.name;
+          let counter = 1;
+          const existingNames = [...slots.map(s => s.name)];
+          while (existingNames.includes(name)) {
+            name = `${slot.name}_${counter}`;
+            counter++;
+          }
+          existingNames.push(name);
+          await api.createSlot({
+            name,
+            color: slot.color,
+            slot_order: slots.length + i
+          });
+          addedCount++;
+        }
+      }
+      await fetchSlots();
+      onSlotsChange?.();
+      setCopyFeedback(`${addedCount} slot(s) pegado(s)`);
+      setTimeout(() => setCopyFeedback(null), 1500);
+    } catch (err) {
+      console.error('Failed to paste slots:', err);
+      setCopyFeedback('Error al pegar');
+      setTimeout(() => setCopyFeedback(null), 1500);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -165,9 +253,28 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
       <div className="slot-modal" onClick={(e) => e.stopPropagation()}>
         <div className="slot-modal-header">
           <h3>Editar Slots</h3>
-          <button className="slot-close-btn" onClick={onClose}>
-            <X size={20} />
-          </button>
+          <div className="slot-header-actions">
+            <button
+              className="slot-header-btn"
+              onClick={handleCopyAll}
+              disabled={saving || slots.length === 0}
+              title="Copiar todos los slots"
+            >
+              <Copy size={16} /> Copiar Todos
+            </button>
+            <button
+              className="slot-header-btn"
+              onClick={handlePaste}
+              disabled={saving || !hasClipboard}
+              title="Pegar slots desde portapapeles"
+            >
+              <ClipboardPaste size={16} /> Pegar Todos
+            </button>
+            <button className="slot-close-btn" onClick={onClose}>
+              <X size={20} />
+            </button>
+          </div>
+          {copyFeedback && <div className="slot-copy-feedback">{copyFeedback}</div>}
         </div>
 
         <div className="slot-modal-content">
@@ -193,25 +300,17 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                 </div>
               ) : (
                 <div className="slot-table">
-                  <div className="slot-table-header">
-                    <div className="slot-col-actions"></div>
-                    <div className="slot-col-order"></div>
-                    <div className="slot-col-name">Nombre</div>
-                    <div className="slot-col-color">Color</div>
-                    <div className="slot-col-preview">Preview</div>
-                    <div className="slot-col-delete"></div>
-                  </div>
 
                   {slots.map((slot, index) => (
                     <div key={slot.id} className="slot-table-row">
                       <div className="slot-col-actions">
                         <button
-                          className="slot-row-btn slot-row-btn-add"
+                          className="slot-row-btn-text slot-row-btn-add"
                           onClick={() => handleAddSlot(index)}
                           disabled={saving}
                           title="Insertar slot después"
                         >
-                          <Plus size={14} />
+                          <Plus size={12} /> Añadir
                         </button>
                       </div>
 
@@ -252,7 +351,6 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                           value={getSlotValue(slot, 'color')}
                           onChange={(e) => handleColorChange(slot, e.target.value)}
                           className="slot-table-color"
-                          disabled={saving}
                         />
                       </div>
 
@@ -265,14 +363,22 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                         </div>
                       </div>
 
-                      <div className="slot-col-delete">
+                      <div className="slot-col-actions-end">
                         <button
-                          className="slot-row-btn slot-row-btn-delete"
+                          className="slot-row-btn-text slot-row-btn-copy"
+                          onClick={() => handleCopySlot(slot)}
+                          disabled={saving}
+                          title="Copiar slot"
+                        >
+                          <Copy size={14} /> Copiar
+                        </button>
+                        <button
+                          className="slot-row-btn-text slot-row-btn-delete"
                           onClick={() => handleDeleteSlot(slot.id)}
                           disabled={saving}
                           title="Eliminar slot"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={14} /> Borrar
                         </button>
                       </div>
                     </div>
@@ -287,6 +393,16 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                       {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : <Plus size={18} />}
                       Agregar Slot
                     </button>
+                    {hasClipboard && (
+                      <button
+                        className="slot-add-row-btn slot-paste-row-btn"
+                        onClick={handlePaste}
+                        disabled={saving}
+                      >
+                        <ClipboardPaste size={18} />
+                        Pegar Slot Copiado
+                      </button>
+                    )}
                   </div>
                 </div>
               )}

@@ -185,7 +185,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
         length_seconds: data.length_seconds,
         od: data.od,
         hp: data.hp,
-        ln_percent: 0,
+        ln_percent: '0',
         is_custom_map: false,
         is_custom_song: false,
         banner_url: data.banner_url,
@@ -213,7 +213,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
       length_seconds: beatmap.length_seconds,
       od: beatmap.od,
       hp: beatmap.hp,
-      ln_percent: 0,
+      ln_percent: '0',
       is_custom_map: false,
       is_custom_song: false,
       banner_url: beatmapsetData.banner_url,
@@ -482,9 +482,9 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
         <div className="mpm-field">
           <label className="mpm-field-label">LN%</label>
           <input
-            type="number"
+            type="text"
             value={formData.ln_percent}
-            onChange={(e) => handleChange('ln_percent', parseInt(e.target.value) || 0)}
+            onChange={(e) => handleChange('ln_percent', e.target.value)}
             className="mpm-input"
             disabled={loading}
           />
@@ -740,6 +740,7 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
   };
 
   const handleEditMap = async (mapId, mapData) => {
+    console.log('handleEditMap called', { mapId, mapData });
     setLoading(true);
     try {
       await api.updatePoolMap(mapId, mapData);

@@ -34,7 +34,7 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
       length_seconds: map.length_seconds,
       od: map.od,
       hp: map.hp,
-      ln_percent: map.ln_percent || 0,
+      ln_percent: map.ln_percent || '0',
       is_custom_map: map.is_custom_map || false,
       is_custom_song: map.is_custom_song || false,
     });
@@ -48,11 +48,19 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData || !formData.beatmap_id || !formData.title) return;
+    if (!formData || !formData.beatmap_id || !formData.title) {
+      console.warn('MapEditModal: validation failed', { formData });
+      return;
+    }
     setSaving(true);
-    await onSave(map.id, formData);
-    setSaving(false);
-    setFormData(null);
+    try {
+      await onSave(map.id, formData);
+      setFormData(null);
+    } catch (err) {
+      console.error('Failed to save map:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleClose = () => {
@@ -239,9 +247,9 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
             <div className="map-edit-field">
               <label className="map-edit-label">LN%</label>
               <input
-                type="number"
+                type="text"
                 value={formData.ln_percent}
-                onChange={(e) => handleChange('ln_percent', parseInt(e.target.value) || 0)}
+                onChange={(e) => handleChange('ln_percent', e.target.value)}
                 className="map-edit-input"
                 disabled={saving}
               />

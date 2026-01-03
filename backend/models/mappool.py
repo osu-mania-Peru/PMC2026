@@ -81,7 +81,7 @@ class MappoolMap(Base):
     length_seconds: Mapped[int] = mapped_column(Integer, nullable=False)
     od: Mapped[Decimal] = mapped_column(Numeric(4, 1), nullable=False)
     hp: Mapped[Decimal] = mapped_column(Numeric(4, 1), nullable=False)
-    ln_percent: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    ln_percent: Mapped[str] = mapped_column(String(20), nullable=False, default='0')
     mapper: Mapped[str] = mapped_column(String(100), nullable=False)
     is_custom_map: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_custom_song: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
