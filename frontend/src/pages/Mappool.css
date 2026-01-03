@@ -523,22 +523,31 @@ td.col-title::after {
 }
 
 .inline-edit-input {
-  background: #1a1a1a;
+  background: #0d0d0d;
   border: 1px solid #ff0844;
-  border-radius: 2px;
+  border-radius: 3px;
   color: #fff;
   font-size: inherit;
   font-family: inherit;
-  padding: 2px 4px;
+  padding: 4px 6px;
   width: 100%;
   min-width: 40px;
   max-width: 80px;
   outline: none;
+  -moz-appearance: textfield;
+}
+
+/* Hide number spinners */
+.inline-edit-input::-webkit-outer-spin-button,
+.inline-edit-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .inline-edit-input:focus {
   border-color: #ff3366;
-  box-shadow: 0 0 0 2px rgba(255, 8, 68, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 8, 68, 0.3);
+  background: #111;
 }
 
 .inline-edit-select {
