@@ -4,6 +4,7 @@ import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
 import SlotEditModal from '../components/SlotEditModal';
+import catGif from '../assets/cat.gif';
 import './Mappool.css';
 
 // Icons as SVG components
@@ -46,6 +47,7 @@ const PencilIcon = () => (
 // Inline editable cell component
 function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [editValue, setEditValue] = useState(value);
   const inputRef = useRef(null);
 
@@ -60,7 +62,9 @@ function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
 
   const handleSave = async () => {
     if (editValue !== value) {
+      setSaving(true);
       await onSave(mapId, { [field]: editValue });
+      setSaving(false);
     }
     setEditing(false);
   };
@@ -73,6 +77,10 @@ function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
       setEditing(false);
     }
   };
+
+  if (saving) {
+    return <img src={catGif} alt="" className="inline-edit-loading" />;
+  }
 
   if (!editing) {
     return (

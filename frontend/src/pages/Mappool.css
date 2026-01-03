@@ -570,3 +570,9 @@ td.col-title::after {
   max-width: 60px;
   text-align: center;
 }
+
+.inline-edit-loading {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
