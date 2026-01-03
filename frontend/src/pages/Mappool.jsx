@@ -140,6 +140,20 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
     return slot?.color || '#3b82f6';
   };
 
+  const getSlotOrder = (slotName) => {
+    const idx = slots?.findIndex(s => s.name === slotName);
+    return idx >= 0 ? idx : 999;
+  };
+
+  // Sort maps by slot order, then by artist+title
+  const sortedMaps = [...(pool.maps || [])].sort((a, b) => {
+    const slotDiff = getSlotOrder(a.slot) - getSlotOrder(b.slot);
+    if (slotDiff !== 0) return slotDiff;
+    const aName = `${a.artist} - ${a.title}`.toLowerCase();
+    const bName = `${b.artist} - ${b.title}`.toLowerCase();
+    return aName.localeCompare(bName);
+  });
+
   return (
     <div className="mappool-accordion">
       <button
@@ -170,7 +184,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                 </tr>
               </thead>
               <tbody>
-                {pool.maps.map((map) => (
+                {sortedMaps.map((map) => (
                   <tr key={map.id} className="mappool-row">
                     {user?.is_staff && (
                       <td className="col-actions">
