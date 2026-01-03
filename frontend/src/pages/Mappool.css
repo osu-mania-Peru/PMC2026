@@ -509,3 +509,55 @@ td.col-title::after {
   }
 
 }
+
+/* Inline Edit */
+.inline-edit-value {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: background 0.15s ease;
+}
+
+.inline-edit-value:hover {
+  background: rgba(255, 8, 68, 0.2);
+}
+
+.inline-edit-input {
+  background: #1a1a1a;
+  border: 1px solid #ff0844;
+  border-radius: 2px;
+  color: #fff;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 2px 4px;
+  width: 100%;
+  min-width: 40px;
+  max-width: 80px;
+  outline: none;
+}
+
+.inline-edit-input:focus {
+  border-color: #ff3366;
+  box-shadow: 0 0 0 2px rgba(255, 8, 68, 0.2);
+}
+
+.inline-edit-select {
+  max-width: 70px;
+  cursor: pointer;
+}
+
+.col-stats .inline-edit-input {
+  max-width: 40px;
+  text-align: center;
+}
+
+.col-mapper .inline-edit-input {
+  max-width: 100px;
+}
+
+.col-sr .inline-edit-input,
+.col-bpm .inline-edit-input,
+.col-length .inline-edit-input {
+  max-width: 60px;
+  text-align: center;
+}

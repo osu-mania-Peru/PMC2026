@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
@@ -43,6 +43,76 @@ const PencilIcon = () => (
   </svg>
 );
 
+// Inline editable cell component
+function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
+  const [editing, setEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      if (type !== 'select') {
+        inputRef.current.select();
+      }
+    }
+  }, [editing]);
+
+  const handleSave = async () => {
+    if (editValue !== value) {
+      await onSave(mapId, { [field]: editValue });
+    }
+    setEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      setEditValue(value);
+      setEditing(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <span className="inline-edit-value" onClick={() => setEditing(true)}>
+        {value}
+      </span>
+    );
+  }
+
+  if (type === 'select' && slots) {
+    return (
+      <select
+        ref={inputRef}
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={handleKeyDown}
+        className="inline-edit-input inline-edit-select"
+      >
+        {slots.map((slot) => (
+          <option key={slot.id} value={slot.name}>{slot.name}</option>
+        ))}
+      </select>
+    );
+  }
+
+  return (
+    <input
+      ref={inputRef}
+      type={type === 'number' ? 'number' : 'text'}
+      step={type === 'number' ? '0.01' : undefined}
+      value={editValue}
+      onChange={(e) => setEditValue(e.target.value)}
+      onBlur={handleSave}
+      onKeyDown={handleKeyDown}
+      className="inline-edit-input"
+    />
+  );
+}
+
 // Format stage name to title case
 const formatStageName = (name) => {
   if (!name) return '';
@@ -54,7 +124,7 @@ const formatStageName = (name) => {
 };
 
 // Accordion component for each stage
-function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap }) {
+function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, onInlineSave }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const getSlotColor = (slotName) => {
@@ -106,7 +176,18 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap })
                       </td>
                     )}
                     <td className="col-slot">
-                      <span className="slot-badge" style={{ borderRightColor: getSlotColor(map.slot) }}>{map.slot}</span>
+                      <span className="slot-badge" style={{ borderRightColor: getSlotColor(map.slot) }}>
+                        {user?.is_staff ? (
+                          <InlineEditCell
+                            value={map.slot}
+                            mapId={map.id}
+                            field="slot"
+                            onSave={onInlineSave}
+                            type="select"
+                            slots={slots}
+                          />
+                        ) : map.slot}
+                      </span>
                     </td>
                     <td className="col-banner">
                       {map.banner_url ? (
@@ -131,13 +212,37 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap })
                         {map.is_custom_song && <CustomSongIcon className="custom-icon song" />}
                       </div>
                     </td>
-                    <td className="col-sr">{map.star_rating.toFixed(2)}</td>
-                    <td className="col-bpm">{map.bpm}</td>
-                    <td className="col-length">{map.length}</td>
-                    <td className="col-stats">
-                      {map.od} | {map.hp} | {map.ln_percent}
+                    <td className="col-sr">
+                      {user?.is_staff ? (
+                        <InlineEditCell value={map.star_rating} mapId={map.id} field="star_rating" onSave={onInlineSave} type="number" />
+                      ) : map.star_rating.toFixed(2)}
                     </td>
-                    <td className="col-mapper">{map.mapper}</td>
+                    <td className="col-bpm">
+                      {user?.is_staff ? (
+                        <InlineEditCell value={map.bpm} mapId={map.id} field="bpm" onSave={onInlineSave} type="number" />
+                      ) : map.bpm}
+                    </td>
+                    <td className="col-length">
+                      {user?.is_staff ? (
+                        <InlineEditCell value={map.length_seconds} mapId={map.id} field="length_seconds" onSave={onInlineSave} type="number" />
+                      ) : map.length}
+                    </td>
+                    <td className="col-stats">
+                      {user?.is_staff ? (
+                        <>
+                          <InlineEditCell value={map.od} mapId={map.id} field="od" onSave={onInlineSave} type="number" />
+                          {' | '}
+                          <InlineEditCell value={map.hp} mapId={map.id} field="hp" onSave={onInlineSave} type="number" />
+                          {' | '}
+                          <InlineEditCell value={map.ln_percent} mapId={map.id} field="ln_percent" onSave={onInlineSave} />
+                        </>
+                      ) : `${map.od} | ${map.hp} | ${map.ln_percent}`}
+                    </td>
+                    <td className="col-mapper">
+                      {user?.is_staff ? (
+                        <InlineEditCell value={map.mapper} mapId={map.id} field="mapper" onSave={onInlineSave} />
+                      ) : map.mapper}
+                    </td>
                     <td className="col-beatmap">{map.beatmap_id}</td>
                   </tr>
                 ))}
@@ -208,6 +313,11 @@ export default function Mappool({ user }) {
     setEditingPoolId(null);
   };
 
+  const handleInlineSave = async (mapId, data) => {
+    await api.updatePoolMap(mapId, data);
+    fetchMappools();
+  };
+
   if (loading) {
     return (
       <div className="mappool-page">
@@ -267,6 +377,7 @@ export default function Mappool({ user }) {
               defaultOpen={index === 0}
               user={user}
               onEditMap={handleEditMap}
+              onInlineSave={handleInlineSave}
             />
           ))
         )}
