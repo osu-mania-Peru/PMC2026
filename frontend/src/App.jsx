@@ -18,6 +18,7 @@ import StaffDiscord from "./pages/StaffDiscord";
 // Components
 import AdminPanel from "./components/AdminPanel";
 import Spinner from "./components/Spinner";
+import SlotMachine from "./components/SlotMachine";
 
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -217,6 +218,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   );
 }
 
+const SLOT_PASS_KEY = 'pmc_slot_passed';
+const SLOT_PASS_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(() => {
@@ -226,6 +230,23 @@ function App() {
       !!new URLSearchParams(window.location.search).get("token")
     );
   });
+  const [slotPassed, setSlotPassed] = useState(() => {
+    const passData = localStorage.getItem(SLOT_PASS_KEY);
+    if (passData) {
+      const passTime = parseInt(passData, 10);
+      if (Date.now() < passTime) {
+        return true;
+      }
+      localStorage.removeItem(SLOT_PASS_KEY);
+    }
+    return false;
+  });
+
+  const handleSlotWin = () => {
+    const passUntil = Date.now() + SLOT_PASS_DURATION;
+    localStorage.setItem(SLOT_PASS_KEY, passUntil.toString());
+    setSlotPassed(true);
+  };
 
   useEffect(() => {
     // Check for token in URL (from auth callback)
@@ -263,6 +284,11 @@ function App() {
     api.logout();
     setUser(null);
   };
+
+  // Show slot machine if not passed
+  if (!slotPassed) {
+    return <SlotMachine onWin={handleSlotWin} />;
+  }
 
   return (
     <BrowserRouter>

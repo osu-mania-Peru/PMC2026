@@ -1,0 +1,838 @@
+.slot-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../assets/candy-background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 99999;
+  overflow: auto;
+  padding: 100px 20px 20px;
+}
+
+
+.slot-overlay::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  background: rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 5;
+  -webkit-mask-image:
+    radial-gradient(circle 80px at calc(67% + 145px) 60px, transparent 79px, black 80px),
+    radial-gradient(circle 25px at calc(67% + 25px) 60px, transparent 24px, black 25px),
+    radial-gradient(circle 25px at calc(67% + 265px) 60px, transparent 24px, black 25px);
+  -webkit-mask-composite: destination-in;
+  mask-image:
+    radial-gradient(circle 80px at calc(67% + 145px) 60px, transparent 79px, black 80px),
+    radial-gradient(circle 25px at calc(67% + 25px) 60px, transparent 24px, black 25px),
+    radial-gradient(circle 25px at calc(67% + 265px) 60px, transparent 24px, black 25px);
+  mask-composite: intersect;
+}
+
+/* Main area wrapper - sidebar + machine */
+.slot-main-area {
+  display: flex;
+  align-items: center;
+}
+
+/* Left Sidebar */
+.slot-sidebar {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+  z-index: 10;
+  position: relative;
+  transform: translateX(-20px);
+}
+
+.sidebar-panels-group {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.sidebar-panel {
+  border-radius: 16px;
+  padding: 12px 20px 16px;
+  text-align: center;
+  min-width: 140px;
+  position: relative;
+  overflow: visible;
+}
+
+/* Orange Feature Panel */
+.feature-panel {
+  background: linear-gradient(180deg, #FFA500 0%, #FF8C00 50%, #E07000 100%);
+  border: none;
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Purple metallic border for feature panel */
+.feature-panel::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    #E9D5FF 0%,
+    #9333EA 15%,
+    #581C87 40%,
+    #9333EA 60%,
+    #E9D5FF 75%,
+    #7C3AED 100%
+  );
+  z-index: -1;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* Glossy highlight for feature panel */
+.feature-panel::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 10%;
+  right: 10%;
+  height: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 50%;
+}
+
+/* Green Bet Panel */
+.bet-panel {
+  background: linear-gradient(180deg, #84CC16 0%, #65A30D 50%, #4D7C0F 100%);
+  border: none;
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  padding: 20px 20px 24px;
+}
+
+/* Gold metallic border for bet panel */
+.bet-panel::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    #FFF9C4 0%,
+    #FFD700 15%,
+    #B8860B 40%,
+    #FFD700 60%,
+    #FFF9C4 75%,
+    #DAA520 100%
+  );
+  z-index: -1;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
+}
+
+/* Glossy highlight for bet panel */
+.bet-panel::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 10%;
+  right: 10%;
+  height: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 50%;
+}
+
+.panel-label {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+
+.panel-value {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #EAB308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.4));
+}
+
+.panel-value-large {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(180deg, #FEF08A 0%, #FACC15 50%, #EAB308 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(2px 2px 1px rgba(0,0,0,0.4));
+  line-height: 1.1;
+  margin-top: 8px;
+}
+
+.panel-divider {
+  display: none;
+}
+
+.panel-sublabel {
+  display: block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Bottom Info - Credit and Bet */
+.slot-bottom-info {
+  position: fixed;
+  bottom: 60px;
+  left: 33%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0 8px;
+}
+
+.bottom-info-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #DAA520;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  text-align: right;
+}
+
+.bottom-info-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  text-align: left;
+}
+
+/* Bottom Controls */
+.slot-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  height: 160px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 67%;
+  gap: 15px;
+  z-index: 10;
+}
+
+.slot-controls > * {
+  flex-shrink: 0;
+}
+
+.control-btn {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  min-height: 50px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  border: 3px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.control-btn:hover {
+  border-color: #fff;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.spin-circle-btn {
+  width: 160px !important;
+  height: 160px !important;
+  min-width: 160px;
+  min-height: 160px;
+  max-width: 160px;
+  max-height: 160px;
+  flex-shrink: 0;
+  flex-grow: 0;
+  aspect-ratio: 1 / 1;
+  border-radius: 50% !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  border: 4px solid rgba(255, 255, 255, 0.8) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  clip-path: none !important;
+  padding: 0 !important;
+}
+
+.spin-circle-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  border-color: #fff;
+}
+
+.spin-circle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin-arrows {
+  font-size: 5rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.spin-circle-btn:disabled .spin-arrows {
+  animation: spin 0.5s linear infinite;
+}
+
+.slot-machine {
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.3) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 20px;
+  padding: 20px;
+  width: 90%;
+  max-width: 1456px;
+  height: auto;
+  margin-bottom: -80px;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 40px 15px rgba(255, 255, 255, 0.8),
+    0 0 80px 30px rgba(255, 255, 255, 0.5),
+    0 0 120px 50px rgba(255, 255, 255, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.05);
+  position: relative;
+  z-index: 2;
+}
+
+/* Candy cane border - only the frame */
+.slot-machine::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 30px;
+  background: repeating-linear-gradient(
+    45deg,
+    #ff0844,
+    #ff0844 12px,
+    #fff 12px,
+    #fff 24px
+  );
+  z-index: -1;
+  box-shadow:
+    /* External shadows for depth */
+    0 6px 20px rgba(0, 0, 0, 0.4),
+    0 3px 10px rgba(0, 0, 0, 0.3),
+    /* External highlight on top */
+    0 -2px 8px rgba(255, 255, 255, 0.5),
+    /* White glow */
+    0 0 30px rgba(255, 255, 255, 0.8),
+    0 0 60px rgba(255, 255, 255, 0.5);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 12px;
+}
+
+/* Inner shadow overlay for candy border volume */
+.slot-machine::after {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  right: -12px;
+  bottom: -12px;
+  border-radius: 30px;
+  z-index: 0;
+  pointer-events: none;
+  box-shadow:
+    /* Internal top highlight */
+    inset 0 4px 8px rgba(255, 255, 255, 0.7),
+    /* Internal bottom shadow */
+    inset 0 -4px 8px rgba(0, 0, 0, 0.3),
+    /* Internal side shadows */
+    inset 4px 0 8px rgba(0, 0, 0, 0.15),
+    inset -4px 0 8px rgba(0, 0, 0, 0.15);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  padding: 12px;
+}
+
+
+.slot-machine.banned {
+  border-color: #FF4466;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.15),
+    0 0 0 8px rgba(255, 68, 102, 0.3);
+}
+
+/* PMC Logo on top of panel */
+.slot-pmc-logo-wrapper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.slot-pmc-logo {
+  width: 300px;
+  height: auto;
+  display: block;
+}
+
+/* Grid */
+.slot-body {
+  background: transparent;
+  border-radius: 15px;
+  padding: 10px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.grid-container {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  width: 100%;
+  height: 91vh;
+  max-height: 910px;
+  overflow: visible;
+}
+
+.slot-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 6px;
+  overflow: visible;
+}
+
+.grid-cell {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+  flex: 1;
+  min-height: 0;
+}
+
+.grid-cell.is-pmc {
+  /* Optional: highlight PMC cells */
+}
+
+
+/* Spinning column effect - symbols fall down */
+.slot-column.spinning .cell-symbol {
+  animation: symbolFall 0.1s linear infinite;
+}
+
+@keyframes symbolFall {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/* Stopped column bounce effect */
+.slot-column:not(.spinning) .cell-symbol {
+  animation: symbolLand 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes symbolLand {
+  0% { transform: translateY(-30px); opacity: 0; }
+  40% { opacity: 1; }
+  70% { transform: translateY(5px); }
+  100% { transform: translateY(0); }
+}
+
+.cell-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.emoji-symbol {
+  font-size: clamp(3.9rem, 10vw, 6.5rem);
+  filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+}
+
+.pmc-symbol {
+  width: 300px;
+  height: auto;
+  filter: drop-shadow(3px 3px 6px rgba(0, 0, 0, 0.5));
+  transform: rotate(-45deg);
+  position: absolute;
+}
+
+/* Result messages */
+.result-message {
+  text-align: center;
+  padding: 15px 20px;
+  margin-top: 10px;
+  border-radius: 15px;
+  animation: fadeIn 0.5s ease;
+  flex-shrink: 0;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.result-message.lose {
+  background: linear-gradient(180deg, #FFE4E8 0%, #FFD0D6 100%);
+  border: 3px solid #FF6B8A;
+}
+
+.result-message.lose span {
+  font-size: 1.6rem;
+  color: #FF4466;
+  font-weight: 800;
+}
+
+.result-message.lose p {
+  color: #FF6B8A;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+.result-message.win {
+  background: linear-gradient(180deg, #E8FFE4 0%, #D0FFD6 100%);
+  border: 3px solid #4ECDC4;
+}
+
+.result-message.win span {
+  font-size: 1.6rem;
+  color: #2ECC71;
+  font-weight: 800;
+}
+
+.result-message.win p {
+  color: #27AE60;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+/* Footer */
+.slot-footer {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.spin-button {
+  background: linear-gradient(180deg, #FF6B8A 0%, #FF8E53 100%);
+  border: none;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 15px 40px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(255, 107, 138, 0.4);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  clip-path: none !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.spin-button:hover:not(:disabled) {
+  background: linear-gradient(180deg, #FF8E53 0%, #FF6B8A 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 107, 138, 0.5);
+}
+
+.spin-button:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 3px 10px rgba(255, 107, 138, 0.4);
+}
+
+.spin-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spin-icon {
+  font-size: 1.4rem;
+}
+
+.spin-button:disabled .spin-icon {
+  animation: spin 0.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pulls-counter {
+  background: linear-gradient(180deg, #FFF0F3 0%, #FFE4E8 100%);
+  border: 3px solid #FFB6C1;
+  border-radius: 25px;
+  padding: 8px 25px;
+  display: inline-block;
+  margin-bottom: 15px;
+}
+
+.pulls-label {
+  color: #FF6B8A;
+  font-size: 0.85rem;
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.pulls-value {
+  color: #FF4466;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.odds-text {
+  color: #CC8899;
+  font-size: 0.8rem;
+  margin-top: 12px;
+}
+
+.result-message.try-again {
+  background: linear-gradient(180deg, #FFF8E1 0%, #FFECB3 100%);
+  border: 3px solid #FFD93D;
+}
+
+.result-message.try-again span {
+  font-size: 1.6rem;
+  color: #FF8E53;
+  font-weight: 800;
+}
+
+.result-message.try-again p {
+  color: #E67E22;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+}
+
+/* Banned state */
+.slot-machine.banned {
+  text-align: center;
+  padding: 40px 30px;
+}
+
+.banned-icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.slot-machine.banned h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #FF4466;
+  margin: 0 0 10px 0;
+}
+
+.banned-reason {
+  color: #FF6B8A;
+  font-size: 1rem;
+  margin: 0 0 25px 0;
+  line-height: 1.6;
+}
+
+.ban-timer {
+  background: linear-gradient(180deg, #FFE4E8 0%, #FFD0D6 100%);
+  border: 3px solid #FF6B8A;
+  border-radius: 20px;
+  padding: 15px 35px;
+  display: inline-block;
+  margin-bottom: 25px;
+}
+
+.timer-label {
+  display: block;
+  color: #FF6B8A;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.timer-value {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #FF4466;
+}
+
+.banned-shame {
+  margin-top: 15px;
+}
+
+.banned-shame p {
+  color: #CC8899;
+  font-style: italic;
+  margin: 0 0 10px 0;
+}
+
+.shame-emojis {
+  font-size: 1.8rem;
+  letter-spacing: 10px;
+}
+
+/* Dev button - remove before deploy */
+.dev-unban-btn {
+  margin-top: 25px;
+  background: linear-gradient(180deg, #E8E8E8 0%, #D0D0D0 100%);
+  border: 2px dashed #999;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.dev-unban-btn:hover {
+  background: linear-gradient(180deg, #D0D0D0 0%, #B0B0B0 100%);
+  color: #333;
+}
+
+@media (max-width: 900px) {
+  .slot-sidebar {
+    display: none;
+  }
+
+  .slot-controls {
+    padding-left: 50%;
+  }
+}
+
+@media (max-width: 768px) {
+  .slot-machine {
+    padding: 15px 10px;
+  }
+
+  .slot-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .slot-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .slot-reel {
+    width: 50px;
+    height: 65px;
+  }
+
+  .emoji-symbol {
+    font-size: 1.8rem;
+  }
+
+  .pmc-symbol {
+    width: 40px;
+  }
+
+  .spin-button {
+    font-size: 1.2rem;
+    padding: 12px 35px;
+  }
+
+  .result-message span {
+    font-size: 1.5rem !important;
+  }
+
+  .timer-value {
+    font-size: 2rem;
+  }
+
+  .slot-machine.banned h1 {
+    font-size: 1.8rem;
+  }
+}
