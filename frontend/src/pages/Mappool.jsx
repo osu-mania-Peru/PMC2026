@@ -224,9 +224,14 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                       )}
                     </td>
                     <td className="col-title">
-                      <span className="map-title">
+                      <a
+                        href={`https://osu.ppy.sh/beatmaps/${map.beatmap_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="map-title"
+                      >
                         {map.artist} - {map.title} [{map.difficulty_name}]
-                      </span>
+                      </a>
                     </td>
                     <td className="col-custom">
                       <div className="custom-icons">

@@ -366,6 +366,13 @@ td.col-title {
   display: block;
   white-space: nowrap;
   padding-right: 40px;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.map-title:hover {
+  color: #ff0844;
 }
 
 td.col-title::after {
