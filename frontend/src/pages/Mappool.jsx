@@ -1,7 +1,27 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Eye } from 'lucide-react';
+import { Eye, Play, Pause } from 'lucide-react';
 import { api } from '../api';
+
+// Speed options
+const SPEED_OPTIONS = [
+  { value: 0.5, label: '0.5x' },
+  { value: 0.75, label: '0.75x' },
+  { value: 1, label: '1x' },
+  { value: 1.25, label: '1.25x' },
+  { value: 1.5, label: '1.5x' },
+  { value: 2, label: '2x' },
+];
+
+// Scroll speed options
+const SCROLL_OPTIONS = [
+  { value: 15, label: '15' },
+  { value: 20, label: '20' },
+  { value: 25, label: '25' },
+  { value: 30, label: '30' },
+  { value: 35, label: '35' },
+  { value: 40, label: '40' },
+];
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
@@ -322,7 +342,10 @@ export default function Mappool({ user }) {
   const [densityPath, setDensityPath] = useState('');
   const [skin, setSkin] = useState('arrow');
   const [volume, setVolume] = useState(0.5);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [scrollSpeed, setScrollSpeed] = useState(25);
   const seekToRef = useRef(null);
+  const playRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
@@ -538,48 +561,96 @@ export default function Mappool({ user }) {
         seekToRef={seekToRef}
         skin={skin}
         volume={volume}
+        playbackSpeed={playbackSpeed}
+        scrollSpeed={scrollSpeed}
+        playRef={playRef}
       />
 
       {/* Audio Progress Overlay */}
       {previewOpen && createPortal(
         <div className="audio-progress-overlay">
-          {/* Skin switcher */}
-          <button
-            className="skin-switcher"
-            onClick={() => setSkin(skin === 'arrow' ? 'circle' : 'arrow')}
-            title={`Switch to ${skin === 'arrow' ? 'circle' : 'arrow'} skin`}
-          >
-            <img
-              src={skin === 'arrow' ? '/mania-assets/circle/Note1.png' : '/mania-assets/left.png'}
-              alt=""
-              className="skin-switcher-icon"
-            />
-            <span>Switch</span>
-          </button>
-          {/* Volume control */}
-          <div className="volume-control">
-            <span className="volume-control-label">Vol</span>
-            <div className="volume-slider-container">
-              <div className="volume-slider-track" />
-              <div
-                className="volume-slider-fill"
-                style={{ clipPath: `polygon(0 50%, ${volume * 100}% ${50 - volume * 50}%, ${volume * 100}% ${50 + volume * 50}%)` }}
-              />
-              <div
-                className="volume-slider-thumb"
-                style={{ left: `${volume * 100}%` }}
-              />
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                className="volume-slider-input"
-              />
+          {/* Controls toolbar */}
+          <div className="overlay-toolbar">
+            {/* Play/Pause */}
+            <button
+              className="overlay-play-btn"
+              onClick={() => playRef.current?.toggle()}
+              title={audioProgress.isPlaying ? 'Pause' : 'Play'}
+            >
+              {audioProgress.isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            </button>
+
+            {/* Playback speed */}
+            <div className="overlay-control-group">
+              <span className="overlay-label">Speed</span>
+              <div className="overlay-btn-group">
+                {SPEED_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    className={`overlay-speed-btn ${playbackSpeed === opt.value ? 'active' : ''}`}
+                    onClick={() => setPlaybackSpeed(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Scroll speed */}
+            <div className="overlay-control-group">
+              <span className="overlay-label">Scroll</span>
+              <div className="overlay-btn-group">
+                {SCROLL_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    className={`overlay-scroll-btn ${scrollSpeed === opt.value ? 'active' : ''}`}
+                    onClick={() => setScrollSpeed(opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Volume control */}
+            <div className="overlay-control-group">
+              <span className="overlay-label">Vol</span>
+              <div className="volume-slider-container">
+                <div className="volume-slider-track" />
+                <div
+                  className="volume-slider-fill"
+                  style={{ clipPath: `polygon(0 50%, ${volume * 100}% ${50 - volume * 50}%, ${volume * 100}% ${50 + volume * 50}%)` }}
+                />
+                <div
+                  className="volume-slider-thumb"
+                  style={{ left: `${volume * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  className="volume-slider-input"
+                />
+              </div>
+            </div>
+
+            {/* Skin switcher */}
+            <button
+              className="overlay-skin-btn"
+              onClick={() => setSkin(skin === 'arrow' ? 'circle' : 'arrow')}
+              title={`Switch to ${skin === 'arrow' ? 'circle' : 'arrow'} skin`}
+            >
+              <img
+                src={skin === 'arrow' ? '/mania-assets/circle/Note1.png' : '/mania-assets/left.png'}
+                alt=""
+                className="overlay-skin-icon"
+              />
+            </button>
           </div>
+
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
             {/* Density curve */}
             {densityPath && (

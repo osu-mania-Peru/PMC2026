@@ -668,56 +668,129 @@ td.col-title::after {
   stroke-width: 0.5;
 }
 
-/* Skin switcher */
-.skin-switcher {
+/* Overlay toolbar */
+.overlay-toolbar {
   position: absolute;
   bottom: 100%;
-  left: 10px;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 12px 24px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.overlay-play-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
   color: #fff;
-  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
+  transition: all 0.15s ease;
   clip-path: none !important;
 }
 
-.skin-switcher:hover {
-  background: rgba(0, 0, 0, 0.8);
-  border-color: rgba(255, 255, 255, 0.4);
+.overlay-play-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.skin-switcher-icon {
-  width: 48px;
-  height: 48px;
+.overlay-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.overlay-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.overlay-btn-group {
+  display: flex;
+  gap: 2px;
+}
+
+.overlay-speed-btn,
+.overlay-scroll-btn {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+}
+
+.overlay-speed-btn:first-child,
+.overlay-scroll-btn:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.overlay-speed-btn:last-child,
+.overlay-scroll-btn:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.overlay-speed-btn:not(:first-child),
+.overlay-scroll-btn:not(:first-child) {
+  border-left: none;
+}
+
+.overlay-speed-btn:hover,
+.overlay-scroll-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.overlay-speed-btn.active,
+.overlay-scroll-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
+}
+
+.overlay-skin-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: auto;
+  clip-path: none !important;
+}
+
+.overlay-skin-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.overlay-skin-icon {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
 }
 
-/* Audacity-style volume control */
-.volume-control {
-  position: absolute;
-  bottom: 100%;
-  right: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 12px 16px;
-  z-index: 10;
-}
-
-.volume-control-label {
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 500;
+/* Volume slider in toolbar */
+.overlay-control-group .volume-slider-container {
+  width: 80px;
 }
 
 .volume-slider-container {

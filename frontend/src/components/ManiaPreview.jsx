@@ -1,41 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause } from 'lucide-react';
 import './ManiaPreview.css';
 
-// Column mapping for 4K
-const COLUMN_MAP = {
-  0: 'left',
-  1: 'down',
-  2: 'up',
-  3: 'right',
-};
-
-// Playback speed options
-const SPEED_OPTIONS = [
-  { value: 0.5, label: '0.5x' },
-  { value: 1, label: '1x' },
-  { value: 1.5, label: '1.5x' },
-  { value: 2, label: '2x' },
-];
-
-// Scroll speed options (like osu!mania scroll speed)
-const SCROLL_SPEED_OPTIONS = [
-  { value: 10, label: '10' },
-  { value: 15, label: '15' },
-  { value: 20, label: '20' },
-  { value: 25, label: '25' },
-  { value: 30, label: '30' },
-  { value: 35, label: '35' },
-  { value: 40, label: '40' },
-];
-
-// Skin options
-const SKIN_OPTIONS = [
-  { value: 'arrow', label: 'Arrow' },
-  { value: 'circle', label: 'Circle' },
-];
-
-export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', volume = 0.5 }) {
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', volume = 0.5, playbackSpeed = 1, scrollSpeed = 25, playRef }) {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -54,12 +20,10 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1);
-  const [scrollSpeedValue, setScrollSpeedValue] = useState(25);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Scroll speed (pixels per millisecond) - based on scroll speed setting
-  const scrollSpeed = scrollSpeedValue / 25;
+  const scrollSpeedMultiplier = scrollSpeed / 25;
 
   // Sync volume to audio element
   useEffect(() => {
@@ -67,6 +31,32 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       audioRef.current.volume = volume;
     }
   }, [volume]);
+
+  // Sync playback speed to audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed]);
+
+  // Expose play/pause toggle via ref
+  useEffect(() => {
+    if (playRef) {
+      playRef.current = {
+        toggle: () => {
+          if (!audioRef.current) return;
+          if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+          } else {
+            audioRef.current.play().catch(console.error);
+            setIsPlaying(true);
+          }
+        },
+        isPlaying,
+      };
+    }
+  }, [playRef, isPlaying]);
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
@@ -149,41 +139,6 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     onAudioProgress?.({ currentTime, duration, isPlaying: false });
   }, [currentTime, duration, onAudioProgress]);
 
-  // Play/Pause toggle
-  const togglePlay = useCallback(() => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play().catch(console.error);
-      setIsPlaying(true);
-    }
-  }, [isPlaying]);
-
-  // Handle seek
-  const handleSeek = useCallback((e) => {
-    if (!audioRef.current) return;
-    const newTime = parseFloat(e.target.value) / 1000;
-    audioRef.current.currentTime = newTime;
-    setCurrentTime(newTime * 1000);
-  }, []);
-
-  // Handle playback speed change
-  const handlePlaybackSpeedChange = useCallback((e) => {
-    const newSpeed = parseFloat(e.target.value);
-    setPlaybackSpeed(newSpeed);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = newSpeed;
-    }
-  }, []);
-
-  // Handle scroll speed change
-  const handleScrollSpeedChange = useCallback((e) => {
-    setScrollSpeedValue(parseInt(e.target.value, 10));
-  }, []);
-
   // Render loop
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -234,8 +189,8 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     }
 
     // Visible range for optimization (only render notes within view)
-    const visibleRangeMs = (RECEPTOR_Y + NOTE_HEIGHT) / scrollSpeed;
-    const minTime = currentTimeMs - (NOTE_HEIGHT / scrollSpeed);
+    const visibleRangeMs = (RECEPTOR_Y + NOTE_HEIGHT) / scrollSpeedMultiplier;
+    const minTime = currentTimeMs - (NOTE_HEIGHT / scrollSpeedMultiplier);
     const maxTime = currentTimeMs + visibleRangeMs;
 
     // Get notes from data
@@ -251,7 +206,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       if (type !== 'hold' && time < minTime) continue;
 
       const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_WIDTH) / 2;
-      const noteY = RECEPTOR_Y - (time - currentTimeMs) * scrollSpeed;
+      const noteY = RECEPTOR_Y - (time - currentTimeMs) * scrollSpeedMultiplier;
 
       // Get note image based on skin
       const noteImg = images[`${skin}_note_${col}`];
@@ -260,7 +215,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
       if (type === 'hold' && end !== undefined) {
         // Draw hold note
-        const endY = RECEPTOR_Y - (end - currentTimeMs) * scrollSpeed;
+        const endY = RECEPTOR_Y - (end - currentTimeMs) * scrollSpeedMultiplier;
         const holdHeight = noteY - endY;
         const capHeight = NOTE_HEIGHT / 2;
 
@@ -293,7 +248,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
     // Continue animation loop
     animationRef.current = requestAnimationFrame(render);
-  }, [imagesLoaded, notesData, scrollSpeed, skin, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
+  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
 
   // Start/stop animation loop
   useEffect(() => {
@@ -306,14 +261,6 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       }
     };
   }, [imagesLoaded, render]);
-
-  // Format time as mm:ss
-  const formatTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   return (
     <div className="mania-preview">
@@ -339,60 +286,6 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         onEnded={handleEnded}
         preload="auto"
       />
-
-      <div className="mania-preview-controls">
-        <button
-          className="mania-preview-play-btn"
-          onClick={togglePlay}
-          disabled={!imagesLoaded}
-        >
-          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-        </button>
-
-        <div className="mania-preview-time">
-          {formatTime(currentTime)}
-        </div>
-
-        <input
-          type="range"
-          className="mania-preview-seek"
-          min="0"
-          max={duration || 100}
-          value={currentTime}
-          onChange={handleSeek}
-          disabled={!duration}
-        />
-
-        <div className="mania-preview-time">
-          {formatTime(duration)}
-        </div>
-
-        <select
-          className="mania-preview-speed"
-          value={playbackSpeed}
-          onChange={handlePlaybackSpeedChange}
-          title="Playback speed"
-        >
-          {SPEED_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-
-        <select
-          className="mania-preview-scroll"
-          value={scrollSpeedValue}
-          onChange={handleScrollSpeedChange}
-          title="Scroll speed"
-        >
-          {SCROLL_SPEED_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
 
       {notesData?.metadata && (
         <div className="mania-preview-metadata">
