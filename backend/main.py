@@ -3,10 +3,14 @@ Peru Mania Cup - Tournament Management System
 FastAPI Backend
 """
 import logging
+import os
 import traceback
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import Config
@@ -104,6 +108,13 @@ app.include_router(slot.router)
 
 # Internal routers (for inter-service communication)
 app.include_router(internal.router)
+
+# Create beatmaps directory if it doesn't exist
+BEATMAPS_DIR = Path("beatmaps")
+BEATMAPS_DIR.mkdir(exist_ok=True)
+
+# Mount beatmaps directory for static file access
+app.mount("/beatmaps", StaticFiles(directory="beatmaps"), name="beatmaps")
 
 
 @app.get("/")

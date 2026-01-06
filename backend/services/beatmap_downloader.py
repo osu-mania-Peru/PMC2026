@@ -3,12 +3,14 @@ Service for downloading and extracting osu! beatmaps.
 
 Downloads .osz files from mirror and extracts them to local storage.
 """
+import json
 import zipfile
 from pathlib import Path
 
 import httpx
 
 from config import Config
+from services.osu_parser import parse_osu_file
 
 
 class BeatmapDownloader:
@@ -94,11 +96,15 @@ class BeatmapDownloader:
                 # Get list of extracted files
                 files = list(extract_path.iterdir())
 
+                # Auto-generate notes.json files
+                notes_result = self.generate_notes_json(beatmapset_id)
+
                 return {
                     "status": "downloaded",
                     "beatmapset_id": beatmapset_id,
                     "path": str(extract_path),
                     "files_count": len(files),
+                    "notes_generated": notes_result.get("generated", []),
                 }
 
         except httpx.HTTPStatusError as e:
@@ -152,6 +158,128 @@ class BeatmapDownloader:
                 files["other_files"].append(f.name)
 
         return files
+
+    def generate_notes_json(self, beatmapset_id: str) -> dict:
+        """
+        Parse all .osu files in a beatmapset and generate notes JSON files.
+
+        Creates a 'notes' subdirectory with JSON files for each difficulty.
+
+        Args:
+            beatmapset_id: The osu! beatmapset ID.
+
+        Returns:
+            Dict with status and list of generated files.
+        """
+        path = self.get_beatmapset_path(beatmapset_id)
+        if not path.exists():
+            return {"status": "error", "error": "Beatmapset not found"}
+
+        notes_dir = path / "notes"
+        notes_dir.mkdir(exist_ok=True)
+
+        generated = []
+        errors = []
+
+        # Find audio file
+        audio_file = None
+        for ext in (".ogg", ".mp3", ".wav"):
+            audio_files = list(path.glob(f"*{ext}"))
+            if audio_files:
+                audio_file = audio_files[0].name
+                break
+
+        # Find background image
+        bg_file = None
+        for f in path.iterdir():
+            if f.suffix.lower() in (".jpg", ".jpeg", ".png") and "bg" in f.name.lower():
+                bg_file = f.name
+                break
+        # Fallback to first image if no bg found
+        if not bg_file:
+            for f in path.iterdir():
+                if f.suffix.lower() in (".jpg", ".jpeg", ".png"):
+                    bg_file = f.name
+                    break
+
+        for osu_file in path.glob("*.osu"):
+            try:
+                parsed = parse_osu_file(str(osu_file))
+
+                # Add audio and background URLs
+                output = {
+                    "metadata": parsed["metadata"],
+                    "audio_file": audio_file,
+                    "background_file": bg_file,
+                    "notes": parsed["notes"],
+                }
+
+                # Use a sanitized filename based on difficulty name
+                diff_name = parsed["metadata"]["version"]
+                safe_name = "".join(c if c.isalnum() or c in "._- " else "_" for c in diff_name)
+                json_filename = f"{safe_name}.json"
+                json_path = notes_dir / json_filename
+
+                with open(json_path, "w", encoding="utf-8") as f:
+                    json.dump(output, f, ensure_ascii=False)
+
+                generated.append({
+                    "osu_file": osu_file.name,
+                    "json_file": json_filename,
+                    "notes_count": len(parsed["notes"]),
+                })
+
+            except Exception as e:
+                errors.append({
+                    "osu_file": osu_file.name,
+                    "error": str(e),
+                })
+
+        return {
+            "status": "success" if generated else "error",
+            "beatmapset_id": beatmapset_id,
+            "generated": generated,
+            "errors": errors,
+        }
+
+    def get_notes_json(self, beatmapset_id: str, difficulty: str | None = None) -> dict | None:
+        """
+        Get parsed notes JSON for a beatmapset.
+
+        Args:
+            beatmapset_id: The osu! beatmapset ID.
+            difficulty: Optional specific difficulty name. If None, returns first found.
+
+        Returns:
+            Parsed notes data or None if not found.
+        """
+        path = self.get_beatmapset_path(beatmapset_id)
+        notes_dir = path / "notes"
+
+        if not notes_dir.exists():
+            # Try to generate if not exists
+            self.generate_notes_json(beatmapset_id)
+
+        if not notes_dir.exists():
+            return None
+
+        json_files = list(notes_dir.glob("*.json"))
+        if not json_files:
+            return None
+
+        # Find specific difficulty or return first
+        target_file = None
+        if difficulty:
+            safe_diff = "".join(c if c.isalnum() or c in "._- " else "_" for c in difficulty)
+            for jf in json_files:
+                if safe_diff.lower() in jf.stem.lower():
+                    target_file = jf
+                    break
+        if not target_file:
+            target_file = json_files[0]
+
+        with open(target_file, "r", encoding="utf-8") as f:
+            return json.load(f)
 
 
 # Singleton instance

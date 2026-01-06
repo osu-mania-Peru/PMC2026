@@ -420,3 +420,37 @@ async def get_sync_status(
         results["maps"].append(map_info)
 
     return results
+
+
+@router.get("/preview/{beatmapset_id}")
+async def get_beatmap_preview_data(
+    beatmapset_id: str,
+    difficulty: str | None = None,
+):
+    """
+    Get parsed notes data for beatmap preview (public).
+
+    Returns notes JSON for rendering in the frontend preview component.
+    Auto-generates if not already parsed.
+
+    Args:
+        beatmapset_id: The osu! beatmapset ID.
+        difficulty: Optional specific difficulty name.
+    """
+    if not beatmap_downloader.exists(beatmapset_id):
+        raise HTTPException(status_code=404, detail="Beatmapset not downloaded")
+
+    notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty)
+    if not notes_data:
+        # Try to generate
+        beatmap_downloader.generate_notes_json(beatmapset_id)
+        notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty)
+
+    if not notes_data:
+        raise HTTPException(status_code=404, detail="Could not parse beatmap")
+
+    # Add URLs for audio and background
+    notes_data["audio_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('audio_file', '')}"
+    notes_data["background_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('background_file', '')}"
+
+    return notes_data
