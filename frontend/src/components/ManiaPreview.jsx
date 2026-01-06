@@ -263,11 +263,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       }
     }
 
-    // Visible range for optimization (only render notes within view)
-    // With SV, we need to be more generous with the range since SV can compress/expand time
-    const visibleRangeMs = (RECEPTOR_Y + NOTE_HEIGHT) / scrollSpeedMultiplier * 2; // 2x buffer for SV
-    const minTime = currentTimeMs - (NOTE_HEIGHT / scrollSpeedMultiplier) * 2;
-    const maxTime = currentTimeMs + visibleRangeMs;
+    // Visible Y range for culling (with buffer for note height)
+    const minVisibleY = -NOTE_HEIGHT;
+    const maxVisibleY = CANVAS_HEIGHT + NOTE_HEIGHT;
 
     // Get notes from data
     const notes = notesData?.notes || [];
@@ -276,16 +274,28 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     for (const note of notes) {
       const { col, time, type, end } = note;
 
-      // Skip notes outside visible range
-      if (time > maxTime) continue;
-      if (type === 'hold' && end < minTime) continue;
-      if (type !== 'hold' && time < minTime) continue;
-
       const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_WIDTH) / 2;
 
       // Calculate SV-aware scroll position for the note
       const noteScrollPos = calculateScrollPosition(time, timingPoints);
       const noteY = RECEPTOR_Y - (noteScrollPos - currentScrollPos) * scrollSpeedMultiplier;
+
+      // For hold notes, also calculate end position
+      let endY = noteY;
+      if (type === 'hold' && end !== undefined) {
+        const endScrollPos = calculateScrollPosition(end, timingPoints);
+        endY = RECEPTOR_Y - (endScrollPos - currentScrollPos) * scrollSpeedMultiplier;
+      }
+
+      // Skip notes outside visible Y range (SV-aware culling)
+      if (type === 'hold') {
+        // Hold note: visible if any part is on screen (head to tail)
+        if (noteY < minVisibleY && endY < minVisibleY) continue;
+        if (noteY > maxVisibleY && endY > maxVisibleY) continue;
+      } else {
+        // Tap note: visible if note center is on screen
+        if (noteY < minVisibleY || noteY > maxVisibleY) continue;
+      }
 
       // Get note image based on skin
       const noteImg = images[`${skin}_note_${col}`];
@@ -293,9 +303,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       const holdCapImg = images[`${skin}_holdcap`];
 
       if (type === 'hold' && end !== undefined) {
-        // Draw hold note with SV-aware end position
-        const endScrollPos = calculateScrollPosition(end, timingPoints);
-        const endY = RECEPTOR_Y - (endScrollPos - currentScrollPos) * scrollSpeedMultiplier;
+        // Draw hold note (endY already calculated above for visibility check)
         const holdHeight = noteY - endY;
         // Circle skin has square holdcap (128x128), arrow skin has rectangular (128x122)
         const capHeight = skin === 'circle' ? NOTE_WIDTH : NOTE_HEIGHT / 2;
