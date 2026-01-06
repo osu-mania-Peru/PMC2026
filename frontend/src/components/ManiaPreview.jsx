@@ -31,16 +31,17 @@ export default function ManiaPreview({ notesData, audioUrl }) {
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Base scroll speed (pixels per millisecond)
-  const BASE_SCROLL_SPEED = 0.5;
+  const BASE_SCROLL_SPEED = 1.0;
   const scrollSpeed = BASE_SCROLL_SPEED * speedMultiplier;
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
-  const CANVAS_HEIGHT = 600;
+  const CANVAS_HEIGHT = 800;
   const COLUMN_WIDTH = CANVAS_WIDTH / 4;
-  const RECEPTOR_Y = CANVAS_HEIGHT - 80;
-  const NOTE_HEIGHT = 40;
-  const NOTE_WIDTH = COLUMN_WIDTH - 10;
+  const RECEPTOR_Y = CANVAS_HEIGHT - 100;
+  const NOTE_SIZE = 100;  // Match receptor image width (100x800)
+  const NOTE_HEIGHT = NOTE_SIZE;
+  const NOTE_WIDTH = NOTE_SIZE;
 
   // Load all images on mount
   useEffect(() => {
@@ -152,14 +153,13 @@ export default function ManiaPreview({ notesData, audioUrl }) {
     ctx.lineTo(CANVAS_WIDTH, RECEPTOR_Y);
     ctx.stroke();
 
-    // Draw receptors
-    const receptorSize = COLUMN_WIDTH - 10;
+    // Draw receptors (images are 100x800)
     for (let col = 0; col < 4; col++) {
       const colName = COLUMN_MAP[col];
       const receptorImg = images[`key_${colName}`];
       if (receptorImg) {
-        const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - receptorSize) / 2;
-        ctx.drawImage(receptorImg, x, RECEPTOR_Y - receptorSize / 2, receptorSize, receptorSize);
+        const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
+        ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
       }
     }
 
@@ -195,10 +195,14 @@ export default function ManiaPreview({ notesData, audioUrl }) {
           ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
         }
 
-        // Draw hold cap at end
+        // Draw hold cap at end (flipped vertically)
         const holdCapImg = images['holdcap'];
         if (holdCapImg) {
-          ctx.drawImage(holdCapImg, x, endY - NOTE_HEIGHT / 2, NOTE_WIDTH, NOTE_HEIGHT / 2);
+          ctx.save();
+          ctx.translate(x + NOTE_WIDTH / 2, endY);
+          ctx.scale(1, -1);
+          ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, NOTE_HEIGHT / 2);
+          ctx.restore();
         }
 
         // Draw note head at start

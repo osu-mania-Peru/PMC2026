@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import ManiaPreview from './ManiaPreview';
 import catGif from '../assets/cat.gif';
@@ -59,25 +60,18 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl }) {
     fetchPreviewData();
   }, [map?.beatmap_id, isOpen, apiBaseUrl]);
 
-  // Prevent body scroll when panel is open
+  // Add body class to shift viewport when panel is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.classList.add('preview-panel-open');
     } else {
-      document.body.style.overflow = '';
+      document.body.classList.remove('preview-panel-open');
     }
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.classList.remove('preview-panel-open');
     };
   }, [isOpen]);
-
-  // Handle backdrop click
-  const handleBackdropClick = (e) => {
-    if (e.target.classList.contains('preview-panel-backdrop')) {
-      onClose();
-    }
-  };
 
   // Handle escape key
   useEffect(() => {
@@ -100,48 +94,43 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl }) {
     return map.title || 'Preview';
   };
 
-  return (
-    <div
-      className={`preview-panel-backdrop ${isOpen ? 'open' : ''}`}
-      onClick={handleBackdropClick}
-    >
-      <div className={`preview-panel ${isOpen ? 'open' : ''}`}>
-        <div className="preview-panel-header">
-          <h3 className="preview-panel-title">{getTitle()}</h3>
-          <button
-            className="preview-panel-close"
-            onClick={onClose}
-            aria-label="Close preview panel"
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        <div className="preview-panel-content">
-          {loading && (
-            <div className="preview-panel-loading">
-              <img src={catGif} alt="Loading..." className="preview-panel-loading-cat" />
-              <span>Loading preview...</span>
-            </div>
-          )}
-
-          {error && (
-            <div className="preview-panel-error">
-              <p>{error}</p>
-            </div>
-          )}
-
-          {!loading && !error && notesData && audioUrl && (
-            <ManiaPreview notesData={notesData} audioUrl={audioUrl} />
-          )}
-
-          {!loading && !error && !notesData && !audioUrl && map && (
-            <div className="preview-panel-empty">
-              <p>No preview data available</p>
-            </div>
-          )}
-        </div>
+  return createPortal(
+    <div className={`preview-panel ${isOpen ? 'open' : ''}`}>
+      <div className="preview-panel-header">
+        <button
+          className="preview-panel-close"
+          onClick={onClose}
+          aria-label="Close preview panel"
+        >
+          <X size={24} />
+        </button>
       </div>
-    </div>
+
+      <div className="preview-panel-content">
+        {loading && (
+          <div className="preview-panel-loading">
+            <img src={catGif} alt="Loading..." className="preview-panel-loading-cat" />
+            <span>Loading preview...</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="preview-panel-error">
+            <p>{error}</p>
+          </div>
+        )}
+
+        {!loading && !error && notesData && audioUrl && (
+          <ManiaPreview notesData={notesData} audioUrl={audioUrl} />
+        )}
+
+        {!loading && !error && !notesData && !audioUrl && map && (
+          <div className="preview-panel-empty">
+            <p>No preview data available</p>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body
   );
 }

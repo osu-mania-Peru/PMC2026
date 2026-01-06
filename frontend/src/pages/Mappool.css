@@ -607,11 +607,3 @@ td.col-title::after {
   height: 16px;
 }
 
-/* Viewport shift when preview panel is open */
-.mappool-page {
-  transition: transform 0.3s ease;
-}
-
-.mappool-page.panel-open {
-  transform: translateX(-200px);
-}
