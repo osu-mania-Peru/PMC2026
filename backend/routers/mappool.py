@@ -422,23 +422,50 @@ async def get_sync_status(
     return results
 
 
-@router.get("/preview/{beatmapset_id}")
+@router.get("/preview/{beatmap_id}")
 async def get_beatmap_preview_data(
-    beatmapset_id: str,
+    beatmap_id: str,
     difficulty: str | None = None,
+    db: Session = Depends(get_db),
 ):
     """
     Get parsed notes data for beatmap preview (public).
 
     Returns notes JSON for rendering in the frontend preview component.
-    Auto-generates if not already parsed.
+    Auto-downloads and parses beatmapset if not already available.
 
     Args:
-        beatmapset_id: The osu! beatmapset ID.
+        beatmap_id: The osu! beatmap ID.
         difficulty: Optional specific difficulty name.
     """
+    # Find the map in database to get beatmapset_id
+    map_obj = db.query(MappoolMap).filter(MappoolMap.beatmap_id == beatmap_id).first()
+
+    beatmapset_id = None
+    if map_obj and map_obj.beatmapset_id:
+        beatmapset_id = map_obj.beatmapset_id
+    else:
+        # Look up beatmapset_id from osu! API
+        beatmap_data = await osu_api.get_beatmap(int(beatmap_id))
+        if not beatmap_data:
+            raise HTTPException(status_code=404, detail="Beatmap not found on osu!")
+        beatmapset_id = str(beatmap_data.get("beatmapset_id"))
+
+        # Save beatmapset_id to database for future
+        if map_obj and beatmapset_id:
+            map_obj.beatmapset_id = beatmapset_id
+            db.commit()
+
+    if not beatmapset_id:
+        raise HTTPException(status_code=404, detail="Could not determine beatmapset_id")
+
+    # Download if not exists
     if not beatmap_downloader.exists(beatmapset_id):
-        raise HTTPException(status_code=404, detail="Beatmapset not downloaded")
+        download_result = await beatmap_downloader.download(beatmapset_id)
+        if download_result["status"] == "error":
+            raise HTTPException(status_code=500, detail=download_result.get("error", "Download failed"))
+        if download_result["status"] == "not_found":
+            raise HTTPException(status_code=404, detail="Beatmapset not found on mirror")
 
     notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty)
     if not notes_data:
