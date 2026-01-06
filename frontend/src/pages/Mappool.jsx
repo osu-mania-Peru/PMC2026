@@ -22,6 +22,15 @@ const SCROLL_OPTIONS = [
   { value: 35, label: '35' },
   { value: 40, label: '40' },
 ];
+
+// Format time as mm:ss:mmm
+const formatTime = (ms) => {
+  const totalMs = Math.floor(ms || 0);
+  const minutes = Math.floor(totalMs / 60000);
+  const seconds = Math.floor((totalMs % 60000) / 1000);
+  const millis = totalMs % 1000;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${millis.toString().padStart(3, '0')}`;
+};
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
@@ -664,6 +673,10 @@ export default function Mappool({ user }) {
               className="audio-progress-marker"
               style={{ left: `${audioProgress.duration ? (audioProgress.currentTime / audioProgress.duration) * 100 : 0}%` }}
             />
+            {/* Time display */}
+            <div className="audio-time-display">
+              {formatTime(audioProgress.currentTime)} / {formatTime(audioProgress.duration)}
+            </div>
           </div>
         </div>,
         document.body
