@@ -635,9 +635,19 @@ td.col-title::after {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 2px;
+  width: 4px;
   background: #ff8c00;
-  box-shadow: 0 0 6px rgba(255, 140, 0, 0.8);
+  box-shadow: 0 0 8px rgba(255, 140, 0, 0.8);
   transform: translateX(-50%);
   transition: left 0.1s linear;
+  pointer-events: none;
+}
+
+.audio-progress-bar {
+  cursor: pointer;
+}
+
+.audio-progress-bar:hover .audio-progress-marker {
+  width: 6px;
+  box-shadow: 0 0 12px rgba(255, 140, 0, 1);
 }

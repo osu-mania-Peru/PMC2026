@@ -319,8 +319,18 @@ export default function Mappool({ user }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMap, setSelectedMap] = useState(null);
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false });
+  const seekToRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
+
+  const handleProgressBarClick = (e) => {
+    if (!seekToRef.current || !audioProgress.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = x / rect.width;
+    const newTime = percent * audioProgress.duration;
+    seekToRef.current(newTime);
+  };
 
   const fetchMappools = () => {
     const fetchFn = user?.is_staff ? api.getMappoolsAdmin : api.getMappools;
@@ -471,12 +481,13 @@ export default function Mappool({ user }) {
         map={selectedMap}
         apiBaseUrl={apiBaseUrl}
         onAudioProgress={setAudioProgress}
+        seekToRef={seekToRef}
       />
 
       {/* Audio Progress Overlay */}
       {previewOpen && createPortal(
         <div className="audio-progress-overlay">
-          <div className="audio-progress-bar">
+          <div className="audio-progress-bar" onClick={handleProgressBarClick}>
             <div
               className="audio-progress-marker"
               style={{ left: `${audioProgress.duration ? (audioProgress.currentTime / audioProgress.duration) * 100 : 0}%` }}

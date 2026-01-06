@@ -29,9 +29,19 @@ const SCROLL_SPEED_OPTIONS = [
   { value: 40, label: '40' },
 ];
 
-export default function ManiaPreview({ notesData, audioUrl, onAudioProgress }) {
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef }) {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
+
+  // Expose seek function via ref
+  if (seekToRef) {
+    seekToRef.current = (timeMs) => {
+      if (audioRef.current) {
+        audioRef.current.currentTime = timeMs / 1000;
+        setCurrentTime(timeMs);
+      }
+    };
+  }
   const animationRef = useRef(null);
   const imagesRef = useRef({});
 
