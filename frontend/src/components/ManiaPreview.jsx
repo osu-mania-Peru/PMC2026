@@ -219,7 +219,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         const holdHeight = noteY - endY;
         // Circle skin has square holdcap (128x128), arrow skin has rectangular (128x122)
         const capHeight = skin === 'circle' ? NOTE_WIDTH : NOTE_HEIGHT / 2;
-        const capOverlap = skin === 'circle' ? 40 : 22;
+        const capOverlap = skin === 'circle' ? 46 : 22;
 
         // Draw hold body (stretched)
         if (holdBodyImg && holdHeight > 0) {
