@@ -619,6 +619,17 @@ export default function Mappool({ user }) {
                   </button>
                 ))}
               </div>
+              <input
+                type="number"
+                min="1"
+                max="40"
+                value={scrollSpeed}
+                onChange={(e) => {
+                  const val = Math.min(40, Math.max(1, parseInt(e.target.value) || 1));
+                  setScrollSpeed(val);
+                }}
+                className="overlay-scroll-input"
+              />
             </div>
 
             {/* Volume control */}
