@@ -195,13 +195,14 @@ export default function ManiaPreview({ notesData, audioUrl }) {
           ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
         }
 
-        // Draw hold cap at end (flipped vertically)
+        // Draw hold cap at end (flipped vertically, overlapping with body)
         const holdCapImg = images['holdcap'];
         if (holdCapImg) {
+          const capHeight = NOTE_HEIGHT / 2;
           ctx.save();
-          ctx.translate(x + NOTE_WIDTH / 2, endY);
+          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight);
           ctx.scale(1, -1);
-          ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, NOTE_HEIGHT / 2);
+          ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
           ctx.restore();
         }
 
