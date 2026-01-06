@@ -196,19 +196,11 @@ export default function ManiaPreview({ notesData, audioUrl }) {
           ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
         }
 
-        // Erase the area where cap will be drawn
-        ctx.save();
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight);
-        ctx.scale(1, -1);
-        ctx.fillRect(-NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
-        ctx.restore();
-
-        // Draw hold cap at end (flipped vertically)
+        // Draw hold cap at end (flipped vertically, slightly overlapping body)
         const holdCapImg = images['holdcap'];
         if (holdCapImg) {
           ctx.save();
-          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight);
+          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - 2);
           ctx.scale(1, -1);
           ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
           ctx.restore();
