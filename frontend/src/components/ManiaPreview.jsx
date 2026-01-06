@@ -219,10 +219,6 @@ export default function ManiaPreview({ notesData, audioUrl }) {
       }
     }
 
-    // Draw playfield border
-    ctx.strokeStyle = '#666';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Continue animation loop
     animationRef.current = requestAnimationFrame(render);
