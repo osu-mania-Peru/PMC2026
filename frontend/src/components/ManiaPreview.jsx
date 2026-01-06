@@ -217,7 +217,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         // Draw hold note
         const endY = RECEPTOR_Y - (end - currentTimeMs) * scrollSpeedMultiplier;
         const holdHeight = noteY - endY;
-        const capHeight = NOTE_HEIGHT / 2;
+        // Circle skin has square holdcap (128x128), arrow skin has rectangular (128x122)
+        const capHeight = skin === 'circle' ? NOTE_WIDTH : NOTE_HEIGHT / 2;
+        const capOverlap = skin === 'circle' ? 40 : 22;
 
         // Draw hold body (stretched)
         if (holdBodyImg && holdHeight > 0) {
@@ -227,7 +229,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         // Draw hold cap at end (flipped vertically, slightly overlapping body)
         if (holdCapImg) {
           ctx.save();
-          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - 22);
+          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - capOverlap);
           ctx.scale(1, -1);
           ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
           ctx.restore();
