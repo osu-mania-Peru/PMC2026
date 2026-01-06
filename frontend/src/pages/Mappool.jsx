@@ -241,6 +241,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                           title="Preview"
                         >
                           <Eye size={16} />
+                          Preview
                         </button>
                       )}
                     </td>

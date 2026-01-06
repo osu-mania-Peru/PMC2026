@@ -595,7 +595,10 @@ td.col-title::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
   transition: opacity 0.2s ease;
+  clip-path: none !important;
 }
 
 .preview-btn:hover {
