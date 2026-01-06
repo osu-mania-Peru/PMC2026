@@ -691,10 +691,15 @@ td.col-title::after {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
-  color: #fff;
+  color: #fff !important;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none !important;
+}
+
+.overlay-play-btn svg {
+  color: #fff;
+  stroke: #fff;
 }
 
 .overlay-play-btn:hover {
@@ -771,6 +776,7 @@ td.col-title::after {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 4px;
+  color: #fff !important;
   cursor: pointer;
   transition: all 0.15s ease;
   margin-left: auto;
