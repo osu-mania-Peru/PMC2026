@@ -320,6 +320,7 @@ export default function Mappool({ user }) {
   const [selectedMap, setSelectedMap] = useState(null);
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
+  const [skin, setSkin] = useState('arrow');
   const seekToRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
@@ -534,11 +535,25 @@ export default function Mappool({ user }) {
         apiBaseUrl={apiBaseUrl}
         onAudioProgress={setAudioProgress}
         seekToRef={seekToRef}
+        skin={skin}
       />
 
       {/* Audio Progress Overlay */}
       {previewOpen && createPortal(
         <div className="audio-progress-overlay">
+          {/* Skin switcher */}
+          <button
+            className="skin-switcher"
+            onClick={() => setSkin(skin === 'arrow' ? 'circle' : 'arrow')}
+            title={`Switch to ${skin === 'arrow' ? 'circle' : 'arrow'} skin`}
+          >
+            <img
+              src={skin === 'arrow' ? '/mania-assets/circle/Note1.png' : '/mania-assets/left.png'}
+              alt=""
+              className="skin-switcher-icon"
+            />
+            <span>Switch</span>
+          </button>
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
             {/* Density curve */}
             {densityPath && (

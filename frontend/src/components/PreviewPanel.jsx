@@ -16,7 +16,7 @@ import './PreviewPanel.css';
  * @param {string} props.apiBaseUrl - Base URL for API calls
  * @param {Function} props.onAudioProgress - Callback for audio progress updates
  */
-export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudioProgress, seekToRef }) {
+export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudioProgress, seekToRef, skin }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
@@ -122,7 +122,7 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
         )}
 
         {!loading && !error && notesData && audioUrl && (
-          <ManiaPreview notesData={notesData} audioUrl={audioUrl} onAudioProgress={onAudioProgress} seekToRef={seekToRef} />
+          <ManiaPreview notesData={notesData} audioUrl={audioUrl} onAudioProgress={onAudioProgress} seekToRef={seekToRef} skin={skin} />
         )}
 
         {!loading && !error && !notesData && !audioUrl && map && (

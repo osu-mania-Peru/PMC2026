@@ -29,7 +29,13 @@ const SCROLL_SPEED_OPTIONS = [
   { value: 40, label: '40' },
 ];
 
-export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef }) {
+// Skin options
+const SKIN_OPTIONS = [
+  { value: 'arrow', label: 'Arrow' },
+  { value: 'circle', label: 'Circle' },
+];
+
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow' }) {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -64,20 +70,40 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
   const NOTE_HEIGHT = NOTE_SIZE;
   const NOTE_WIDTH = NOTE_SIZE;
 
-  // Load all images on mount
+  // Load all images on mount (both skins)
   useEffect(() => {
-    const imageNames = [
+    const arrowImages = [
       // Notes
-      'left', 'down', 'up', 'right',
+      { name: 'arrow_note_0', src: '/mania-assets/left.png' },
+      { name: 'arrow_note_1', src: '/mania-assets/down.png' },
+      { name: 'arrow_note_2', src: '/mania-assets/up.png' },
+      { name: 'arrow_note_3', src: '/mania-assets/right.png' },
       // Receptors
-      'key_left', 'key_down', 'key_up', 'key_right',
-      // Pressed receptors
-      'key_leftD', 'key_downD', 'key_upD', 'key_rightD',
+      { name: 'arrow_receptor_0', src: '/mania-assets/key_left.png' },
+      { name: 'arrow_receptor_1', src: '/mania-assets/key_down.png' },
+      { name: 'arrow_receptor_2', src: '/mania-assets/key_up.png' },
+      { name: 'arrow_receptor_3', src: '/mania-assets/key_right.png' },
       // Holds
-      'holdbody', 'holdcap',
+      { name: 'arrow_holdbody', src: '/mania-assets/holdbody.png' },
+      { name: 'arrow_holdcap', src: '/mania-assets/holdcap.png' },
     ];
 
-    const loadPromises = imageNames.map((name) => {
+    const circleImages = [
+      // Notes (same image for all columns)
+      { name: 'circle_note_0', src: '/mania-assets/circle/Note1.png' },
+      { name: 'circle_note_1', src: '/mania-assets/circle/Note2.png' },
+      { name: 'circle_note_2', src: '/mania-assets/circle/Note3.png' },
+      { name: 'circle_note_3', src: '/mania-assets/circle/Note4.png' },
+      // Receptors (same for all columns)
+      { name: 'circle_receptor', src: '/mania-assets/circle/receptor.png' },
+      // Holds
+      { name: 'circle_holdbody', src: '/mania-assets/circle/holdbody.png' },
+      { name: 'circle_holdcap', src: '/mania-assets/circle/holdcap.png' },
+    ];
+
+    const allImages = [...arrowImages, ...circleImages];
+
+    const loadPromises = allImages.map(({ name, src }) => {
       return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
@@ -85,7 +111,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
           resolve();
         };
         img.onerror = reject;
-        img.src = `/mania-assets/${name}.png`;
+        img.src = src;
       });
     });
 
@@ -182,13 +208,20 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     ctx.lineTo(CANVAS_WIDTH, RECEPTOR_Y);
     ctx.stroke();
 
-    // Draw receptors (images are 100x800)
+    // Draw receptors
     for (let col = 0; col < 4; col++) {
-      const colName = COLUMN_MAP[col];
-      const receptorImg = images[`key_${colName}`];
+      const receptorImg = skin === 'arrow'
+        ? images[`arrow_receptor_${col}`]
+        : images['circle_receptor'];
       if (receptorImg) {
         const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
-        ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
+        if (skin === 'arrow') {
+          // Arrow receptors are 100x800
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
+        } else {
+          // Circle receptors are square, draw at receptor position
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - NOTE_SIZE / 2, NOTE_SIZE, NOTE_SIZE);
+        }
       }
     }
 
@@ -209,9 +242,13 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       if (type === 'hold' && end < minTime) continue;
       if (type !== 'hold' && time < minTime) continue;
 
-      const colName = COLUMN_MAP[col];
       const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_WIDTH) / 2;
       const noteY = RECEPTOR_Y - (time - currentTimeMs) * scrollSpeed;
+
+      // Get note image based on skin
+      const noteImg = images[`${skin}_note_${col}`];
+      const holdBodyImg = images[`${skin}_holdbody`];
+      const holdCapImg = images[`${skin}_holdcap`];
 
       if (type === 'hold' && end !== undefined) {
         // Draw hold note
@@ -220,13 +257,11 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         const capHeight = NOTE_HEIGHT / 2;
 
         // Draw hold body (stretched)
-        const holdBodyImg = images['holdbody'];
         if (holdBodyImg && holdHeight > 0) {
           ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
         }
 
         // Draw hold cap at end (flipped vertically, slightly overlapping body)
-        const holdCapImg = images['holdcap'];
         if (holdCapImg) {
           ctx.save();
           ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - 22);
@@ -236,13 +271,11 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         }
 
         // Draw note head at start
-        const noteImg = images[colName];
         if (noteImg) {
           ctx.drawImage(noteImg, x, noteY - NOTE_HEIGHT / 2, NOTE_WIDTH, NOTE_HEIGHT);
         }
       } else {
         // Draw regular note
-        const noteImg = images[colName];
         if (noteImg) {
           ctx.drawImage(noteImg, x, noteY - NOTE_HEIGHT / 2, NOTE_WIDTH, NOTE_HEIGHT);
         }
@@ -252,7 +285,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
     // Continue animation loop
     animationRef.current = requestAnimationFrame(render);
-  }, [imagesLoaded, notesData, scrollSpeed, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
+  }, [imagesLoaded, notesData, scrollSpeed, skin, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
 
   // Start/stop animation loop
   useEffect(() => {
