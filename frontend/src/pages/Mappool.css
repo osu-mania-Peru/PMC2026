@@ -671,7 +671,7 @@ td.col-title::after {
 /* Skin switcher */
 .skin-switcher {
   position: absolute;
-  top: 10px;
+  bottom: 100%;
   left: 10px;
   display: flex;
   align-items: center;
