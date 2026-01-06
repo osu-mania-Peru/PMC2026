@@ -614,7 +614,7 @@ td.col-title::after {
 .audio-progress-overlay {
   position: fixed;
   bottom: 0;
-  left: 0;
+  left: calc((100vh - 60px) / 2);
   right: 0;
   height: 40px;
   background: rgba(0, 0, 0, 0.7);
