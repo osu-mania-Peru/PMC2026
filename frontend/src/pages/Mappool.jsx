@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Eye } from 'lucide-react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
@@ -473,7 +474,7 @@ export default function Mappool({ user }) {
       />
 
       {/* Audio Progress Overlay */}
-      {previewOpen && (
+      {previewOpen && createPortal(
         <div className="audio-progress-overlay">
           <div className="audio-progress-bar">
             <div
@@ -481,7 +482,8 @@ export default function Mappool({ user }) {
               style={{ left: `${audioProgress.duration ? (audioProgress.currentTime / audioProgress.duration) * 100 : 0}%` }}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
