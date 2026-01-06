@@ -331,7 +331,7 @@ export default function Mappool({ user }) {
       return;
     }
 
-    const NUM_BARS = 100;
+    const NUM_BARS = 300;
     const segmentDuration = audioProgress.duration / NUM_BARS;
     const counts = new Array(NUM_BARS).fill(0);
 

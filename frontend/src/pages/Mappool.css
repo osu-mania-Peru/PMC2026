@@ -656,7 +656,7 @@ td.col-title::after {
 .density-bar {
   position: absolute;
   bottom: 0;
-  width: 1%;
+  width: 0.34%;
   background: rgba(59, 130, 246, 0.6);
   pointer-events: none;
 }
