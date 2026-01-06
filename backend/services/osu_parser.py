@@ -179,8 +179,8 @@ def parse_timing_points(lines: list[str]) -> list[TimingPoint]:
                 # Inherited point (green line) - defines SV
                 # beatLength is negative, SV = -100 / beatLength
                 sv = -100 / beat_length if beat_length < 0 else 1.0
-                # Clamp SV to reasonable range
-                sv = max(0.1, min(10.0, sv))
+                # Clamp SV to extended range (allows freeze/teleport effects)
+                sv = max(0.01, min(40.0, sv))
                 timing_point = {
                     "time": time,
                     "sv": sv,
