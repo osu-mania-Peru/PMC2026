@@ -127,8 +127,9 @@
   cursor: not-allowed;
 }
 
-/* Speed selector */
-.mania-preview-speed {
+/* Speed selectors */
+.mania-preview-speed,
+.mania-preview-scroll {
   padding: 4px 8px;
   background: #3a3a3a;
   border: 1px solid #4a4a4a;
@@ -138,11 +139,13 @@
   cursor: pointer;
 }
 
-.mania-preview-speed:hover {
+.mania-preview-speed:hover,
+.mania-preview-scroll:hover {
   border-color: #5a5a5a;
 }
 
-.mania-preview-speed:focus {
+.mania-preview-speed:focus,
+.mania-preview-scroll:focus {
   outline: none;
   border-color: #666;
 }

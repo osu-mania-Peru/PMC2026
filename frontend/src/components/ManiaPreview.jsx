@@ -10,12 +10,23 @@ const COLUMN_MAP = {
   3: 'right',
 };
 
-// Speed multiplier options
+// Playback speed options
 const SPEED_OPTIONS = [
   { value: 0.5, label: '0.5x' },
   { value: 1, label: '1x' },
   { value: 1.5, label: '1.5x' },
   { value: 2, label: '2x' },
+];
+
+// Scroll speed options (like osu!mania scroll speed)
+const SCROLL_SPEED_OPTIONS = [
+  { value: 10, label: '10' },
+  { value: 15, label: '15' },
+  { value: 20, label: '20' },
+  { value: 25, label: '25' },
+  { value: 30, label: '30' },
+  { value: 35, label: '35' },
+  { value: 40, label: '40' },
 ];
 
 export default function ManiaPreview({ notesData, audioUrl }) {
@@ -27,12 +38,12 @@ export default function ManiaPreview({ notesData, audioUrl }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [scrollSpeedValue, setScrollSpeedValue] = useState(25);
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Base scroll speed (pixels per millisecond)
-  const BASE_SCROLL_SPEED = 1.0;
-  const scrollSpeed = BASE_SCROLL_SPEED * speedMultiplier;
+  // Scroll speed (pixels per millisecond) - based on scroll speed setting
+  const scrollSpeed = scrollSpeedValue / 25;
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
@@ -113,13 +124,18 @@ export default function ManiaPreview({ notesData, audioUrl }) {
     setCurrentTime(newTime * 1000);
   }, []);
 
-  // Handle speed change
-  const handleSpeedChange = useCallback((e) => {
+  // Handle playback speed change
+  const handlePlaybackSpeedChange = useCallback((e) => {
     const newSpeed = parseFloat(e.target.value);
-    setSpeedMultiplier(newSpeed);
+    setPlaybackSpeed(newSpeed);
     if (audioRef.current) {
       audioRef.current.playbackRate = newSpeed;
     }
+  }, []);
+
+  // Handle scroll speed change
+  const handleScrollSpeedChange = useCallback((e) => {
+    setScrollSpeedValue(parseInt(e.target.value, 10));
   }, []);
 
   // Render loop
@@ -299,10 +315,24 @@ export default function ManiaPreview({ notesData, audioUrl }) {
 
         <select
           className="mania-preview-speed"
-          value={speedMultiplier}
-          onChange={handleSpeedChange}
+          value={playbackSpeed}
+          onChange={handlePlaybackSpeedChange}
+          title="Playback speed"
         >
           {SPEED_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          className="mania-preview-scroll"
+          value={scrollSpeedValue}
+          onChange={handleScrollSpeedChange}
+          title="Scroll speed"
+        >
+          {SCROLL_SPEED_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
