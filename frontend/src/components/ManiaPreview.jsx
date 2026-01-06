@@ -187,23 +187,24 @@ export default function ManiaPreview({ notesData, audioUrl }) {
       if (type === 'hold' && end !== undefined) {
         // Draw hold note
         const endY = RECEPTOR_Y - (end - currentTimeMs) * scrollSpeed;
-        const holdHeight = noteY - endY;
+        const capHeight = NOTE_HEIGHT / 2;
 
-        // Draw hold body (stretched)
-        const holdBodyImg = images['holdbody'];
-        if (holdBodyImg && holdHeight > 0) {
-          ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
-        }
-
-        // Draw hold cap at end (flipped vertically, overlapping with body)
+        // Draw hold cap at end first (flipped vertically)
         const holdCapImg = images['holdcap'];
         if (holdCapImg) {
-          const capHeight = NOTE_HEIGHT / 2;
           ctx.save();
           ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight);
           ctx.scale(1, -1);
           ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
           ctx.restore();
+        }
+
+        // Draw hold body below the cap (so they don't overlap)
+        const bodyStartY = endY + capHeight;
+        const holdHeight = noteY - bodyStartY;
+        const holdBodyImg = images['holdbody'];
+        if (holdBodyImg && holdHeight > 0) {
+          ctx.drawImage(holdBodyImg, x, bodyStartY, NOTE_WIDTH, holdHeight);
         }
 
         // Draw note head at start
