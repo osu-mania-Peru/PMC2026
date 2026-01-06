@@ -688,18 +688,20 @@ td.col-title::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 4px;
   color: #fff !important;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none !important;
+  padding: 0 !important;
 }
 
 .overlay-play-btn svg {
-  color: #fff;
-  stroke: #fff;
+  color: #fff !important;
+  stroke: #fff !important;
+  fill: #fff !important;
 }
 
 .overlay-play-btn:hover {
@@ -728,10 +730,10 @@ td.col-title::after {
 
 .overlay-speed-btn,
 .overlay-scroll-btn {
-  padding: 4px 8px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 8px !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
@@ -756,15 +758,15 @@ td.col-title::after {
 
 .overlay-speed-btn:hover,
 .overlay-scroll-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
 }
 
 .overlay-speed-btn.active,
 .overlay-scroll-btn.active {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #fff !important;
 }
 
 .overlay-skin-btn {
@@ -773,14 +775,15 @@ td.col-title::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 4px;
   color: #fff !important;
   cursor: pointer;
   transition: all 0.15s ease;
   margin-left: auto;
   clip-path: none !important;
+  padding: 0 !important;
 }
 
 .overlay-skin-btn:hover {
