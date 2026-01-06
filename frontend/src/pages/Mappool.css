@@ -685,6 +685,7 @@ td.col-title::after {
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 10;
+  clip-path: none !important;
 }
 
 .skin-switcher:hover {
