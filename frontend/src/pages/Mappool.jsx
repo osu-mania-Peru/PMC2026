@@ -319,26 +319,26 @@ export default function Mappool({ user }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMap, setSelectedMap] = useState(null);
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
-  const [densityBars, setDensityBars] = useState([]);
+  const [densityPath, setDensityPath] = useState('');
   const seekToRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
-  // Calculate note density when notes data changes
+  // Calculate note density and create bezier curve path
   useEffect(() => {
     if (!audioProgress.notes || !audioProgress.duration) {
-      setDensityBars([]);
+      setDensityPath('');
       return;
     }
 
-    const NUM_BARS = 300;
-    const segmentDuration = audioProgress.duration / NUM_BARS;
-    const counts = new Array(NUM_BARS).fill(0);
+    const NUM_POINTS = 150;
+    const segmentDuration = audioProgress.duration / NUM_POINTS;
+    const counts = new Array(NUM_POINTS).fill(0);
 
     // Count notes in each segment
     for (const note of audioProgress.notes) {
       const segmentIndex = Math.floor(note.time / segmentDuration);
-      if (segmentIndex >= 0 && segmentIndex < NUM_BARS) {
+      if (segmentIndex >= 0 && segmentIndex < NUM_POINTS) {
         counts[segmentIndex]++;
       }
     }
@@ -346,13 +346,33 @@ export default function Mappool({ user }) {
     // Find max for normalization
     const maxCount = Math.max(...counts, 1);
 
-    // Create bar data with normalized heights
-    const bars = counts.map((count, i) => ({
-      left: (i / NUM_BARS) * 100,
-      height: (count / maxCount) * 100,
+    // Create points with normalized heights (0-100)
+    const points = counts.map((count, i) => ({
+      x: (i / (NUM_POINTS - 1)) * 100,
+      y: 100 - (count / maxCount) * 100, // Invert for SVG coords
     }));
 
-    setDensityBars(bars);
+    // Smooth the curve with bezier - create SVG path
+    let path = `M 0,100 L 0,${points[0].y}`;
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[Math.min(points.length - 1, i + 2)];
+
+      // Catmull-Rom to Bezier conversion
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+
+    path += ' L 100,100 Z'; // Close the path at bottom
+
+    setDensityPath(path);
   }, [audioProgress.notes, audioProgress.duration]);
 
   const handleProgressBarClick = (e) => {
@@ -520,14 +540,12 @@ export default function Mappool({ user }) {
       {previewOpen && createPortal(
         <div className="audio-progress-overlay">
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
-            {/* Density bars */}
-            {densityBars.map((bar, i) => (
-              <div
-                key={i}
-                className="density-bar"
-                style={{ left: `${bar.left}%`, height: `${bar.height}%` }}
-              />
-            ))}
+            {/* Density curve */}
+            {densityPath && (
+              <svg className="density-curve" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d={densityPath} />
+              </svg>
+            )}
             {/* Progress marker */}
             <div
               className="audio-progress-marker"

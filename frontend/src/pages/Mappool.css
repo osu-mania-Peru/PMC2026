@@ -652,11 +652,18 @@ td.col-title::after {
   box-shadow: 0 0 12px rgba(255, 140, 0, 1);
 }
 
-/* Density bars */
-.density-bar {
+/* Density curve */
+.density-curve {
   position: absolute;
-  bottom: 0;
-  width: 0.34%;
-  background: rgba(59, 130, 246, 0.6);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+}
+
+.density-curve path {
+  fill: rgba(59, 130, 246, 0.5);
+  stroke: rgba(59, 130, 246, 0.8);
+  stroke-width: 0.5;
 }
