@@ -563,7 +563,7 @@ export default function Mappool({ user }) {
               <div className="volume-slider-track" />
               <div
                 className="volume-slider-fill"
-                style={{ width: `${volume * 100}%` }}
+                style={{ clipPath: `polygon(0 50%, ${volume * 100}% ${50 - volume * 50}%, ${volume * 100}% ${50 + volume * 50}%)` }}
               />
               <div
                 className="volume-slider-thumb"
