@@ -181,14 +181,6 @@ class BeatmapDownloader:
         generated = []
         errors = []
 
-        # Find audio file
-        audio_file = None
-        for ext in (".ogg", ".mp3", ".wav"):
-            audio_files = list(path.glob(f"*{ext}"))
-            if audio_files:
-                audio_file = audio_files[0].name
-                break
-
         # Find background image
         bg_file = None
         for f in path.iterdir():
@@ -206,7 +198,10 @@ class BeatmapDownloader:
             try:
                 parsed = parse_osu_file(str(osu_file))
 
-                # Add audio and background URLs
+                # Use audio file from the .osu file's [General] section
+                audio_file = parsed["metadata"].get("audio_filename", "")
+
+                # Add audio and background info
                 output = {
                     "metadata": parsed["metadata"],
                     "audio_file": audio_file,

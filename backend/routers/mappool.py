@@ -425,7 +425,6 @@ async def get_sync_status(
 @router.get("/preview/{beatmap_id}")
 async def get_beatmap_preview_data(
     beatmap_id: str,
-    difficulty: str | None = None,
     db: Session = Depends(get_db),
 ):
     """
@@ -436,20 +435,26 @@ async def get_beatmap_preview_data(
 
     Args:
         beatmap_id: The osu! beatmap ID.
-        difficulty: Optional specific difficulty name.
     """
-    # Find the map in database to get beatmapset_id
+    # Find the map in database to get beatmapset_id and difficulty_name
     map_obj = db.query(MappoolMap).filter(MappoolMap.beatmap_id == beatmap_id).first()
 
     beatmapset_id = None
-    if map_obj and map_obj.beatmapset_id:
+    difficulty_name = None
+
+    if map_obj:
         beatmapset_id = map_obj.beatmapset_id
-    else:
+        difficulty_name = map_obj.difficulty_name
+
+    if not beatmapset_id:
         # Look up beatmapset_id from osu! API
         beatmap_data = await osu_api.get_beatmap(int(beatmap_id))
         if not beatmap_data:
             raise HTTPException(status_code=404, detail="Beatmap not found on osu!")
         beatmapset_id = str(beatmap_data.get("beatmapset_id"))
+        # Also get difficulty name from API if we don't have it
+        if not difficulty_name:
+            difficulty_name = beatmap_data.get("version")
 
         # Save beatmapset_id to database for future
         if map_obj and beatmapset_id:
@@ -467,11 +472,12 @@ async def get_beatmap_preview_data(
         if download_result["status"] == "not_found":
             raise HTTPException(status_code=404, detail="Beatmapset not found on mirror")
 
-    notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty)
+    # Use difficulty_name from database/API to get correct difficulty
+    notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty_name)
     if not notes_data:
-        # Try to generate
+        # Try to regenerate
         beatmap_downloader.generate_notes_json(beatmapset_id)
-        notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty)
+        notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty_name)
 
     if not notes_data:
         raise HTTPException(status_code=404, detail="Could not parse beatmap")

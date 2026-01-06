@@ -35,6 +35,7 @@ class MetadataDict(TypedDict):
     creator: str
     version: str
     keys: int
+    audio_filename: str
 
 
 class ParsedBeatmap(TypedDict):
@@ -46,13 +47,13 @@ class ParsedBeatmap(TypedDict):
 
 def parse_metadata(lines: list[str]) -> dict[str, str | int]:
     """
-    Extract metadata from [Metadata] and [Difficulty] sections.
+    Extract metadata from [General], [Metadata] and [Difficulty] sections.
 
     Args:
         lines: All lines from the .osu file.
 
     Returns:
-        Dictionary containing title, artist, creator, version, and keys.
+        Dictionary containing title, artist, creator, version, keys, and audio_filename.
     """
     metadata: dict[str, str | int] = {
         "title": "",
@@ -60,6 +61,7 @@ def parse_metadata(lines: list[str]) -> dict[str, str | int]:
         "creator": "",
         "version": "",
         "keys": 4,
+        "audio_filename": "",
     }
 
     current_section = ""
@@ -80,7 +82,11 @@ def parse_metadata(lines: list[str]) -> dict[str, str | int]:
         key = key.strip()
         value = value.strip()
 
-        if current_section == "Metadata":
+        if current_section == "General":
+            if key == "AudioFilename":
+                metadata["audio_filename"] = value
+
+        elif current_section == "Metadata":
             if key == "Title":
                 metadata["title"] = value
             elif key == "Artist":
@@ -237,6 +243,7 @@ def parse_osu_file(file_path: str) -> ParsedBeatmap:
             "creator": str(metadata_dict.get("creator", "")),
             "version": str(metadata_dict.get("version", "")),
             "keys": key_count,
+            "audio_filename": str(metadata_dict.get("audio_filename", "")),
         },
         "notes": notes,
     }
