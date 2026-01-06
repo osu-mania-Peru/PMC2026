@@ -106,9 +106,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     if (audioRef.current) {
       const time = audioRef.current.currentTime * 1000;
       setCurrentTime(time);
-      onAudioProgress?.({ currentTime: time, duration, isPlaying });
+      onAudioProgress?.({ currentTime: time, duration, isPlaying, notes: notesData?.notes });
     }
-  }, [duration, isPlaying, onAudioProgress]);
+  }, [duration, isPlaying, onAudioProgress, notesData]);
 
   // Handle audio ended
   const handleEnded = useCallback(() => {

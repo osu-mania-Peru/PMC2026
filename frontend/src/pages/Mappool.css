@@ -651,3 +651,12 @@ td.col-title::after {
   width: 6px;
   box-shadow: 0 0 12px rgba(255, 140, 0, 1);
 }
+
+/* Density bars */
+.density-bar {
+  position: absolute;
+  bottom: 0;
+  width: 1%;
+  background: rgba(59, 130, 246, 0.6);
+  pointer-events: none;
+}

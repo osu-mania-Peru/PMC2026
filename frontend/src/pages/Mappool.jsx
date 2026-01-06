@@ -318,10 +318,42 @@ export default function Mappool({ user }) {
   const [editingPoolId, setEditingPoolId] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMap, setSelectedMap] = useState(null);
-  const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false });
+  const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
+  const [densityBars, setDensityBars] = useState([]);
   const seekToRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
+
+  // Calculate note density when notes data changes
+  useEffect(() => {
+    if (!audioProgress.notes || !audioProgress.duration) {
+      setDensityBars([]);
+      return;
+    }
+
+    const NUM_BARS = 100;
+    const segmentDuration = audioProgress.duration / NUM_BARS;
+    const counts = new Array(NUM_BARS).fill(0);
+
+    // Count notes in each segment
+    for (const note of audioProgress.notes) {
+      const segmentIndex = Math.floor(note.time / segmentDuration);
+      if (segmentIndex >= 0 && segmentIndex < NUM_BARS) {
+        counts[segmentIndex]++;
+      }
+    }
+
+    // Find max for normalization
+    const maxCount = Math.max(...counts, 1);
+
+    // Create bar data with normalized heights
+    const bars = counts.map((count, i) => ({
+      left: (i / NUM_BARS) * 100,
+      height: (count / maxCount) * 100,
+    }));
+
+    setDensityBars(bars);
+  }, [audioProgress.notes, audioProgress.duration]);
 
   const handleProgressBarClick = (e) => {
     if (!seekToRef.current || !audioProgress.duration) return;
@@ -488,6 +520,15 @@ export default function Mappool({ user }) {
       {previewOpen && createPortal(
         <div className="audio-progress-overlay">
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
+            {/* Density bars */}
+            {densityBars.map((bar, i) => (
+              <div
+                key={i}
+                className="density-bar"
+                style={{ left: `${bar.left}%`, height: `${bar.height}%` }}
+              />
+            ))}
+            {/* Progress marker */}
             <div
               className="audio-progress-marker"
               style={{ left: `${audioProgress.duration ? (audioProgress.currentTime / audioProgress.duration) * 100 : 0}%` }}
