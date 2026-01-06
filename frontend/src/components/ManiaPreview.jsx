@@ -219,8 +219,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
           // Arrow receptors are 100x800
           ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
         } else {
-          // Circle receptors are square, draw at receptor position
-          ctx.drawImage(receptorImg, x, RECEPTOR_Y - NOTE_SIZE / 2, NOTE_SIZE, NOTE_SIZE);
+          // Circle receptors are 100x284, preserve aspect ratio and stick to bottom
+          const circleReceptorHeight = NOTE_SIZE * (284 / 100);
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - circleReceptorHeight, NOTE_SIZE, circleReceptorHeight);
         }
       }
     }
