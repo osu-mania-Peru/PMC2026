@@ -9,6 +9,7 @@ from utils.database import get_db
 from models.mappool import Mappool, MappoolMap
 from models.user import User
 from services.osu_api import osu_api
+from services.beatmap_downloader import beatmap_downloader
 
 router = APIRouter(prefix="/mappools", tags=["Mappools"])
 
@@ -27,6 +28,7 @@ def serialize_map(m: MappoolMap) -> dict:
         "slot": m.slot,
         "slot_order": m.slot_order,
         "beatmap_id": m.beatmap_id,
+        "beatmapset_id": m.beatmapset_id,
         "artist": m.artist,
         "title": m.title,
         "difficulty_name": m.difficulty_name,
@@ -306,3 +308,115 @@ async def delete_map(
     db.delete(map_obj)
     db.commit()
     return {"message": "Map deleted"}
+
+
+# === Beatmap sync/download endpoints ===
+
+@router.post("/sync")
+async def sync_all_beatmaps(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """
+    Sync all mappool beatmaps (staff only).
+
+    For each map in the mappool:
+    1. Lookup beatmapset_id if missing
+    2. Download and extract .osz if not already on disk
+
+    Returns summary of sync results.
+    """
+    maps = db.query(MappoolMap).all()
+
+    results = {
+        "total": len(maps),
+        "downloaded": 0,
+        "already_exists": 0,
+        "errors": 0,
+        "details": [],
+    }
+
+    for m in maps:
+        # Get beatmapset_id if not stored
+        beatmapset_id = m.beatmapset_id
+        if not beatmapset_id:
+            # Look it up from osu! API
+            beatmap_data = await osu_api.get_beatmap(int(m.beatmap_id))
+            if beatmap_data:
+                beatmapset_id = beatmap_data.get("beatmapset_id")
+                # Save it to database for future
+                m.beatmapset_id = beatmapset_id
+                db.commit()
+
+        if not beatmapset_id:
+            results["errors"] += 1
+            results["details"].append({
+                "beatmap_id": m.beatmap_id,
+                "slot": m.slot,
+                "status": "error",
+                "error": "Could not determine beatmapset_id",
+            })
+            continue
+
+        # Download the beatmapset
+        download_result = await beatmap_downloader.download(beatmapset_id)
+
+        if download_result["status"] == "downloaded":
+            results["downloaded"] += 1
+        elif download_result["status"] == "exists":
+            results["already_exists"] += 1
+        else:
+            results["errors"] += 1
+
+        results["details"].append({
+            "beatmap_id": m.beatmap_id,
+            "beatmapset_id": beatmapset_id,
+            "slot": m.slot,
+            **download_result,
+        })
+
+    return results
+
+
+@router.get("/sync/status")
+async def get_sync_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """
+    Check download status of all mappool beatmaps (staff only).
+
+    Returns which beatmaps are downloaded and which are missing.
+    """
+    maps = db.query(MappoolMap).all()
+
+    results = {
+        "total": len(maps),
+        "downloaded": 0,
+        "missing": 0,
+        "no_beatmapset_id": 0,
+        "maps": [],
+    }
+
+    for m in maps:
+        map_info = {
+            "beatmap_id": m.beatmap_id,
+            "beatmapset_id": m.beatmapset_id,
+            "slot": m.slot,
+            "title": m.title,
+        }
+
+        if not m.beatmapset_id:
+            map_info["status"] = "no_beatmapset_id"
+            results["no_beatmapset_id"] += 1
+        elif beatmap_downloader.exists(m.beatmapset_id):
+            map_info["status"] = "downloaded"
+            map_info["files"] = beatmap_downloader.get_beatmap_files(m.beatmapset_id)
+            results["downloaded"] += 1
+        else:
+            map_info["status"] = "missing"
+            results["missing"] += 1
+
+        results["maps"].append(map_info)
+
+    return results

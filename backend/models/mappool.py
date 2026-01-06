@@ -72,6 +72,7 @@ class MappoolMap(Base):
     slot: Mapped[str] = mapped_column(String(10), nullable=False)
     slot_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     beatmap_id: Mapped[str] = mapped_column(String(20), nullable=False)
+    beatmapset_id: Mapped[str | None] = mapped_column(String(20), nullable=True, comment='osu! beatmapset ID for downloads')
     artist: Mapped[str] = mapped_column(String(255), nullable=False)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     difficulty_name: Mapped[str] = mapped_column(String(255), nullable=False)
