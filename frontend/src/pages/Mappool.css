@@ -675,13 +675,13 @@ td.col-title::after {
   left: 10px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 12px 24px;
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 10;
@@ -694,7 +694,82 @@ td.col-title::after {
 }
 
 .skin-switcher-icon {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
+}
+
+/* Audacity-style volume control */
+.volume-control {
+  position: absolute;
+  bottom: 100%;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  z-index: 10;
+}
+
+.volume-control-label {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.volume-slider-container {
+  position: relative;
+  width: 120px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.volume-slider-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: translateY(-50%);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+.volume-slider-fill {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 100%;
+  transform: translateY(-50%);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
+  border-radius: 2px;
+}
+
+.volume-slider-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.volume-slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 28px;
+  background: #fff;
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }

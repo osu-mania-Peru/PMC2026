@@ -321,6 +321,7 @@ export default function Mappool({ user }) {
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
   const [skin, setSkin] = useState('arrow');
+  const [volume, setVolume] = useState(0.5);
   const seekToRef = useRef(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
@@ -536,6 +537,7 @@ export default function Mappool({ user }) {
         onAudioProgress={setAudioProgress}
         seekToRef={seekToRef}
         skin={skin}
+        volume={volume}
       />
 
       {/* Audio Progress Overlay */}
@@ -554,6 +556,30 @@ export default function Mappool({ user }) {
             />
             <span>Switch</span>
           </button>
+          {/* Volume control */}
+          <div className="volume-control">
+            <span className="volume-control-label">Vol</span>
+            <div className="volume-slider-container">
+              <div className="volume-slider-track" />
+              <div
+                className="volume-slider-fill"
+                style={{ width: `${volume * 100}%` }}
+              />
+              <div
+                className="volume-slider-thumb"
+                style={{ left: `${volume * 100}%` }}
+              />
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                className="volume-slider-input"
+              />
+            </div>
+          </div>
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
             {/* Density curve */}
             {densityPath && (

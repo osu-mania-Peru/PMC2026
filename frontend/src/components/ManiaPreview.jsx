@@ -35,7 +35,7 @@ const SKIN_OPTIONS = [
   { value: 'circle', label: 'Circle' },
 ];
 
-export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow' }) {
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', volume = 0.5 }) {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
 
@@ -60,6 +60,13 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
   // Scroll speed (pixels per millisecond) - based on scroll speed setting
   const scrollSpeed = scrollSpeedValue / 25;
+
+  // Sync volume to audio element
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
