@@ -615,31 +615,29 @@ td.col-title::after {
   position: fixed;
   bottom: 0;
   left: calc((100vh - 60px) / 2);
-  right: 0;
+  width: 200px;
   height: 40px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 .audio-progress-bar {
   flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
+  height: 100%;
+  background: transparent;
   position: relative;
 }
 
 .audio-progress-marker {
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
   background: #ff8c00;
-  border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255, 140, 0, 0.6);
+  box-shadow: 0 0 6px rgba(255, 140, 0, 0.8);
+  transform: translateX(-50%);
   transition: left 0.1s linear;
 }
