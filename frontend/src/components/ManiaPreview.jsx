@@ -200,7 +200,7 @@ export default function ManiaPreview({ notesData, audioUrl }) {
         const holdCapImg = images['holdcap'];
         if (holdCapImg) {
           ctx.save();
-          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - 2);
+          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - 22);
           ctx.scale(1, -1);
           ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
           ctx.restore();
