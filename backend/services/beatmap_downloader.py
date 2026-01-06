@@ -4,6 +4,7 @@ Service for downloading and extracting osu! beatmaps.
 Downloads .osz files from mirror and extracts them to local storage.
 """
 import json
+import re
 import zipfile
 from pathlib import Path
 
@@ -265,9 +266,12 @@ class BeatmapDownloader:
         # Find specific difficulty or return first
         target_file = None
         if difficulty:
-            safe_diff = "".join(c if c.isalnum() or c in "._- " else "_" for c in difficulty)
+            # Strip [#K] prefix (e.g., "[4K] " or "[7K] ") that osu! API adds
+            clean_diff = re.sub(r'^\[\d+K\]\s*', '', difficulty)
+            safe_diff = "".join(c if c.isalnum() or c in "._- " else "_" for c in clean_diff)
             for jf in json_files:
-                if safe_diff.lower() in jf.stem.lower():
+                # Check both directions - difficulty in filename or filename in difficulty
+                if safe_diff.lower() in jf.stem.lower() or jf.stem.lower() in safe_diff.lower():
                     target_file = jf
                     break
         if not target_file:
