@@ -583,3 +583,35 @@ td.col-title::after {
   height: 20px;
   object-fit: contain;
 }
+
+/* Preview button */
+.preview-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  opacity: 0.6;
+  cursor: pointer;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.preview-btn:hover {
+  opacity: 1;
+}
+
+.preview-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Viewport shift when preview panel is open */
+.mappool-page {
+  transition: transform 0.3s ease;
+}
+
+.mappool-page.panel-open {
+  transform: translateX(-200px);
+}
