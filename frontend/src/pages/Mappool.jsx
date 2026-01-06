@@ -1,9 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
+import { Eye } from 'lucide-react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
 import SlotEditModal from '../components/SlotEditModal';
+import PreviewPanel from '../components/PreviewPanel';
 import catGif from '../assets/cat.gif';
 import './Mappool.css';
 
@@ -132,7 +134,7 @@ const formatStageName = (name) => {
 };
 
 // Accordion component for each stage
-function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, onInlineSave }) {
+function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, onInlineSave, onPreviewClick }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const getSlotColor = (slotName) => {
@@ -232,6 +234,15 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                       >
                         {map.artist} - {map.title} [{map.difficulty_name}]
                       </a>
+                      {onPreviewClick && (
+                        <button
+                          className="preview-btn"
+                          onClick={() => onPreviewClick(map)}
+                          title="Preview"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      )}
                     </td>
                     <td className="col-custom">
                       <div className="custom-icons">
@@ -303,6 +314,10 @@ export default function Mappool({ user }) {
   const [showSlotModal, setShowSlotModal] = useState(false);
   const [editingMap, setEditingMap] = useState(null);
   const [editingPoolId, setEditingPoolId] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [selectedMap, setSelectedMap] = useState(null);
+
+  const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
   const fetchMappools = () => {
     const fetchFn = user?.is_staff ? api.getMappoolsAdmin : api.getMappools;
@@ -345,6 +360,16 @@ export default function Mappool({ user }) {
     fetchMappools();
   };
 
+  const handlePreviewClick = (map) => {
+    setSelectedMap(map);
+    setPreviewOpen(true);
+  };
+
+  const handlePreviewClose = () => {
+    setPreviewOpen(false);
+    setSelectedMap(null);
+  };
+
   if (loading) {
     return (
       <div className="mappool-page">
@@ -354,7 +379,7 @@ export default function Mappool({ user }) {
   }
 
   return (
-    <div className="mappool-page">
+    <div className={`mappool-page ${previewOpen ? 'panel-open' : ''}`}>
       {/* Header */}
       <div className="mappool-header">
         <div className="mappool-header-left">
@@ -405,6 +430,7 @@ export default function Mappool({ user }) {
               user={user}
               onEditMap={handleEditMap}
               onInlineSave={handleInlineSave}
+              onPreviewClick={handlePreviewClick}
             />
           ))
         )}
@@ -433,6 +459,14 @@ export default function Mappool({ user }) {
         isOpen={showSlotModal}
         onClose={() => setShowSlotModal(false)}
         onSlotsChange={fetchSlots}
+      />
+
+      {/* Preview Panel */}
+      <PreviewPanel
+        isOpen={previewOpen}
+        onClose={handlePreviewClose}
+        map={selectedMap}
+        apiBaseUrl={apiBaseUrl}
       />
     </div>
   );
