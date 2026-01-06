@@ -317,6 +317,7 @@ export default function Mappool({ user }) {
   const [editingPoolId, setEditingPoolId] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedMap, setSelectedMap] = useState(null);
+  const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false });
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
@@ -468,7 +469,20 @@ export default function Mappool({ user }) {
         onClose={handlePreviewClose}
         map={selectedMap}
         apiBaseUrl={apiBaseUrl}
+        onAudioProgress={setAudioProgress}
       />
+
+      {/* Audio Progress Overlay */}
+      {previewOpen && (
+        <div className="audio-progress-overlay">
+          <div className="audio-progress-bar">
+            <div
+              className="audio-progress-marker"
+              style={{ left: `${audioProgress.duration ? (audioProgress.currentTime / audioProgress.duration) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

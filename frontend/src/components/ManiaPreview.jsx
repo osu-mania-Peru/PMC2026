@@ -29,7 +29,7 @@ const SCROLL_SPEED_OPTIONS = [
   { value: 40, label: '40' },
 ];
 
-export default function ManiaPreview({ notesData, audioUrl }) {
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress }) {
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
   const animationRef = useRef(null);
@@ -94,14 +94,17 @@ export default function ManiaPreview({ notesData, audioUrl }) {
   // Handle audio time update
   const handleTimeUpdate = useCallback(() => {
     if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime * 1000);
+      const time = audioRef.current.currentTime * 1000;
+      setCurrentTime(time);
+      onAudioProgress?.({ currentTime: time, duration, isPlaying });
     }
-  }, []);
+  }, [duration, isPlaying, onAudioProgress]);
 
   // Handle audio ended
   const handleEnded = useCallback(() => {
     setIsPlaying(false);
-  }, []);
+    onAudioProgress?.({ currentTime, duration, isPlaying: false });
+  }, [currentTime, duration, onAudioProgress]);
 
   // Play/Pause toggle
   const togglePlay = useCallback(() => {

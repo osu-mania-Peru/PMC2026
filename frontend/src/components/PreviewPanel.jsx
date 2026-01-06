@@ -7,15 +7,16 @@ import './PreviewPanel.css';
 
 /**
  * Sliding preview panel component for displaying beatmap previews.
- * Slides in from the right side of the screen.
+ * Slides in from the left side of the screen.
  *
  * @param {Object} props
  * @param {boolean} props.isOpen - Whether the panel is visible
  * @param {Function} props.onClose - Function to call when closing the panel
  * @param {Object} props.map - The map object with beatmapset_id and other info
  * @param {string} props.apiBaseUrl - Base URL for API calls
+ * @param {Function} props.onAudioProgress - Callback for audio progress updates
  */
-export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl }) {
+export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudioProgress }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
@@ -121,7 +122,7 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl }) {
         )}
 
         {!loading && !error && notesData && audioUrl && (
-          <ManiaPreview notesData={notesData} audioUrl={audioUrl} />
+          <ManiaPreview notesData={notesData} audioUrl={audioUrl} onAudioProgress={onAudioProgress} />
         )}
 
         {!loading && !error && !notesData && !audioUrl && map && (
