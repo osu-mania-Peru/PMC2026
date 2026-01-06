@@ -648,6 +648,7 @@ export default function Mappool({ user }) {
                 alt=""
                 className="overlay-skin-icon"
               />
+              <span>Skin</span>
             </button>
           </div>
 

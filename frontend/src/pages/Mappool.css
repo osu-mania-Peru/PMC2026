@@ -770,11 +770,11 @@ td.col-title::after {
 }
 
 .overlay-skin-btn {
-  width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   background: transparent !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
   border-radius: 4px;
@@ -783,11 +783,17 @@ td.col-title::after {
   transition: all 0.15s ease;
   margin-left: auto;
   clip-path: none !important;
-  padding: 0 !important;
+  padding: 4px 10px !important;
+}
+
+.overlay-skin-btn span {
+  color: #fff !important;
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .overlay-skin-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1) !important;
   border-color: rgba(255, 255, 255, 0.5);
 }
 
