@@ -27,6 +27,14 @@ class HoldNote(TypedDict):
 NoteData = TapNote | HoldNote
 
 
+class TimingPoint(TypedDict):
+    """Type definition for a timing/SV point."""
+
+    time: int
+    sv: float  # Scroll velocity multiplier (1.0 = normal)
+    bpm: float | None  # BPM if uninherited point, None if inherited
+
+
 class MetadataDict(TypedDict):
     """Type definition for beatmap metadata."""
 
@@ -43,6 +51,7 @@ class ParsedBeatmap(TypedDict):
 
     metadata: MetadataDict
     notes: list[NoteData]
+    timing_points: list[TimingPoint]
 
 
 def parse_metadata(lines: list[str]) -> dict[str, str | int]:
@@ -104,6 +113,89 @@ def parse_metadata(lines: list[str]) -> dict[str, str | int]:
                     metadata["keys"] = 4
 
     return metadata
+
+
+def parse_timing_points(lines: list[str]) -> list[TimingPoint]:
+    """
+    Extract timing points from the [TimingPoints] section.
+
+    Timing point format: time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects
+
+    For uninherited points (red lines): beatLength = ms per beat, SV = 1.0
+    For inherited points (green lines): SV = -100 / beatLength
+
+    Args:
+        lines: All lines from the .osu file.
+
+    Returns:
+        List of timing points with time, sv multiplier, and optionally bpm.
+    """
+    timing_points: list[TimingPoint] = []
+    in_timing_points = False
+
+    for line in lines:
+        line = line.strip()
+
+        # Detect [TimingPoints] section
+        if line == "[TimingPoints]":
+            in_timing_points = True
+            continue
+
+        # Detect start of a new section
+        if line.startswith("[") and line.endswith("]"):
+            if in_timing_points:
+                break
+            continue
+
+        if not in_timing_points:
+            continue
+
+        # Skip empty lines
+        if not line:
+            continue
+
+        # Parse timing point: time,beatLength,meter,sampleSet,sampleIndex,volume,uninherited,effects
+        parts = line.split(",")
+        if len(parts) < 2:
+            continue
+
+        try:
+            time = int(float(parts[0]))
+            beat_length = float(parts[1])
+
+            # Check if uninherited (index 6, default to 1 for old formats)
+            uninherited = int(parts[6]) if len(parts) > 6 else 1
+
+            if uninherited == 1:
+                # Uninherited point (red line) - defines BPM
+                # beatLength is ms per beat, BPM = 60000 / beatLength
+                bpm = 60000 / beat_length if beat_length > 0 else 120
+                timing_point: TimingPoint = {
+                    "time": time,
+                    "sv": 1.0,
+                    "bpm": bpm,
+                }
+            else:
+                # Inherited point (green line) - defines SV
+                # beatLength is negative, SV = -100 / beatLength
+                sv = -100 / beat_length if beat_length < 0 else 1.0
+                # Clamp SV to reasonable range
+                sv = max(0.1, min(10.0, sv))
+                timing_point = {
+                    "time": time,
+                    "sv": sv,
+                    "bpm": None,
+                }
+
+            timing_points.append(timing_point)
+
+        except (ValueError, ZeroDivisionError):
+            continue
+
+    # Sort by time
+    timing_points.sort(key=lambda tp: tp["time"])
+
+    return timing_points
 
 
 def parse_hit_objects(lines: list[str], key_count: int) -> list[NoteData]:
@@ -231,9 +323,10 @@ def parse_osu_file(file_path: str) -> ParsedBeatmap:
     if not first_line.startswith("osu file format"):
         raise ValueError(f"Invalid osu file format: {file_path}")
 
-    # Parse metadata and hit objects
+    # Parse metadata, timing points, and hit objects
     metadata_dict = parse_metadata(lines)
     key_count = int(metadata_dict.get("keys", 4))
+    timing_points = parse_timing_points(lines)
     notes = parse_hit_objects(lines, key_count)
 
     result: ParsedBeatmap = {
@@ -246,6 +339,7 @@ def parse_osu_file(file_path: str) -> ParsedBeatmap:
             "audio_filename": str(metadata_dict.get("audio_filename", "")),
         },
         "notes": notes,
+        "timing_points": timing_points,
     }
 
     return result

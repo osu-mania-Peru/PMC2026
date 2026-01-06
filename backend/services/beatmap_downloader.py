@@ -202,12 +202,13 @@ class BeatmapDownloader:
                 # Use audio file from the .osu file's [General] section
                 audio_file = parsed["metadata"].get("audio_filename", "")
 
-                # Add audio and background info
+                # Add audio, background, and timing info
                 output = {
                     "metadata": parsed["metadata"],
                     "audio_file": audio_file,
                     "background_file": bg_file,
                     "notes": parsed["notes"],
+                    "timing_points": parsed.get("timing_points", []),
                 }
 
                 # Use a sanitized filename based on difficulty name

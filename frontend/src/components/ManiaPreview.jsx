@@ -1,26 +1,72 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './ManiaPreview.css';
 
+/**
+ * Calculate scroll position at a given time considering SV changes.
+ * Returns the cumulative scroll distance from time 0 to the given time.
+ */
+function calculateScrollPosition(time, timingPoints) {
+  if (!timingPoints || timingPoints.length === 0) {
+    return time; // No SV data, use linear time
+  }
+
+  let position = 0;
+  let currentSv = 1.0;
+  let lastTime = 0;
+
+  for (const tp of timingPoints) {
+    if (tp.time > time) {
+      // Add remaining distance at current SV
+      position += (time - lastTime) * currentSv;
+      return position;
+    }
+
+    // Add distance from last point to this point at current SV
+    position += (tp.time - lastTime) * currentSv;
+    lastTime = tp.time;
+
+    // Update SV (only if it's an inherited point with SV change)
+    if (tp.sv !== undefined && tp.sv !== null) {
+      currentSv = tp.sv;
+    }
+  }
+
+  // Add remaining distance after last timing point
+  position += (time - lastTime) * currentSv;
+  return position;
+}
+
 export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', volume = 0.5, playbackSpeed = 1, scrollSpeed = 25, playRef }) {
+  // Refs
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
-
-  // Expose seek function via ref
-  if (seekToRef) {
-    seekToRef.current = (timeMs) => {
-      if (audioRef.current) {
-        audioRef.current.currentTime = timeMs / 1000;
-        setCurrentTime(timeMs);
-      }
-    };
-  }
   const animationRef = useRef(null);
   const imagesRef = useRef({});
+  const renderRef = useRef(null);
+  // Time interpolation refs for smooth animation at any playback speed
+  const lastAudioTimeRef = useRef(0);
+  const lastPerfTimeRef = useRef(0);
 
+  // State
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  // Expose seek function via ref
+  useEffect(() => {
+    if (seekToRef) {
+      seekToRef.current = (timeMs) => {
+        if (audioRef.current) {
+          audioRef.current.currentTime = timeMs / 1000;
+          setCurrentTime(timeMs);
+          // Reset interpolation refs on seek
+          lastAudioTimeRef.current = timeMs;
+          lastPerfTimeRef.current = performance.now();
+        }
+      };
+    }
+  }, [seekToRef]);
 
   // Scroll speed (pixels per millisecond) - based on scroll speed setting
   const scrollSpeedMultiplier = scrollSpeed / 25;
@@ -45,6 +91,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       playRef.current = {
         toggle: () => {
           if (!audioRef.current) return;
+          // Reset interpolation refs on play/pause
+          lastAudioTimeRef.current = audioRef.current.currentTime * 1000;
+          lastPerfTimeRef.current = performance.now();
           if (isPlaying) {
             audioRef.current.pause();
             setIsPlaying(false);
@@ -146,7 +195,33 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     if (!canvas || !ctx || !imagesLoaded) return;
 
     const images = imagesRef.current;
-    const currentTimeMs = audioRef.current ? audioRef.current.currentTime * 1000 : 0;
+
+    // Interpolate time for smooth animation at any playback speed
+    let currentTimeMs = 0;
+    if (audioRef.current) {
+      const audioTime = audioRef.current.currentTime * 1000;
+      const perfTime = performance.now();
+
+      if (!audioRef.current.paused) {
+        // If audio time changed significantly, update our reference
+        if (Math.abs(audioTime - lastAudioTimeRef.current) > 50) {
+          lastAudioTimeRef.current = audioTime;
+          lastPerfTimeRef.current = perfTime;
+        }
+        // Interpolate: last known audio time + elapsed performance time * playback rate
+        const elapsed = (perfTime - lastPerfTimeRef.current) * (audioRef.current.playbackRate || 1);
+        currentTimeMs = lastAudioTimeRef.current + elapsed;
+      } else {
+        currentTimeMs = audioTime;
+        lastAudioTimeRef.current = audioTime;
+        lastPerfTimeRef.current = perfTime;
+      }
+    }
+
+    const timingPoints = notesData?.timing_points || [];
+
+    // Calculate current scroll position for SV-aware rendering
+    const currentScrollPos = calculateScrollPosition(currentTimeMs, timingPoints);
 
     // Clear canvas with black background
     ctx.fillStyle = '#000';
@@ -189,8 +264,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     }
 
     // Visible range for optimization (only render notes within view)
-    const visibleRangeMs = (RECEPTOR_Y + NOTE_HEIGHT) / scrollSpeedMultiplier;
-    const minTime = currentTimeMs - (NOTE_HEIGHT / scrollSpeedMultiplier);
+    // With SV, we need to be more generous with the range since SV can compress/expand time
+    const visibleRangeMs = (RECEPTOR_Y + NOTE_HEIGHT) / scrollSpeedMultiplier * 2; // 2x buffer for SV
+    const minTime = currentTimeMs - (NOTE_HEIGHT / scrollSpeedMultiplier) * 2;
     const maxTime = currentTimeMs + visibleRangeMs;
 
     // Get notes from data
@@ -206,7 +282,10 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       if (type !== 'hold' && time < minTime) continue;
 
       const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_WIDTH) / 2;
-      const noteY = RECEPTOR_Y - (time - currentTimeMs) * scrollSpeedMultiplier;
+
+      // Calculate SV-aware scroll position for the note
+      const noteScrollPos = calculateScrollPosition(time, timingPoints);
+      const noteY = RECEPTOR_Y - (noteScrollPos - currentScrollPos) * scrollSpeedMultiplier;
 
       // Get note image based on skin
       const noteImg = images[`${skin}_note_${col}`];
@@ -214,8 +293,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       const holdCapImg = images[`${skin}_holdcap`];
 
       if (type === 'hold' && end !== undefined) {
-        // Draw hold note
-        const endY = RECEPTOR_Y - (end - currentTimeMs) * scrollSpeedMultiplier;
+        // Draw hold note with SV-aware end position
+        const endScrollPos = calculateScrollPosition(end, timingPoints);
+        const endY = RECEPTOR_Y - (endScrollPos - currentScrollPos) * scrollSpeedMultiplier;
         const holdHeight = noteY - endY;
         // Circle skin has square holdcap (128x128), arrow skin has rectangular (128x122)
         const capHeight = skin === 'circle' ? NOTE_WIDTH : NOTE_HEIGHT / 2;
@@ -248,14 +328,15 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     }
 
 
-    // Continue animation loop
-    animationRef.current = requestAnimationFrame(render);
+    // Continue animation loop using ref to avoid stale closure
+    animationRef.current = requestAnimationFrame(() => renderRef.current?.());
   }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
 
-  // Start/stop animation loop
+  // Store render function in ref and start/stop animation loop
   useEffect(() => {
+    renderRef.current = render;
     if (imagesLoaded) {
-      animationRef.current = requestAnimationFrame(render);
+      animationRef.current = requestAnimationFrame(() => renderRef.current?.());
     }
     return () => {
       if (animationRef.current) {
