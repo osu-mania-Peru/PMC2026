@@ -110,9 +110,14 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
   const CANVAS_HEIGHT = 800;
-  const COLUMN_WIDTH = CANVAS_WIDTH / 4;
   const RECEPTOR_Y = CANVAS_HEIGHT - 100;
-  const NOTE_SIZE = 100;  // Match receptor image width (100x800)
+
+  // Get key count from beatmap metadata (default to 4K)
+  const keyCount = notesData?.metadata?.keys || 4;
+
+  // For 4K, use fixed 100px columns; for other key counts, divide canvas evenly
+  const COLUMN_WIDTH = keyCount === 4 ? 100 : CANVAS_WIDTH / keyCount;
+  const NOTE_SIZE = keyCount === 4 ? 100 : COLUMN_WIDTH;
   const NOTE_HEIGHT = NOTE_SIZE;
   const NOTE_WIDTH = NOTE_SIZE;
 
@@ -166,35 +171,42 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       .catch((err) => console.error('Failed to load mania assets:', err));
   }, []);
 
-  // Load custom skin images when customSkinData changes
+  // Load custom skin images when customSkinData or keyCount changes
   useEffect(() => {
     if (!customSkinData) return;
 
     const loadCustomSkinImages = async () => {
       const customImages = [];
 
-      // Load notes
-      for (let i = 0; i < 4; i++) {
-        const src = customSkinData.notes[i];
+      // Get sprites for current key count, fall back to 4K sprites
+      const sprites = customSkinData.spritesByKeyCount?.[keyCount]
+        || customSkinData.spritesByKeyCount?.[4]
+        || { notes: customSkinData.notes, receptors: customSkinData.receptors, holdBody: customSkinData.holdBody, holdCap: customSkinData.holdCap };
+
+      // Load notes for each column
+      const numColumns = sprites.notes?.length || keyCount;
+      for (let i = 0; i < numColumns; i++) {
+        const src = sprites.notes?.[i];
         if (src) {
           customImages.push({ name: `custom_note_${i}`, src });
         }
       }
 
-      // Load receptors
-      for (let i = 0; i < 4; i++) {
-        const src = customSkinData.receptors[i] || customSkinData.receptors[0];
+      // Load receptors for each column
+      const numReceptors = sprites.receptors?.length || keyCount;
+      for (let i = 0; i < numReceptors; i++) {
+        const src = sprites.receptors?.[i] || sprites.receptors?.[0];
         if (src) {
           customImages.push({ name: `custom_receptor_${i}`, src });
         }
       }
 
       // Load hold body and cap
-      if (customSkinData.holdBody) {
-        customImages.push({ name: 'custom_holdbody', src: customSkinData.holdBody });
+      if (sprites.holdBody) {
+        customImages.push({ name: 'custom_holdbody', src: sprites.holdBody });
       }
-      if (customSkinData.holdCap) {
-        customImages.push({ name: 'custom_holdcap', src: customSkinData.holdCap });
+      if (sprites.holdCap) {
+        customImages.push({ name: 'custom_holdcap', src: sprites.holdCap });
       }
 
       const loadPromises = customImages.map(({ name, src }) => {
@@ -216,7 +228,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     };
 
     loadCustomSkinImages();
-  }, [customSkinData]);
+  }, [customSkinData, keyCount]);
 
   // Handle audio metadata loaded
   const handleLoadedMetadata = useCallback(() => {
@@ -282,7 +294,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     // Draw column separators
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 1;
-    for (let i = 1; i < 4; i++) {
+    for (let i = 1; i < keyCount; i++) {
       ctx.beginPath();
       ctx.moveTo(i * COLUMN_WIDTH, 0);
       ctx.lineTo(i * COLUMN_WIDTH, CANVAS_HEIGHT);
@@ -302,23 +314,28 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     const skinPrefix = isCustomSkin ? 'custom' : skin;
 
     // Draw receptors
-    for (let col = 0; col < 4; col++) {
+    for (let col = 0; col < keyCount; col++) {
       let receptorImg;
       if (isCustomSkin) {
-        receptorImg = images[`custom_receptor_${col}`] || images['custom_receptor_0'];
+        // For custom skins, use modulo to repeat available columns (usually 4)
+        const skinCol = col % 4;
+        receptorImg = images[`custom_receptor_${skinCol}`] || images['custom_receptor_0'];
       } else if (skin === 'arrow') {
-        receptorImg = images[`arrow_receptor_${col}`];
+        // For arrow skin, use modulo 4 for non-4K
+        const skinCol = col % 4;
+        receptorImg = images[`arrow_receptor_${skinCol}`];
       } else {
+        // Circle skin uses same receptor for all columns
         receptorImg = images['circle_receptor'];
       }
 
       if (receptorImg) {
         const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
-        if (skin === 'arrow') {
-          // Arrow receptors are 100x800
+        if (skin === 'arrow' && keyCount === 4) {
+          // Arrow receptors are 100x800 (only for 4K)
           ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
         } else {
-          // Circle and custom receptors - preserve aspect ratio and stick to bottom
+          // Circle, custom, and non-4K arrow receptors - preserve aspect ratio
           const aspectRatio = receptorImg.height / receptorImg.width;
           const receptorHeight = NOTE_SIZE * Math.min(aspectRatio, 8); // Cap at reasonable height
           ctx.drawImage(receptorImg, x, RECEPTOR_Y - receptorHeight, NOTE_SIZE, receptorHeight);
@@ -360,8 +377,9 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         if (noteY < minVisibleY || noteY > maxVisibleY) continue;
       }
 
-      // Get note image based on skin
-      const noteImg = images[`${skinPrefix}_note_${col}`] || (isCustomSkin ? images['arrow_note_0'] : null);
+      // Get note image based on skin (use modulo 4 for non-4K to repeat skin images)
+      const skinCol = col % 4;
+      const noteImg = images[`${skinPrefix}_note_${skinCol}`] || (isCustomSkin ? images['arrow_note_0'] : null);
       const holdBodyImg = images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null);
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
@@ -416,7 +434,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
     // Continue animation loop using ref to avoid stale closure
     animationRef.current = requestAnimationFrame(() => renderRef.current?.());
-  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
+  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, keyCount, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
 
   // Store render function in ref and start/stop animation loop
   useEffect(() => {

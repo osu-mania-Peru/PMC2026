@@ -6,23 +6,37 @@ import JSZip from 'jszip';
 const SKINS_STORAGE_KEY = 'pmc_custom_skins';
 
 /**
- * Parse skin.ini to extract skin name and mania image paths.
+ * Create empty mania config for a given key count.
+ *
+ * @param {number} keyCount - Number of keys
+ * @returns {object} Empty mania config
+ */
+function createEmptyManiaConfig(keyCount) {
+  return {
+    keys: keyCount,
+    notes: new Array(keyCount).fill(null),
+    noteHeads: new Array(keyCount).fill(null),
+    noteBodies: new Array(keyCount).fill(null),
+    noteTails: new Array(keyCount).fill(null),
+    keyImages: new Array(keyCount).fill(null),
+  };
+}
+
+/**
+ * Parse skin.ini to extract skin name and mania image paths for all key counts.
+ * osu! skins can have multiple [Mania] sections, one per key count.
  *
  * @param {string} content - The content of skin.ini
- * @returns {object} Parsed skin info with mania paths
+ * @returns {object} Parsed skin info with mania configs per key count
  */
 function parseSkinIni(content) {
   const lines = content.split('\n');
   let skinName = 'Custom Skin';
   let currentSection = '';
-  const mania = {
-    keys: 4,
-    notes: [null, null, null, null],
-    noteHeads: [null, null, null, null],
-    noteBodies: [null, null, null, null],
-    noteTails: [null, null, null, null],
-    keyImages: [null, null, null, null],
-  };
+  let currentKeyCount = 4;
+
+  // Store mania configs per key count (4K through 10K)
+  const maniaConfigs = {};
 
   for (const line of lines) {
     let trimmed = line.trim();
@@ -37,6 +51,10 @@ function parseSkinIni(content) {
     // Section header
     if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
       currentSection = trimmed.slice(1, -1).toLowerCase();
+      // Reset key count when entering a new [Mania] section
+      if (currentSection === 'mania') {
+        currentKeyCount = 4; // Default, will be overwritten by Keys: line
+      }
       continue;
     }
 
@@ -53,29 +71,41 @@ function parseSkinIni(content) {
       if (currentSection === 'mania') {
         const keyLower = key.toLowerCase();
 
+        // Keys: line specifies which key count this section is for
         if (keyLower === 'keys') {
-          mania.keys = parseInt(value, 10) || 4;
+          currentKeyCount = parseInt(value, 10) || 4;
+          // Initialize config for this key count if not exists
+          if (!maniaConfigs[currentKeyCount]) {
+            maniaConfigs[currentKeyCount] = createEmptyManiaConfig(currentKeyCount);
+          }
         }
 
-        // Parse note images for columns 0-3
-        for (let i = 0; i < 4; i++) {
+        // Ensure we have a config for current key count
+        if (!maniaConfigs[currentKeyCount]) {
+          maniaConfigs[currentKeyCount] = createEmptyManiaConfig(currentKeyCount);
+        }
+
+        const config = maniaConfigs[currentKeyCount];
+
+        // Parse note images for all possible columns (0-9 for up to 10K)
+        for (let i = 0; i < currentKeyCount; i++) {
           if (keyLower === `noteimage${i}`) {
-            mania.notes[i] = value;
+            config.notes[i] = value;
           } else if (keyLower === `noteimage${i}h`) {
-            mania.noteHeads[i] = value;
+            config.noteHeads[i] = value;
           } else if (keyLower === `noteimage${i}l`) {
-            mania.noteBodies[i] = value;
+            config.noteBodies[i] = value;
           } else if (keyLower === `noteimage${i}t`) {
-            mania.noteTails[i] = value;
+            config.noteTails[i] = value;
           } else if (keyLower === `keyimage${i}`) {
-            mania.keyImages[i] = value;
+            config.keyImages[i] = value;
           }
         }
       }
     }
   }
 
-  return { skinName, mania };
+  return { skinName, maniaConfigs };
 }
 
 /**
@@ -175,114 +205,98 @@ async function fileToBase64(zip, filePath) {
 }
 
 /**
- * Default fallback patterns for 4K mania when skin.ini doesn't specify.
- * Column mapping: 0→type1, 1→type2, 2→type2, 3→type1 (outer-inner-inner-outer)
+ * Get default fallback patterns for a column in a given key count.
+ * Uses osu! standard pattern: alternating note1/note2 from edges to center.
+ *
+ * @param {number} keyCount - Number of keys
+ * @param {number} col - Column index
+ * @returns {object} Patterns for notes, keys, etc.
  */
-const DEFAULT_PATTERNS = {
-  notes: [
-    ['mania-note1@2x.png', 'mania-note1.png', 'note1.png', 'left.png'],
-    ['mania-note2@2x.png', 'mania-note2.png', 'note2.png', 'down.png'],
-    ['mania-note2@2x.png', 'mania-note2.png', 'note2.png', 'up.png'],
-    ['mania-note1@2x.png', 'mania-note1.png', 'note1.png', 'right.png'],
-  ],
-  noteHeads: [
-    ['mania-note1h@2x.png', 'mania-note1h.png'],
-    ['mania-note2h@2x.png', 'mania-note2h.png'],
-    ['mania-note2h@2x.png', 'mania-note2h.png'],
-    ['mania-note1h@2x.png', 'mania-note1h.png'],
-  ],
-  noteBodies: [
-    ['mania-note1l@2x.png', 'mania-note1l.png', 'holdbody.png'],
-    ['mania-note2l@2x.png', 'mania-note2l.png', 'holdbody.png'],
-    ['mania-note2l@2x.png', 'mania-note2l.png', 'holdbody.png'],
-    ['mania-note1l@2x.png', 'mania-note1l.png', 'holdbody.png'],
-  ],
-  noteTails: [
-    ['mania-note1t@2x.png', 'mania-note1t.png', 'holdcap.png'],
-    ['mania-note2t@2x.png', 'mania-note2t.png', 'holdcap.png'],
-    ['mania-note2t@2x.png', 'mania-note2t.png', 'holdcap.png'],
-    ['mania-note1t@2x.png', 'mania-note1t.png', 'holdcap.png'],
-  ],
-  keys: [
-    ['mania-key1@2x.png', 'mania-key1.png', 'key1.png', 'key_left.png'],
-    ['mania-key2@2x.png', 'mania-key2.png', 'key2.png', 'key_down.png'],
-    ['mania-key2@2x.png', 'mania-key2.png', 'key2.png', 'key_up.png'],
-    ['mania-key1@2x.png', 'mania-key1.png', 'key1.png', 'key_right.png'],
-  ],
-};
+function getDefaultPatterns(keyCount, col) {
+  // For 4K arrow skin fallback
+  const arrowNotes = ['left.png', 'down.png', 'up.png', 'right.png'];
+  const arrowKeys = ['key_left.png', 'key_down.png', 'key_up.png', 'key_right.png'];
+
+  // Determine if this column is "outer" (type 1) or "inner" (type 2)
+  // osu! uses alternating pattern from edges: 1,2,1,2... or 1,2,2,1 for 4K
+  const isOuter = col === 0 || col === keyCount - 1 ||
+    (keyCount > 4 && (col === 1 || col === keyCount - 2));
+  const noteType = isOuter ? '1' : '2';
+
+  return {
+    notes: [
+      `mania-note${noteType}@2x.png`,
+      `mania-note${noteType}.png`,
+      `note${noteType}.png`,
+      arrowNotes[col % 4],
+    ],
+    keys: [
+      `mania-key${noteType}@2x.png`,
+      `mania-key${noteType}.png`,
+      `key${noteType}.png`,
+      arrowKeys[col % 4],
+    ],
+    noteBodies: [
+      `mania-note${noteType}l@2x.png`,
+      `mania-note${noteType}l.png`,
+      'holdbody.png',
+    ],
+    noteTails: [
+      `mania-note${noteType}t@2x.png`,
+      `mania-note${noteType}t.png`,
+      'holdcap.png',
+    ],
+  };
+}
 
 /**
- * Load and parse an osu! skin from a zip file.
+ * Load sprites for a specific key count configuration.
  *
- * @param {File} zipFile - The uploaded zip file
- * @returns {Promise<object>} Parsed skin data with base64 images
+ * @param {JSZip} zip - The JSZip instance
+ * @param {string[]} filePaths - All file paths in the zip
+ * @param {object|null} maniaConfig - Parsed mania config for this key count
+ * @param {number} keyCount - Number of keys
+ * @returns {Promise<object>} Loaded sprites for this key count
  */
-export async function loadSkinFromZip(zipFile) {
-  const zip = await JSZip.loadAsync(zipFile);
-
-  // Get all file paths in the zip (excluding directories)
-  const filePaths = Object.keys(zip.files).filter((path) => !zip.files[path].dir);
-
-  // Find and parse skin.ini
-  const skinIniPath = filePaths.find((f) => f.toLowerCase().endsWith('skin.ini'));
-  let skinName = zipFile.name.replace(/\.zip$/i, '').replace(/\.osk$/i, '');
-  let maniaConfig = null;
-
-  if (skinIniPath) {
-    const skinIniContent = await zip.file(skinIniPath).async('string');
-    const parsed = parseSkinIni(skinIniContent);
-    if (parsed.skinName) {
-      skinName = parsed.skinName;
-    }
-    maniaConfig = parsed.mania;
-  }
-
-  // Load note images for each column
+async function loadSpritesForKeyCount(zip, filePaths, maniaConfig, keyCount) {
   const notes = [];
-  for (let i = 0; i < 4; i++) {
-    let filePath = null;
+  const receptors = [];
 
-    // First try skin.ini specified path
+  for (let i = 0; i < keyCount; i++) {
+    const defaults = getDefaultPatterns(keyCount, i);
+
+    // Load note image
+    let notePath = null;
     if (maniaConfig?.notes[i]) {
       const variations = normalizePath(maniaConfig.notes[i]);
-      filePath = findFileInZip(filePaths, variations);
+      notePath = findFileInZip(filePaths, variations);
     }
-
-    // Fall back to default patterns
-    if (!filePath) {
-      filePath = findByPattern(filePaths, DEFAULT_PATTERNS.notes[i]);
+    if (!notePath) {
+      notePath = findByPattern(filePaths, defaults.notes);
     }
+    notes.push(await fileToBase64(zip, notePath));
 
-    const base64 = await fileToBase64(zip, filePath);
-    notes.push(base64);
-  }
-
-  // Load receptor/key images for each column
-  const receptors = [];
-  for (let i = 0; i < 4; i++) {
-    let filePath = null;
-
+    // Load receptor/key image
+    let keyPath = null;
     if (maniaConfig?.keyImages[i]) {
       const variations = normalizePath(maniaConfig.keyImages[i]);
-      filePath = findFileInZip(filePaths, variations);
+      keyPath = findFileInZip(filePaths, variations);
     }
-
-    if (!filePath) {
-      filePath = findByPattern(filePaths, DEFAULT_PATTERNS.keys[i]);
+    if (!keyPath) {
+      keyPath = findByPattern(filePaths, defaults.keys);
     }
-
-    const base64 = await fileToBase64(zip, filePath);
-    receptors.push(base64);
+    receptors.push(await fileToBase64(zip, keyPath));
   }
 
-  // Load hold body (use column 0's pattern, they're usually the same)
+  // Load hold body (use column 0's pattern)
+  const defaults0 = getDefaultPatterns(keyCount, 0);
   let holdBodyPath = null;
   if (maniaConfig?.noteBodies[0]) {
     const variations = normalizePath(maniaConfig.noteBodies[0]);
     holdBodyPath = findFileInZip(filePaths, variations);
   }
   if (!holdBodyPath) {
-    holdBodyPath = findByPattern(filePaths, DEFAULT_PATTERNS.noteBodies[0]);
+    holdBodyPath = findByPattern(filePaths, defaults0.noteBodies);
   }
   const holdBody = await fileToBase64(zip, holdBodyPath);
 
@@ -293,20 +307,66 @@ export async function loadSkinFromZip(zipFile) {
     holdCapPath = findFileInZip(filePaths, variations);
   }
   if (!holdCapPath) {
-    holdCapPath = findByPattern(filePaths, DEFAULT_PATTERNS.noteTails[0]);
+    holdCapPath = findByPattern(filePaths, defaults0.noteTails);
   }
   const holdCap = await fileToBase64(zip, holdCapPath);
+
+  return { notes, receptors, holdBody, holdCap };
+}
+
+/**
+ * Load and parse an osu! skin from a zip file.
+ * Supports multiple key counts (4K-10K) based on skin.ini sections.
+ *
+ * @param {File} zipFile - The uploaded zip file
+ * @returns {Promise<object>} Parsed skin data with base64 images per key count
+ */
+export async function loadSkinFromZip(zipFile) {
+  const zip = await JSZip.loadAsync(zipFile);
+
+  // Get all file paths in the zip (excluding directories)
+  const filePaths = Object.keys(zip.files).filter((path) => !zip.files[path].dir);
+
+  // Find and parse skin.ini
+  const skinIniPath = filePaths.find((f) => f.toLowerCase().endsWith('skin.ini'));
+  let skinName = zipFile.name.replace(/\.zip$/i, '').replace(/\.osk$/i, '');
+  let maniaConfigs = {};
+
+  if (skinIniPath) {
+    const skinIniContent = await zip.file(skinIniPath).async('string');
+    const parsed = parseSkinIni(skinIniContent);
+    if (parsed.skinName) {
+      skinName = parsed.skinName;
+    }
+    maniaConfigs = parsed.maniaConfigs || {};
+  }
+
+  // Load sprites for each key count that has a config
+  // Always load 4K as default, plus any other key counts defined
+  const keyCounts = new Set([4, ...Object.keys(maniaConfigs).map(Number)]);
+  const spritesByKeyCount = {};
+
+  for (const keyCount of keyCounts) {
+    const config = maniaConfigs[keyCount] || null;
+    spritesByKeyCount[keyCount] = await loadSpritesForKeyCount(zip, filePaths, config, keyCount);
+  }
 
   // Create unique ID for this skin
   const id = `custom_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
+  // For backwards compatibility, also include flat 4K sprites at top level
+  const sprites4K = spritesByKeyCount[4] || { notes: [], receptors: [], holdBody: null, holdCap: null };
+
   return {
     id,
     name: skinName,
-    notes,
-    receptors,
-    holdBody,
-    holdCap,
+    // Flat 4K sprites for backwards compatibility
+    notes: sprites4K.notes,
+    receptors: sprites4K.receptors,
+    holdBody: sprites4K.holdBody,
+    holdCap: sprites4K.holdCap,
+    // All key count sprites
+    spritesByKeyCount,
     isCustom: true,
   };
 }
