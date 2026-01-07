@@ -36,7 +36,7 @@ function calculateScrollPosition(time, timingPoints) {
   return position;
 }
 
-export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', volume = 0.5, playbackSpeed = 1, scrollSpeed = 25, playRef }) {
+export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, seekToRef, skin = 'arrow', customSkinData = null, volume = 0.5, playbackSpeed = 1, scrollSpeed = 25, playRef }) {
   // Refs
   const canvasRef = useRef(null);
   const audioRef = useRef(null);
@@ -116,7 +116,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
   const NOTE_HEIGHT = NOTE_SIZE;
   const NOTE_WIDTH = NOTE_SIZE;
 
-  // Load all images on mount (both skins)
+  // Load all images on mount (both built-in skins)
   useEffect(() => {
     const arrowImages = [
       // Notes
@@ -165,6 +165,58 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       .then(() => setImagesLoaded(true))
       .catch((err) => console.error('Failed to load mania assets:', err));
   }, []);
+
+  // Load custom skin images when customSkinData changes
+  useEffect(() => {
+    if (!customSkinData) return;
+
+    const loadCustomSkinImages = async () => {
+      const customImages = [];
+
+      // Load notes
+      for (let i = 0; i < 4; i++) {
+        const src = customSkinData.notes[i];
+        if (src) {
+          customImages.push({ name: `custom_note_${i}`, src });
+        }
+      }
+
+      // Load receptors
+      for (let i = 0; i < 4; i++) {
+        const src = customSkinData.receptors[i] || customSkinData.receptors[0];
+        if (src) {
+          customImages.push({ name: `custom_receptor_${i}`, src });
+        }
+      }
+
+      // Load hold body and cap
+      if (customSkinData.holdBody) {
+        customImages.push({ name: 'custom_holdbody', src: customSkinData.holdBody });
+      }
+      if (customSkinData.holdCap) {
+        customImages.push({ name: 'custom_holdcap', src: customSkinData.holdCap });
+      }
+
+      const loadPromises = customImages.map(({ name, src }) => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            imagesRef.current[name] = img;
+            resolve();
+          };
+          img.onerror = () => {
+            console.warn(`Failed to load custom skin image: ${name}`);
+            resolve(); // Don't fail the whole load
+          };
+          img.src = src;
+        });
+      });
+
+      await Promise.all(loadPromises);
+    };
+
+    loadCustomSkinImages();
+  }, [customSkinData]);
 
   // Handle audio metadata loaded
   const handleLoadedMetadata = useCallback(() => {
@@ -245,20 +297,31 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
     ctx.lineTo(CANVAS_WIDTH, RECEPTOR_Y);
     ctx.stroke();
 
+    // Determine skin type for rendering
+    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle';
+    const skinPrefix = isCustomSkin ? 'custom' : skin;
+
     // Draw receptors
     for (let col = 0; col < 4; col++) {
-      const receptorImg = skin === 'arrow'
-        ? images[`arrow_receptor_${col}`]
-        : images['circle_receptor'];
+      let receptorImg;
+      if (isCustomSkin) {
+        receptorImg = images[`custom_receptor_${col}`] || images['custom_receptor_0'];
+      } else if (skin === 'arrow') {
+        receptorImg = images[`arrow_receptor_${col}`];
+      } else {
+        receptorImg = images['circle_receptor'];
+      }
+
       if (receptorImg) {
         const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
         if (skin === 'arrow') {
           // Arrow receptors are 100x800
           ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
         } else {
-          // Circle receptors are 100x284, preserve aspect ratio and stick to bottom
-          const circleReceptorHeight = NOTE_SIZE * (284 / 100);
-          ctx.drawImage(receptorImg, x, RECEPTOR_Y - circleReceptorHeight, NOTE_SIZE, circleReceptorHeight);
+          // Circle and custom receptors - preserve aspect ratio and stick to bottom
+          const aspectRatio = receptorImg.height / receptorImg.width;
+          const receptorHeight = NOTE_SIZE * Math.min(aspectRatio, 8); // Cap at reasonable height
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - receptorHeight, NOTE_SIZE, receptorHeight);
         }
       }
     }
@@ -298,18 +361,33 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
       }
 
       // Get note image based on skin
-      const noteImg = images[`${skin}_note_${col}`];
-      const holdBodyImg = images[`${skin}_holdbody`];
-      const holdCapImg = images[`${skin}_holdcap`];
+      const noteImg = images[`${skinPrefix}_note_${col}`] || (isCustomSkin ? images['arrow_note_0'] : null);
+      const holdBodyImg = images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null);
+      const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
+
+      // For custom skins, preserve aspect ratio (fit to column width)
+      let noteDrawWidth = NOTE_WIDTH;
+      let noteDrawHeight = NOTE_HEIGHT;
+      if (isCustomSkin && noteImg) {
+        const aspectRatio = noteImg.height / noteImg.width;
+        noteDrawHeight = NOTE_WIDTH * aspectRatio;
+      }
+
+      let capDrawHeight = NOTE_HEIGHT / 2;
+      if (isCustomSkin && holdCapImg) {
+        const capAspect = holdCapImg.height / holdCapImg.width;
+        capDrawHeight = NOTE_WIDTH * capAspect;
+      } else if (skin === 'circle') {
+        capDrawHeight = NOTE_WIDTH; // Circle skin has square caps
+      }
 
       if (type === 'hold' && end !== undefined) {
         // Draw hold note (endY already calculated above for visibility check)
         const holdHeight = noteY - endY;
-        // Circle skin has square holdcap (128x128), arrow skin has rectangular (128x122)
-        const capHeight = skin === 'circle' ? NOTE_WIDTH : NOTE_HEIGHT / 2;
-        const capOverlap = skin === 'circle' ? 51 : 22;
+        // Cap overlap - for custom skins use proportional overlap
+        const capOverlap = isCustomSkin ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
 
-        // Draw hold body (stretched)
+        // Draw hold body (stretched vertically, fit to column width)
         if (holdBodyImg && holdHeight > 0) {
           ctx.drawImage(holdBodyImg, x, endY, NOTE_WIDTH, holdHeight);
         }
@@ -317,20 +395,20 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
         // Draw hold cap at end (flipped vertically, slightly overlapping body)
         if (holdCapImg) {
           ctx.save();
-          ctx.translate(x + NOTE_WIDTH / 2, endY + capHeight - capOverlap);
+          ctx.translate(x + NOTE_WIDTH / 2, endY + capDrawHeight - capOverlap);
           ctx.scale(1, -1);
-          ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capHeight);
+          ctx.drawImage(holdCapImg, -NOTE_WIDTH / 2, 0, NOTE_WIDTH, capDrawHeight);
           ctx.restore();
         }
 
         // Draw note head at start
         if (noteImg) {
-          ctx.drawImage(noteImg, x, noteY - NOTE_HEIGHT / 2, NOTE_WIDTH, NOTE_HEIGHT);
+          ctx.drawImage(noteImg, x, noteY - noteDrawHeight / 2, noteDrawWidth, noteDrawHeight);
         }
       } else {
         // Draw regular note
         if (noteImg) {
-          ctx.drawImage(noteImg, x, noteY - NOTE_HEIGHT / 2, NOTE_WIDTH, NOTE_HEIGHT);
+          ctx.drawImage(noteImg, x, noteY - noteDrawHeight / 2, noteDrawWidth, noteDrawHeight);
         }
       }
     }
@@ -338,7 +416,7 @@ export default function ManiaPreview({ notesData, audioUrl, onAudioProgress, see
 
     // Continue animation loop using ref to avoid stale closure
     animationRef.current = requestAnimationFrame(() => renderRef.current?.());
-  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
+  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
 
   // Store render function in ref and start/stop animation loop
   useEffect(() => {

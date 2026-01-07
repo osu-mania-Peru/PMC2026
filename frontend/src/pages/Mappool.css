@@ -898,3 +898,122 @@ td.col-title::after {
   pointer-events: none;
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
+
+/* Skin dropdown styles */
+.skin-dropdown-container {
+  position: relative;
+  margin-left: auto;
+}
+
+.skin-dropdown-chevron {
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+}
+
+.skin-dropdown-chevron.open {
+  transform: rotate(180deg);
+}
+
+.skin-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: rgba(20, 20, 20, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 6px;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+}
+
+.skin-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 4px;
+  color: #fff !important;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  text-align: left;
+}
+
+.skin-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.skin-dropdown-item.active {
+  background: rgba(255, 8, 68, 0.2) !important;
+  border-left: 2px solid #ff0844 !important;
+}
+
+.skin-dropdown-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.skin-dropdown-icon-placeholder {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.skin-dropdown-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.skin-dropdown-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 6px 0;
+}
+
+.skin-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px !important;
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+}
+
+.skin-delete-btn:hover {
+  background: rgba(255, 0, 0, 0.2) !important;
+  color: #ff4444 !important;
+}
+
+.skin-upload-btn {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.skin-upload-btn:hover {
+  color: #fff !important;
+}
+
+.skin-dropdown-upload-icon {
+  opacity: 0.7;
+}
+
+.skin-loading {
+  width: 20px;
+  height: 20px;
+}

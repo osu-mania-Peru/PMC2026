@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Eye, Play, Pause } from 'lucide-react';
+import { Eye, Play, Pause, Upload, ChevronDown, Trash2 } from 'lucide-react';
 import { api } from '../api';
+import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
 
 // Speed options
 const SPEED_OPTIONS = [
@@ -350,6 +351,11 @@ export default function Mappool({ user }) {
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
   const [skin, setSkin] = useState('arrow');
+  const [customSkins, setCustomSkins] = useState([]);
+  const [skinDropdownOpen, setSkinDropdownOpen] = useState(false);
+  const [loadingSkin, setLoadingSkin] = useState(false);
+  const skinFileInputRef = useRef(null);
+  const skinDropdownRef = useRef(null);
   const [volume, setVolume] = useState(0.5);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [scrollSpeed, setScrollSpeed] = useState(25);
@@ -436,6 +442,72 @@ export default function Mappool({ user }) {
     fetchMappools();
     fetchSlots();
   }, [user]);
+
+  // Load saved custom skins from localStorage
+  useEffect(() => {
+    const savedSkins = getSavedSkins();
+    setCustomSkins(savedSkins);
+  }, []);
+
+  // Close skin dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (skinDropdownRef.current && !skinDropdownRef.current.contains(e.target)) {
+        setSkinDropdownOpen(false);
+      }
+    };
+    if (skinDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [skinDropdownOpen]);
+
+  // Handle skin file upload
+  const handleSkinUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoadingSkin(true);
+    try {
+      const skinData = await loadSkinFromZip(file);
+      saveSkinToStorage(skinData);
+      setCustomSkins(getSavedSkins());
+      setSkin(skinData.id);
+      setSkinDropdownOpen(false);
+    } catch (err) {
+      console.error('Failed to load skin:', err);
+      alert('Failed to load skin. Make sure it\'s a valid osu! skin zip file.');
+    } finally {
+      setLoadingSkin(false);
+      if (skinFileInputRef.current) {
+        skinFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Delete a custom skin
+  const handleDeleteSkin = (skinId, e) => {
+    e.stopPropagation();
+    deleteSkinFromStorage(skinId);
+    setCustomSkins(getSavedSkins());
+    if (skin === skinId) {
+      setSkin('arrow');
+    }
+  };
+
+  // Get current skin display name
+  const getCurrentSkinName = () => {
+    if (skin === 'arrow') return 'Arrow';
+    if (skin === 'circle') return 'Circle';
+    const customSkin = customSkins.find((s) => s.id === skin);
+    return customSkin?.name || 'Custom';
+  };
+
+  // Get current skin data for ManiaPreview
+  const getCurrentSkinData = () => {
+    if (skin === 'arrow' || skin === 'circle') return null;
+    return customSkins.find((s) => s.id === skin) || null;
+  };
 
   const handleEditMap = (map, poolId) => {
     setEditingMap(map);
@@ -569,6 +641,7 @@ export default function Mappool({ user }) {
         onAudioProgress={setAudioProgress}
         seekToRef={seekToRef}
         skin={skin}
+        customSkinData={getCurrentSkinData()}
         volume={volume}
         playbackSpeed={playbackSpeed}
         scrollSpeed={scrollSpeed}
@@ -657,19 +730,93 @@ export default function Mappool({ user }) {
               </div>
             </div>
 
-            {/* Skin switcher */}
-            <button
-              className="overlay-skin-btn"
-              onClick={() => setSkin(skin === 'arrow' ? 'circle' : 'arrow')}
-              title={`Switch to ${skin === 'arrow' ? 'circle' : 'arrow'} skin`}
-            >
-              <img
-                src={skin === 'arrow' ? '/mania-assets/circle/Note1.png' : '/mania-assets/left.png'}
-                alt=""
-                className="overlay-skin-icon"
+            {/* Skin dropdown */}
+            <div className="skin-dropdown-container" ref={skinDropdownRef}>
+              <button
+                className="overlay-skin-btn"
+                onClick={() => setSkinDropdownOpen(!skinDropdownOpen)}
+                title="Select skin"
+              >
+                <img
+                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
+                  alt=""
+                  className="overlay-skin-icon"
+                />
+                <span>{getCurrentSkinName()}</span>
+                <ChevronDown size={14} className={`skin-dropdown-chevron ${skinDropdownOpen ? 'open' : ''}`} />
+              </button>
+
+              {skinDropdownOpen && (
+                <div className="skin-dropdown-menu">
+                  {/* Built-in skins */}
+                  <button
+                    className={`skin-dropdown-item ${skin === 'arrow' ? 'active' : ''}`}
+                    onClick={() => { setSkin('arrow'); setSkinDropdownOpen(false); }}
+                  >
+                    <img src="/mania-assets/left.png" alt="" className="skin-dropdown-icon" />
+                    <span>Arrow</span>
+                  </button>
+                  <button
+                    className={`skin-dropdown-item ${skin === 'circle' ? 'active' : ''}`}
+                    onClick={() => { setSkin('circle'); setSkinDropdownOpen(false); }}
+                  >
+                    <img src="/mania-assets/circle/Note1.png" alt="" className="skin-dropdown-icon" />
+                    <span>Circle</span>
+                  </button>
+
+                  {/* Custom skins */}
+                  {customSkins.length > 0 && (
+                    <>
+                      <div className="skin-dropdown-divider" />
+                      {customSkins.map((customSkin) => (
+                        <button
+                          key={customSkin.id}
+                          className={`skin-dropdown-item ${skin === customSkin.id ? 'active' : ''}`}
+                          onClick={() => { setSkin(customSkin.id); setSkinDropdownOpen(false); }}
+                        >
+                          {customSkin.notes[0] ? (
+                            <img src={customSkin.notes[0]} alt="" className="skin-dropdown-icon" />
+                          ) : (
+                            <div className="skin-dropdown-icon-placeholder" />
+                          )}
+                          <span className="skin-dropdown-name">{customSkin.name}</span>
+                          <button
+                            className="skin-delete-btn"
+                            onClick={(e) => handleDeleteSkin(customSkin.id, e)}
+                            title="Delete skin"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </button>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Upload button */}
+                  <div className="skin-dropdown-divider" />
+                  <button
+                    className="skin-dropdown-item skin-upload-btn"
+                    onClick={() => skinFileInputRef.current?.click()}
+                    disabled={loadingSkin}
+                  >
+                    {loadingSkin ? (
+                      <img src={catGif} alt="" className="skin-dropdown-icon skin-loading" />
+                    ) : (
+                      <Upload size={16} className="skin-dropdown-upload-icon" />
+                    )}
+                    <span>{loadingSkin ? 'Loading...' : 'Upload Skin (.osk/.zip)'}</span>
+                  </button>
+                </div>
+              )}
+
+              <input
+                ref={skinFileInputRef}
+                type="file"
+                accept=".osk,.zip"
+                onChange={handleSkinUpload}
+                style={{ display: 'none' }}
               />
-              <span>Skin</span>
-            </button>
+            </div>
           </div>
 
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
