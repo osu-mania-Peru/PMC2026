@@ -14,11 +14,12 @@ import Matches from "./pages/Matches";
 import Players from "./pages/Players";
 import Mappool from "./pages/Mappool";
 import StaffDiscord from "./pages/StaffDiscord";
+import Timba from "./pages/Timba";
 
 // Components
 import AdminPanel from "./components/AdminPanel";
 import Spinner from "./components/Spinner";
-// SlotMachine minigame disabled - code kept in ./components/SlotMachine.jsx
+// SlotMachine minigame available at /timba
 
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -149,6 +150,10 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
               <Navigate to="/" />
             )
           }
+        />
+        <Route
+          path="/timba"
+          element={<Timba />}
         />
       </Routes>
 
