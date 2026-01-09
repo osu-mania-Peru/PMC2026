@@ -21,7 +21,7 @@ const SPIN_DURATION = 100;
 const GRID_COLS = 6;
 const GRID_ROWS = 5;
 const MAX_PULLS = 10;
-const WIN_CONDITION = 6; // Need 6 PMC logos to win
+const WIN_CONDITION = 5; // Need 5 PMC logos aligned vertically to win
 
 // Single column that scrolls symbols downward
 function SlotColumn({ columnIndex, spinning, finalSymbols, onStop }) {
@@ -180,11 +180,14 @@ export default function SlotMachine({ onWin }) {
       setPullsLeft((prev) => prev - 1);
       setShowResult(true);
 
-      // Count PMC logos across all columns
+      // Check for vertical alignment: any column with all 5 PMC logos
+      const hasVerticalWin = columnResults.some(column =>
+        column.every(symbol => symbol?.isPMC)
+      );
       const allSymbols = columnResults.flat();
       const pmcMatches = allSymbols.filter((s) => s.isPMC).length;
       setPmcCount(pmcMatches);
-      const won = pmcMatches >= WIN_CONDITION;
+      const won = hasVerticalWin;
       setIsWinner(won);
 
       if (won) {
