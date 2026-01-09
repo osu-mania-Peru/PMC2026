@@ -6,6 +6,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
 import catGif from '../assets/cat.gif';
+import heroBgVideo from '../assets/hero-bg.mp4';
 import './Home.css';
 
 // Parse DD/MM/YYYY or DD/MM date string to Date object
@@ -252,6 +253,15 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     <div className="home-page">
       {/* Video Background Section */}
       <div className={`video-section ${user ? 'logged-in' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
+        <video
+          ref={videoRef}
+          className="video-bg"
+          src={heroBgVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
         <div className="video-overlay"></div>
 
         {/* Hero Section */}
