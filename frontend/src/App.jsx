@@ -4,7 +4,42 @@ import { api } from "./api";
 import { FaDiscord, FaYoutube, FaTwitch } from "react-icons/fa";
 import { Menu, X } from "lucide-react";
 import logo from "./assets/logo.svg";
+import catGif from "./assets/cat.gif";
 import "./App.css";
+
+// Fuzzy match for stinky detection
+function isStinky(username) {
+  if (!username) return false;
+  const target = "miaurichesu";
+  const name = username.toLowerCase().replace(/[^a-z]/g, '');
+
+  // Exact match
+  if (name === target) return true;
+
+  // Contains target
+  if (name.includes(target)) return true;
+
+  // Levenshtein distance for fuzzy matching
+  const levenshtein = (a, b) => {
+    const matrix = Array(b.length + 1).fill(null).map(() => Array(a.length + 1).fill(null));
+    for (let i = 0; i <= a.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= b.length; j++) matrix[j][0] = j;
+    for (let j = 1; j <= b.length; j++) {
+      for (let i = 1; i <= a.length; i++) {
+        const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
+    }
+    return matrix[b.length][a.length];
+  };
+
+  // Allow up to 3 character differences
+  return levenshtein(name, target) <= 3;
+}
 
 // Pages
 import Home from "./pages/Home";
@@ -225,6 +260,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
 
 function App() {
   const [user, setUser] = useState(null);
+  const [blocked, setBlocked] = useState(false);
   const [loading, setLoading] = useState(() => {
     // Initialize loading based on whether we have a token
     return (
@@ -254,7 +290,13 @@ function App() {
     if (authToken) {
       api
         .getMe()
-        .then(setUser)
+        .then((userData) => {
+          if (isStinky(userData?.username)) {
+            setBlocked(true);
+          } else {
+            setUser(userData);
+          }
+        })
         .catch(() => {
           api.logout();
         })
@@ -269,6 +311,15 @@ function App() {
     api.logout();
     setUser(null);
   };
+
+  if (blocked) {
+    return (
+      <div className="stinky-blocked">
+        <img src={catGif} alt="No stinky allowed" className="stinky-cat" />
+        <p className="stinky-text">No stinky allowed</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
