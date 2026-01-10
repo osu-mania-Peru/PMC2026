@@ -10,7 +10,7 @@ import "./App.css";
 // Fuzzy match for stinky detection
 function isStinky(username) {
   if (!username) return false;
-  const targets = ["miaurichesu", "sakisagee"];
+  const targets = ["miaurichesu"];
   const name = username.toLowerCase().replace(/[^a-z]/g, '');
 
   // Levenshtein distance for fuzzy matching
