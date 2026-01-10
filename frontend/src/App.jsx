@@ -314,6 +314,10 @@ function App() {
       <div className="stinky-blocked">
         <img src={catGif} alt="No stinky allowed" className="stinky-cat" />
         <p className="stinky-text">No stinky allowed</p>
+        <button className="fake-paypal-btn" onClick={() => alert('jaja saludos')}>
+          <span className="paypal-logo">Pay</span><span className="paypal-logo-pal">Pal</span>
+          <span className="paypal-text">Pagar $5.00 para desbloquear</span>
+        </button>
       </div>
     );
   }

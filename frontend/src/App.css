@@ -769,3 +769,39 @@ a {
   color: #fff;
   font-weight: bold;
 }
+
+.fake-paypal-btn {
+  margin-top: 2rem;
+  padding: 12px 24px;
+  background: #ffc439;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.fake-paypal-btn:hover {
+  background: #f0b630;
+}
+
+.paypal-logo {
+  color: #003087;
+  font-style: italic;
+  font-weight: 800;
+}
+
+.paypal-logo-pal {
+  color: #009cde;
+  font-style: italic;
+  font-weight: 800;
+}
+
+.paypal-text {
+  color: #333;
+  margin-left: 8px;
+}
