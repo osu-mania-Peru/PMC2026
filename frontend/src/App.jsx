@@ -10,14 +10,8 @@ import "./App.css";
 // Fuzzy match for stinky detection
 function isStinky(username) {
   if (!username) return false;
-  const target = "miaurichesu";
+  const targets = ["miaurichesu", "sakisagee"];
   const name = username.toLowerCase().replace(/[^a-z]/g, '');
-
-  // Exact match
-  if (name === target) return true;
-
-  // Contains target
-  if (name.includes(target)) return true;
 
   // Levenshtein distance for fuzzy matching
   const levenshtein = (a, b) => {
@@ -37,8 +31,11 @@ function isStinky(username) {
     return matrix[b.length][a.length];
   };
 
-  // Allow up to 3 character differences
-  return levenshtein(name, target) <= 3;
+  return targets.some(target => {
+    if (name === target) return true;
+    if (name.includes(target)) return true;
+    return levenshtein(name, target) <= 3;
+  });
 }
 
 // Pages
@@ -204,7 +201,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
               </span>
               <div className="footer-social-icons">
                 <a
-                  href="https://youtube.com"
+                  href="https://www.youtube.com/@PeruManiaCup"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube"
@@ -212,7 +209,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
                   <FaYoutube size={20} />
                 </a>
                 <a
-                  href="https://twitch.tv"
+                  href="https://www.twitch.tv/perumaniacup"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Twitch"

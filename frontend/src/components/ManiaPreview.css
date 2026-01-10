@@ -58,3 +58,113 @@
   color: #888;
   font-size: 0.8rem;
 }
+
+/* Results Screen Overlay */
+.mania-results-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mania-results-content {
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 32px 48px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  min-width: 280px;
+}
+
+.mania-results-content h2 {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.mania-results-score {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.mania-results-accuracy {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #00ffff;
+  margin-bottom: 16px;
+}
+
+.mania-results-combo {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 24px;
+}
+
+.mania-results-judgements {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.judgement-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.judgement-row.max span:first-child { color: #00ffff; }
+.judgement-row.perfect span:first-child { color: #ffff00; }
+.judgement-row.great span:first-child { color: #00ff00; }
+.judgement-row.good span:first-child { color: #0088ff; }
+.judgement-row.ok span:first-child { color: #888888; }
+.judgement-row.miss span:first-child { color: #ff0000; }
+
+.judgement-row span:last-child {
+  color: #fff;
+  font-weight: 600;
+}
+
+.mania-results-close {
+  padding: 10px 32px !important;
+  background: linear-gradient(135deg, #ff0844 0%, #ff8c00 100%) !important;
+  border: none !important;
+  border-radius: 8px;
+  color: #fff !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  clip-path: none !important;
+}
+
+.mania-results-close:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(255, 8, 68, 0.4);
+}

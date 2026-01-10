@@ -16,7 +16,7 @@ import './PreviewPanel.css';
  * @param {string} props.apiBaseUrl - Base URL for API calls
  * @param {Function} props.onAudioProgress - Callback for audio progress updates
  */
-export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudioProgress, seekToRef, skin, customSkinData, volume, playbackSpeed, scrollSpeed, playRef }) {
+export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudioProgress, seekToRef, skin, customSkinData, volume, playbackSpeed, scrollSpeed, playRef, playMode, onPlayModeChange, customKeyBindings }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
@@ -133,6 +133,9 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
             playbackSpeed={playbackSpeed}
             scrollSpeed={scrollSpeed}
             playRef={playRef}
+            playMode={playMode}
+            onPlayModeChange={onPlayModeChange}
+            customKeyBindings={customKeyBindings}
           />
         )}
 

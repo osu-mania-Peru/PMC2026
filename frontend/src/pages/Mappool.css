@@ -1017,3 +1017,70 @@ td.col-title::after {
   width: 20px;
   height: 20px;
 }
+
+/* Play Mode button */
+.overlay-play-mode-btn {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 4px;
+  color: #fff !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  padding: 4px 12px !important;
+}
+
+.overlay-play-mode-btn span {
+  color: #fff !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.overlay-play-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.overlay-play-mode-btn.active {
+  background: #ff0000 !important;
+  border-color: #ff0000 !important;
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
+}
+
+.overlay-play-mode-btn.active span {
+  color: #fff !important;
+}
+
+.overlay-play-mode-btn.active svg {
+  color: #fff !important;
+}
+
+/* Keybindings button */
+.overlay-keybindings-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border-radius: 4px;
+  color: #fff !important;
+  cursor: pointer;
+  clip-path: none !important;
+  padding: 0 !important;
+}
+
+.overlay-keybindings-btn:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.overlay-keybindings-btn svg {
+  color: #fff !important;
+}

@@ -269,7 +269,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
           <div className="hero-left">
           <h1 className="hero-title">
             Peru Mania<br />
-            <span>Cup 2026</span>
+            <Link to="/timba" style={{ textDecoration: 'none', color: 'inherit' }}>Cup 2026</Link>
           </h1>
           <p className="hero-subtitle">
             El torneo de osu!mania 4K más grande de Perú.

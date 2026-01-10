@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Eye, Play, Pause, Upload, ChevronDown, Trash2 } from 'lucide-react';
+import { Eye, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, X } from 'lucide-react';
 import { api } from '../api';
 import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
 
@@ -23,6 +23,32 @@ const SCROLL_OPTIONS = [
   { value: 35, label: '35' },
   { value: 40, label: '40' },
 ];
+
+// Default key bindings per key count
+const DEFAULT_KEY_BINDINGS = {
+  1: ['Space'],
+  2: ['KeyF', 'KeyJ'],
+  3: ['KeyF', 'Space', 'KeyJ'],
+  4: ['KeyD', 'KeyF', 'KeyJ', 'KeyK'],
+  5: ['KeyD', 'KeyF', 'Space', 'KeyJ', 'KeyK'],
+  6: ['KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL'],
+  7: ['KeyS', 'KeyD', 'KeyF', 'Space', 'KeyJ', 'KeyK', 'KeyL'],
+  8: ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+  9: ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'Space', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+  10: ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyV', 'KeyN', 'KeyJ', 'KeyK', 'KeyL', 'Semicolon'],
+};
+
+// Display names for keys
+const KEY_DISPLAY_NAMES = {
+  KeyA: 'A', KeyS: 'S', KeyD: 'D', KeyF: 'F', KeyG: 'G', KeyH: 'H',
+  KeyJ: 'J', KeyK: 'K', KeyL: 'L', KeyZ: 'Z', KeyX: 'X', KeyC: 'C',
+  KeyV: 'V', KeyB: 'B', KeyN: 'N', KeyM: 'M', KeyQ: 'Q', KeyW: 'W',
+  KeyE: 'E', KeyR: 'R', KeyT: 'T', KeyY: 'Y', KeyU: 'U', KeyI: 'I',
+  KeyO: 'O', KeyP: 'P', Space: 'SPACE', Semicolon: ';', Quote: "'",
+  Comma: ',', Period: '.', Slash: '/', BracketLeft: '[', BracketRight: ']',
+};
+
+const KEYBINDINGS_STORAGE_KEY = 'pmc_keybindings';
 
 // Format time as mm:ss:mmm
 const formatTime = (ms) => {
@@ -361,6 +387,18 @@ export default function Mappool({ user }) {
   const [scrollSpeed, setScrollSpeed] = useState(25);
   const seekToRef = useRef(null);
   const playRef = useRef(null);
+  const [playMode, setPlayMode] = useState(false);
+  const [keybindingsModalOpen, setKeybindingsModalOpen] = useState(false);
+  const [customKeyBindings, setCustomKeyBindings] = useState(() => {
+    try {
+      const stored = localStorage.getItem(KEYBINDINGS_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : { ...DEFAULT_KEY_BINDINGS };
+    } catch {
+      return { ...DEFAULT_KEY_BINDINGS };
+    }
+  });
+  const [editingKeyCount, setEditingKeyCount] = useState(4);
+  const [listeningForKey, setListeningForKey] = useState(null); // {keyCount, colIndex}
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
 
@@ -509,6 +547,48 @@ export default function Mappool({ user }) {
     return customSkins.find((s) => s.id === skin) || null;
   };
 
+  // Keybindings functions
+  const saveKeyBindings = (bindings) => {
+    setCustomKeyBindings(bindings);
+    localStorage.setItem(KEYBINDINGS_STORAGE_KEY, JSON.stringify(bindings));
+  };
+
+  const handleKeyBindingChange = (keyCount, colIndex, newKey) => {
+    const newBindings = { ...customKeyBindings };
+    newBindings[keyCount] = [...newBindings[keyCount]];
+    newBindings[keyCount][colIndex] = newKey;
+    saveKeyBindings(newBindings);
+  };
+
+  const resetKeyBindings = (keyCount) => {
+    const newBindings = { ...customKeyBindings };
+    newBindings[keyCount] = [...DEFAULT_KEY_BINDINGS[keyCount]];
+    saveKeyBindings(newBindings);
+  };
+
+  const resetAllKeyBindings = () => {
+    saveKeyBindings({ ...DEFAULT_KEY_BINDINGS });
+  };
+
+  // Listen for key press when rebinding
+  useEffect(() => {
+    if (!listeningForKey) return;
+
+    const handleKeyDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Ignore modifier keys alone
+      if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+
+      handleKeyBindingChange(listeningForKey.keyCount, listeningForKey.colIndex, e.code);
+      setListeningForKey(null);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [listeningForKey, customKeyBindings]);
+
   const handleEditMap = (map, poolId) => {
     setEditingMap(map);
     setEditingPoolId(poolId);
@@ -646,6 +726,9 @@ export default function Mappool({ user }) {
         playbackSpeed={playbackSpeed}
         scrollSpeed={scrollSpeed}
         playRef={playRef}
+        playMode={playMode}
+        onPlayModeChange={setPlayMode}
+        customKeyBindings={customKeyBindings}
       />
 
       {/* Audio Progress Overlay */}
@@ -729,6 +812,25 @@ export default function Mappool({ user }) {
                 />
               </div>
             </div>
+
+            {/* Play Mode toggle */}
+            <button
+              className={`overlay-play-mode-btn ${playMode ? 'active' : ''}`}
+              onClick={() => setPlayMode(!playMode)}
+              title={playMode ? 'Disable play mode' : 'Enable play mode'}
+            >
+              <Gamepad2 size={16} />
+              <span>{playMode ? 'PLAYING' : 'PLAY'}</span>
+            </button>
+
+            {/* Keybindings button */}
+            <button
+              className="overlay-keybindings-btn"
+              onClick={() => setKeybindingsModalOpen(true)}
+              title="Configure keybindings"
+            >
+              <Keyboard size={16} />
+            </button>
 
             {/* Skin dropdown */}
             <div className="skin-dropdown-container" ref={skinDropdownRef}>
@@ -834,6 +936,45 @@ export default function Mappool({ user }) {
             {/* Time display */}
             <div className="audio-time-display">
               {formatTime(audioProgress.currentTime)} / {formatTime(audioProgress.duration)}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Keybindings Modal */}
+      {keybindingsModalOpen && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }} onClick={() => { setKeybindingsModalOpen(false); setListeningForKey(null); }}>
+          <div style={{ background: '#222', padding: 20, borderRadius: 8, minWidth: 300 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+              <b style={{ color: '#fff' }}>Keybindings</b>
+              <button onClick={() => { setKeybindingsModalOpen(false); setListeningForKey(null); }} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', clipPath: 'none' }}>✕</button>
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => (
+                <button key={k} onClick={() => setEditingKeyCount(k)} style={{ margin: 2, padding: '4px 8px', background: editingKeyCount === k ? '#ff0844' : '#444', color: '#fff', border: 'none', cursor: 'pointer', clipPath: 'none' }}>{k}K</button>
+              ))}
+            </div>
+
+            <table style={{ color: '#fff', width: '100%' }}>
+              <tbody>
+                {customKeyBindings[editingKeyCount]?.map((keyCode, idx) => (
+                  <tr key={idx}>
+                    <td style={{ padding: 4 }}>Key {idx + 1}</td>
+                    <td style={{ padding: 4 }}>
+                      <button onClick={() => setListeningForKey({ keyCount: editingKeyCount, colIndex: idx })} style={{ padding: '6px 12px', minWidth: 80, background: listeningForKey?.keyCount === editingKeyCount && listeningForKey?.colIndex === idx ? '#ff0844' : '#555', color: '#fff', border: 'none', cursor: 'pointer', clipPath: 'none' }}>
+                        {listeningForKey?.keyCount === editingKeyCount && listeningForKey?.colIndex === idx ? '...' : KEY_DISPLAY_NAMES[keyCode] || keyCode.replace('Key', '')}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+              <button onClick={() => resetKeyBindings(editingKeyCount)} style={{ flex: 1, padding: 8, background: '#444', color: '#fff', border: 'none', cursor: 'pointer', clipPath: 'none' }}>Reset {editingKeyCount}K</button>
+              <button onClick={resetAllKeyBindings} style={{ flex: 1, padding: 8, background: '#600', color: '#fff', border: 'none', cursor: 'pointer', clipPath: 'none' }}>Reset All</button>
             </div>
           </div>
         </div>,
