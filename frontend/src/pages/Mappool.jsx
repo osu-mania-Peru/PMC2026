@@ -376,7 +376,7 @@ export default function Mappool({ user }) {
   const [selectedMap, setSelectedMap] = useState(null);
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
-  const [skin, setSkin] = useState('pwc');
+  const [skin, setSkin] = useState('pmc');
   const [customSkins, setCustomSkins] = useState([]);
   const [skinDropdownOpen, setSkinDropdownOpen] = useState(false);
   const [loadingSkin, setLoadingSkin] = useState(false);
@@ -532,7 +532,7 @@ export default function Mappool({ user }) {
     deleteSkinFromStorage(skinId);
     setCustomSkins(getSavedSkins());
     if (skin === skinId) {
-      setSkin('pwc');
+      setSkin('pmc');
     }
   };
 
@@ -540,14 +540,14 @@ export default function Mappool({ user }) {
   const getCurrentSkinName = () => {
     if (skin === 'arrow') return 'Arrow';
     if (skin === 'circle') return 'Circle';
-    if (skin === 'pwc') return 'PWC';
+    if (skin === 'pmc') return 'PMC';
     const customSkin = customSkins.find((s) => s.id === skin);
     return customSkin?.name || 'Custom';
   };
 
   // Get current skin data for ManiaPreview
   const getCurrentSkinData = () => {
-    if (skin === 'arrow' || skin === 'circle' || skin === 'pwc') return null;
+    if (skin === 'arrow' || skin === 'circle' || skin === 'pmc') return null;
     return customSkins.find((s) => s.id === skin) || null;
   };
 
@@ -844,7 +844,7 @@ export default function Mappool({ user }) {
                 title="Select skin"
               >
                 <img
-                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : skin === 'pwc' ? '/mania-assets/pwc/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
+                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : skin === 'pmc' ? '/mania-assets/pmc/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
                   alt=""
                   className="overlay-skin-icon"
                 />
@@ -870,11 +870,11 @@ export default function Mappool({ user }) {
                     <span>Circle</span>
                   </button>
                   <button
-                    className={`skin-dropdown-item ${skin === 'pwc' ? 'active' : ''}`}
-                    onClick={() => { setSkin('pwc'); setSkinDropdownOpen(false); }}
+                    className={`skin-dropdown-item ${skin === 'pmc' ? 'active' : ''}`}
+                    onClick={() => { setSkin('pmc'); setSkinDropdownOpen(false); }}
                   >
-                    <img src="/mania-assets/pwc/Note1.png" alt="" className="skin-dropdown-icon" />
-                    <span>PWC</span>
+                    <img src="/mania-assets/pmc/Note1.png" alt="" className="skin-dropdown-icon" />
+                    <span>PMC</span>
                   </button>
 
                   {/* Custom skins */}

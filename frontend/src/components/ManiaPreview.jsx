@@ -92,7 +92,7 @@ export default function ManiaPreview({
   audioUrl,
   onAudioProgress,
   seekToRef,
-  skin = 'pwc',
+  skin = 'pmc',
   customSkinData = null,
   volume = 0.5,
   playbackSpeed = 1,
@@ -506,24 +506,24 @@ export default function ManiaPreview({
       { name: 'circle_holdcap', src: '/mania-assets/circle/holdcap.png' },
     ];
 
-    const pwcImages = [
+    const pmcImages = [
       // Notes
-      { name: 'pwc_note_0', src: '/mania-assets/pwc/Note1.png' },
-      { name: 'pwc_note_1', src: '/mania-assets/pwc/Note2.png' },
-      { name: 'pwc_note_2', src: '/mania-assets/pwc/Note3.png' },
-      { name: 'pwc_note_3', src: '/mania-assets/pwc/Note4.png' },
+      { name: 'pmc_note_0', src: '/mania-assets/pmc/Note1.png' },
+      { name: 'pmc_note_1', src: '/mania-assets/pmc/Note2.png' },
+      { name: 'pmc_note_2', src: '/mania-assets/pmc/Note3.png' },
+      { name: 'pmc_note_3', src: '/mania-assets/pmc/Note4.png' },
       // Receptors
-      { name: 'pwc_receptor', src: '/mania-assets/pwc/receptor.png' },
-      { name: 'pwc_receptor_pressed', src: '/mania-assets/pwc/receptorD.png' },
+      { name: 'pmc_receptor', src: '/mania-assets/pmc/receptor.png' },
+      { name: 'pmc_receptor_pressed', src: '/mania-assets/pmc/receptorD.png' },
       // Hold bodies per column (Purple, Yellow, Yellow, Green)
-      { name: 'pwc_holdbody_0', src: '/mania-assets/pwc/holdbody0.png' },
-      { name: 'pwc_holdbody_1', src: '/mania-assets/pwc/holdbody1.png' },
-      { name: 'pwc_holdbody_2', src: '/mania-assets/pwc/holdbody2.png' },
-      { name: 'pwc_holdbody_3', src: '/mania-assets/pwc/holdbody3.png' },
-      { name: 'pwc_holdcap', src: '/mania-assets/pwc/holdcap.png' },
+      { name: 'pmc_holdbody_0', src: '/mania-assets/pmc/holdbody0.png' },
+      { name: 'pmc_holdbody_1', src: '/mania-assets/pmc/holdbody1.png' },
+      { name: 'pmc_holdbody_2', src: '/mania-assets/pmc/holdbody2.png' },
+      { name: 'pmc_holdbody_3', src: '/mania-assets/pmc/holdbody3.png' },
+      { name: 'pmc_holdcap', src: '/mania-assets/pmc/holdcap.png' },
     ];
 
-    const allImages = [...arrowImages, ...circleImages, ...pwcImages];
+    const allImages = [...arrowImages, ...circleImages, ...pmcImages];
 
     const loadPromises = allImages.map(({ name, src }) => {
       return new Promise((resolve, reject) => {
@@ -703,7 +703,7 @@ export default function ManiaPreview({
     ctx.stroke();
 
     // Determine skin type for rendering
-    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pwc';
+    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pmc';
     const skinPrefix = isCustomSkin ? 'custom' : skin;
 
     // Draw receptors (use pressed image when key is pressed in play mode)
@@ -722,12 +722,12 @@ export default function ManiaPreview({
         } else {
           receptorImg = images[`arrow_receptor_${skinCol}`];
         }
-      } else if (skin === 'pwc') {
+      } else if (skin === 'pmc') {
         // PWC skin uses same receptor for all columns
         if (isPressed) {
-          receptorImg = images['pwc_receptor_pressed'] || images['pwc_receptor'];
+          receptorImg = images['pmc_receptor_pressed'] || images['pmc_receptor'];
         } else {
-          receptorImg = images['pwc_receptor'];
+          receptorImg = images['pmc_receptor'];
         }
       } else {
         // Circle skin
@@ -792,21 +792,21 @@ export default function ManiaPreview({
       const skinCol = col % 4;
       const noteImg = images[`${skinPrefix}_note_${skinCol}`] || (isCustomSkin ? images['arrow_note_0'] : null);
       // PWC has per-column hold bodies (different colors)
-      const holdBodyImg = skin === 'pwc'
-        ? images[`pwc_holdbody_${skinCol}`]
+      const holdBodyImg = skin === 'pmc'
+        ? images[`pmc_holdbody_${skinCol}`]
         : (images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null));
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
       // For custom skins and PWC, preserve aspect ratio (fit to column width)
       let noteDrawWidth = NOTE_WIDTH;
       let noteDrawHeight = NOTE_HEIGHT;
-      if ((isCustomSkin || skin === 'pwc') && noteImg) {
+      if ((isCustomSkin || skin === 'pmc') && noteImg) {
         const aspectRatio = noteImg.height / noteImg.width;
         noteDrawHeight = NOTE_WIDTH * aspectRatio;
       }
 
       let capDrawHeight = NOTE_HEIGHT / 2;
-      if ((isCustomSkin || skin === 'pwc') && holdCapImg) {
+      if ((isCustomSkin || skin === 'pmc') && holdCapImg) {
         const capAspect = holdCapImg.height / holdCapImg.width;
         capDrawHeight = NOTE_WIDTH * capAspect;
       } else if (skin === 'circle') {
@@ -815,7 +815,7 @@ export default function ManiaPreview({
 
       if (type === 'hold' && end !== undefined) {
         const holdHeight = noteY - endY;
-        const capOverlap = (isCustomSkin || skin === 'pwc') ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
+        const capOverlap = (isCustomSkin || skin === 'pmc') ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
 
         // Check if this hold is being held
         const isBeingHeld = playMode && activeHoldsRef.current.has(col) &&
