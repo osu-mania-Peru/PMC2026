@@ -382,7 +382,10 @@ export default function Mappool({ user }) {
   const [loadingSkin, setLoadingSkin] = useState(false);
   const skinFileInputRef = useRef(null);
   const skinDropdownRef = useRef(null);
-  const [volume, setVolume] = useState(0.5);
+  const [volume, setVolume] = useState(() => {
+    const stored = localStorage.getItem('pmc_preview_volume');
+    return stored ? parseFloat(stored) : 0.25;
+  });
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [scrollSpeed, setScrollSpeed] = useState(25);
   const seekToRef = useRef(null);
@@ -808,7 +811,7 @@ export default function Mappool({ user }) {
                   max="1"
                   step="0.01"
                   value={volume}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  onChange={(e) => { const v = parseFloat(e.target.value); setVolume(v); localStorage.setItem('pmc_preview_volume', v); }}
                   className="volume-slider-input"
                 />
               </div>

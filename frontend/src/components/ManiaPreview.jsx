@@ -778,16 +778,16 @@ export default function ManiaPreview({
       const holdBodyImg = images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null);
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
-      // For custom skins, preserve aspect ratio (fit to column width)
+      // For custom skins and PWC, preserve aspect ratio (fit to column width)
       let noteDrawWidth = NOTE_WIDTH;
       let noteDrawHeight = NOTE_HEIGHT;
-      if (isCustomSkin && noteImg) {
+      if ((isCustomSkin || skin === 'pwc') && noteImg) {
         const aspectRatio = noteImg.height / noteImg.width;
         noteDrawHeight = NOTE_WIDTH * aspectRatio;
       }
 
       let capDrawHeight = NOTE_HEIGHT / 2;
-      if (isCustomSkin && holdCapImg) {
+      if ((isCustomSkin || skin === 'pwc') && holdCapImg) {
         const capAspect = holdCapImg.height / holdCapImg.width;
         capDrawHeight = NOTE_WIDTH * capAspect;
       } else if (skin === 'circle') {
@@ -796,7 +796,7 @@ export default function ManiaPreview({
 
       if (type === 'hold' && end !== undefined) {
         const holdHeight = noteY - endY;
-        const capOverlap = isCustomSkin ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
+        const capOverlap = (isCustomSkin || skin === 'pwc') ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
 
         // Check if this hold is being held
         const isBeingHeld = playMode && activeHoldsRef.current.has(col) &&
