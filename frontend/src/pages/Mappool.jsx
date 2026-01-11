@@ -537,13 +537,14 @@ export default function Mappool({ user }) {
   const getCurrentSkinName = () => {
     if (skin === 'arrow') return 'Arrow';
     if (skin === 'circle') return 'Circle';
+    if (skin === 'pwc') return 'PWC';
     const customSkin = customSkins.find((s) => s.id === skin);
     return customSkin?.name || 'Custom';
   };
 
   // Get current skin data for ManiaPreview
   const getCurrentSkinData = () => {
-    if (skin === 'arrow' || skin === 'circle') return null;
+    if (skin === 'arrow' || skin === 'circle' || skin === 'pwc') return null;
     return customSkins.find((s) => s.id === skin) || null;
   };
 
@@ -840,7 +841,7 @@ export default function Mappool({ user }) {
                 title="Select skin"
               >
                 <img
-                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
+                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : skin === 'pwc' ? '/mania-assets/pwc/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
                   alt=""
                   className="overlay-skin-icon"
                 />
@@ -864,6 +865,13 @@ export default function Mappool({ user }) {
                   >
                     <img src="/mania-assets/circle/Note1.png" alt="" className="skin-dropdown-icon" />
                     <span>Circle</span>
+                  </button>
+                  <button
+                    className={`skin-dropdown-item ${skin === 'pwc' ? 'active' : ''}`}
+                    onClick={() => { setSkin('pwc'); setSkinDropdownOpen(false); }}
+                  >
+                    <img src="/mania-assets/pwc/Note1.png" alt="" className="skin-dropdown-icon" />
+                    <span>PWC</span>
                   </button>
 
                   {/* Custom skins */}

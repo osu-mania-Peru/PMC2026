@@ -493,7 +493,21 @@ export default function ManiaPreview({
       { name: 'circle_holdcap', src: '/mania-assets/circle/holdcap.png' },
     ];
 
-    const allImages = [...arrowImages, ...circleImages];
+    const pwcImages = [
+      // Notes
+      { name: 'pwc_note_0', src: '/mania-assets/pwc/Note1.png' },
+      { name: 'pwc_note_1', src: '/mania-assets/pwc/Note2.png' },
+      { name: 'pwc_note_2', src: '/mania-assets/pwc/Note3.png' },
+      { name: 'pwc_note_3', src: '/mania-assets/pwc/Note4.png' },
+      // Receptors
+      { name: 'pwc_receptor', src: '/mania-assets/pwc/receptor.png' },
+      { name: 'pwc_receptor_pressed', src: '/mania-assets/pwc/receptorD.png' },
+      // Holds
+      { name: 'pwc_holdbody', src: '/mania-assets/pwc/holdbody.png' },
+      { name: 'pwc_holdcap', src: '/mania-assets/pwc/holdcap.png' },
+    ];
+
+    const allImages = [...arrowImages, ...circleImages, ...pwcImages];
 
     const loadPromises = allImages.map(({ name, src }) => {
       return new Promise((resolve, reject) => {
@@ -673,7 +687,7 @@ export default function ManiaPreview({
     ctx.stroke();
 
     // Determine skin type for rendering
-    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle';
+    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pwc';
     const skinPrefix = isCustomSkin ? 'custom' : skin;
 
     // Draw receptors (use pressed image when key is pressed in play mode)
@@ -691,6 +705,13 @@ export default function ManiaPreview({
           receptorImg = images[`arrow_receptor_${skinCol}_pressed`] || images[`arrow_receptor_${skinCol}`];
         } else {
           receptorImg = images[`arrow_receptor_${skinCol}`];
+        }
+      } else if (skin === 'pwc') {
+        // PWC skin uses same receptor for all columns
+        if (isPressed) {
+          receptorImg = images['pwc_receptor_pressed'] || images['pwc_receptor'];
+        } else {
+          receptorImg = images['pwc_receptor'];
         }
       } else {
         // Circle skin
