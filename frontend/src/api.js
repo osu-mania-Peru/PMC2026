@@ -65,8 +65,8 @@ export const api = {
           }
         );
 
-        // Call global error handler if set
-        if (globalErrorHandler) {
+        // Call global error handler if set, but skip auth errors (expected for logged-out users)
+        if (globalErrorHandler && response.status !== 401 && response.status !== 403) {
           globalErrorHandler(error);
         }
 
