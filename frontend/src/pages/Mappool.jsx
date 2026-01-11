@@ -384,7 +384,7 @@ export default function Mappool({ user }) {
   const skinDropdownRef = useRef(null);
   const [volume, setVolume] = useState(() => {
     const stored = localStorage.getItem('pmc_preview_volume');
-    return stored ? parseFloat(stored) : 0.25;
+    return stored ? parseFloat(stored) : 0.1;
   });
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [scrollSpeed, setScrollSpeed] = useState(25);
