@@ -416,17 +416,23 @@ export default function ManiaPreview({
     }
   }, [seekToRef]);
 
+  // Convert linear slider value to logarithmic volume for natural perception
+  const toLogVolume = (linear) => {
+    // Use exponential curve: quieter at low values, natural feel
+    return Math.pow(linear, 3);
+  };
+
   // Sync volume to audio element (including on mount)
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume;
+      audioRef.current.volume = toLogVolume(volume);
     }
   }, [volume]);
 
   // Ensure volume is set when audio can play
   const handleCanPlay = useCallback(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume;
+      audioRef.current.volume = toLogVolume(volume);
     }
   }, [volume]);
 
