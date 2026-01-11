@@ -416,8 +416,15 @@ export default function ManiaPreview({
     }
   }, [seekToRef]);
 
-  // Sync volume to audio element
+  // Sync volume to audio element (including on mount)
   useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  // Ensure volume is set when audio can play
+  const handleCanPlay = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
@@ -1004,6 +1011,7 @@ export default function ManiaPreview({
         ref={audioRef}
         src={audioUrl}
         onLoadedMetadata={handleLoadedMetadata}
+        onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
         preload="auto"
