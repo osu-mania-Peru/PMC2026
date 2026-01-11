@@ -92,7 +92,7 @@ export default function ManiaPreview({
   audioUrl,
   onAudioProgress,
   seekToRef,
-  skin = 'arrow',
+  skin = 'pwc',
   customSkinData = null,
   volume = 0.5,
   playbackSpeed = 1,

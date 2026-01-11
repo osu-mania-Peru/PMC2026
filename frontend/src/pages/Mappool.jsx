@@ -376,7 +376,7 @@ export default function Mappool({ user }) {
   const [selectedMap, setSelectedMap] = useState(null);
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
-  const [skin, setSkin] = useState('arrow');
+  const [skin, setSkin] = useState('pwc');
   const [customSkins, setCustomSkins] = useState([]);
   const [skinDropdownOpen, setSkinDropdownOpen] = useState(false);
   const [loadingSkin, setLoadingSkin] = useState(false);
@@ -529,7 +529,7 @@ export default function Mappool({ user }) {
     deleteSkinFromStorage(skinId);
     setCustomSkins(getSavedSkins());
     if (skin === skinId) {
-      setSkin('arrow');
+      setSkin('pwc');
     }
   };
 
