@@ -515,8 +515,11 @@ export default function ManiaPreview({
       // Receptors
       { name: 'pwc_receptor', src: '/mania-assets/pwc/receptor.png' },
       { name: 'pwc_receptor_pressed', src: '/mania-assets/pwc/receptorD.png' },
-      // Holds
-      { name: 'pwc_holdbody', src: '/mania-assets/pwc/holdbody.png' },
+      // Hold bodies per column (Purple, Yellow, Yellow, Green)
+      { name: 'pwc_holdbody_0', src: '/mania-assets/pwc/holdbody0.png' },
+      { name: 'pwc_holdbody_1', src: '/mania-assets/pwc/holdbody1.png' },
+      { name: 'pwc_holdbody_2', src: '/mania-assets/pwc/holdbody2.png' },
+      { name: 'pwc_holdbody_3', src: '/mania-assets/pwc/holdbody3.png' },
       { name: 'pwc_holdcap', src: '/mania-assets/pwc/holdcap.png' },
     ];
 
@@ -788,7 +791,10 @@ export default function ManiaPreview({
       // Get note image based on skin
       const skinCol = col % 4;
       const noteImg = images[`${skinPrefix}_note_${skinCol}`] || (isCustomSkin ? images['arrow_note_0'] : null);
-      const holdBodyImg = images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null);
+      // PWC has per-column hold bodies (different colors)
+      const holdBodyImg = skin === 'pwc'
+        ? images[`pwc_holdbody_${skinCol}`]
+        : (images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null));
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
       // For custom skins and PWC, preserve aspect ratio (fit to column width)
