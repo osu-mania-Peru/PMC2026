@@ -46,7 +46,7 @@ import Matches from "./pages/Matches";
 import Players from "./pages/Players";
 import Mappool from "./pages/Mappool";
 import StaffDiscord from "./pages/StaffDiscord";
-import Timba from "./pages/Timba";
+// Timba removed - tournament committee prohibits gambling
 
 // Components
 import AdminPanel from "./components/AdminPanel";
@@ -183,10 +183,6 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             )
           }
         />
-        <Route
-          path="/timba"
-          element={<Timba />}
-        />
       </Routes>
 
       <footer className="footer">
@@ -217,7 +213,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
                   <FaTwitch size={20} />
                 </a>
                 <a
-                  href="https://discord.gg/placeholder"
+                  href="https://discord.gg/CbbNwxpr"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Discord"
@@ -232,7 +228,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
               <Link to="/players">JUGADORES</Link>
               <Link to="/maps">MAPPOOL</Link>
               <a
-                href="https://discord.gg/placeholder"
+                href="https://discord.gg/CbbNwxpr"
                 target="_blank"
                 rel="noopener noreferrer"
               >
