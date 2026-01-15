@@ -38,6 +38,11 @@
   text-transform: uppercase;
 }
 
+.players-count.players-count-total {
+  background: #333;
+  color: #888;
+}
+
 .players-header-right {
   display: flex;
   align-items: center;
@@ -150,6 +155,22 @@
 .player-rank {
   font-family: 'JetBrains Mono', monospace;
   color: #666;
+}
+
+/* Not registered state */
+.player-card.not-registered {
+  opacity: 0.6;
+}
+
+.player-seed-container.not-registered {
+  background: linear-gradient(135deg, #444 0%, #555 100%);
+}
+
+.player-status.not-registered {
+  color: #f44;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
 /* Empty state */

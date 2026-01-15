@@ -24,14 +24,20 @@ export default function Players() {
 
   if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
 
-  const sortedPlayers = players.sort((a, b) => (a.seed_number || 999) - (b.seed_number || 999));
+  const registeredCount = players.filter(p => p.is_registered).length;
+  const sortedPlayers = players.sort((a, b) => {
+    // Registered players first, then by seed
+    if (a.is_registered !== b.is_registered) return b.is_registered - a.is_registered;
+    return (a.seed_number || 999) - (b.seed_number || 999);
+  });
 
   return (
     <div className="players-page">
       <div className="players-header">
         <div className="players-header-left">
           <h1 className="players-title">Jugadores</h1>
-          <span className="players-count">{players.length} registrados</span>
+          <span className="players-count">{registeredCount} registrados</span>
+          <span className="players-count players-count-total">{players.length} total</span>
         </div>
         <div className="players-header-right">
           <UsersIcon />
@@ -52,9 +58,9 @@ export default function Players() {
               href={`https://osu.ppy.sh/users/${player.osu_id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="player-card"
+              className={`player-card ${!player.is_registered ? 'not-registered' : ''}`}
             >
-              <div className="player-seed-container">
+              <div className={`player-seed-container ${!player.is_registered ? 'not-registered' : ''}`}>
                 <span className={`player-seed ${!player.seed_number ? 'unranked' : ''}`}>
                   {player.seed_number || '—'}
                 </span>
@@ -68,7 +74,7 @@ export default function Players() {
                 <span className="player-name">{player.username}</span>
                 <div className="player-meta">
                   <span className="player-flag">{player.flag_code}</span>
-                  <span className="player-rank">#{player.global_rank?.toLocaleString() || '—'}</span>
+                  {!player.is_registered && <span className="player-status not-registered">No inscrito</span>}
                 </div>
               </div>
             </a>
