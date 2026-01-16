@@ -334,9 +334,10 @@
 }
 
 .discord-success-cat {
-  width: 120px;
+  width: 100px;
   height: auto;
-  margin-bottom: 16px;
+  margin: 0 auto 8px;
+  display: block;
 }
 
 .discord-invite-text {
