@@ -84,7 +84,7 @@
 }
 
 .discord-label .required {
-  color: #f23f42;
+  color: #ff0844;
   padding-left: 4px;
 }
 
@@ -111,7 +111,7 @@
 .discord-error {
   background: transparent;
   border: none;
-  color: #f23f42;
+  color: #ff0844;
   padding: 0;
   margin-top: -12px;
   font-size: 12px;
@@ -155,7 +155,7 @@
   width: 60px;
   height: 60px;
   margin: 0 auto 16px;
-  background: #f23f42;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff0844 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -280,7 +280,7 @@
 }
 
 .discord-btn.danger {
-  background: #f23f42;
+  background: linear-gradient(135deg, #ff8c00 0%, #ff0844 100%);
   color: #fff;
   display: flex;
   align-items: center;
@@ -289,7 +289,7 @@
 }
 
 .discord-btn.danger:hover:not(:disabled) {
-  background: #da373c;
+  background: linear-gradient(135deg, #e67e00 0%, #e0073d 100%);
 }
 
 .discord-btn.secondary {
@@ -319,4 +319,47 @@
 .discord-btn.tertiary:hover:not(:disabled) {
   color: #f2f3f5;
   background: transparent;
+}
+
+/* Discord invite section */
+.discord-invite-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.discord-invite-icon {
+  font-size: 64px;
+  color: #5865f2;
+  margin-bottom: 16px;
+}
+
+.discord-invite-text {
+  color: #f2f3f5;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.discord-invite-subtext {
+  color: #b5bac1;
+  font-size: 14px;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.discord-invite-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: auto !important;
+  padding: 12px 24px !important;
+  background: #5865f2 !important;
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.discord-invite-btn:hover {
+  background: #4752c4 !important;
 }

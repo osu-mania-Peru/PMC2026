@@ -218,7 +218,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
     try {
       const result = await api.register(discordUsername);
       setUser(result.user);
-      setShowDiscordModal(false);
+      // Don't close modal - let it show success state with Discord invite
     } catch (err) {
       setError(err.message);
       throw err; // Re-throw so modal can display it

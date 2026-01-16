@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import { Check, LogOut, UserX } from 'lucide-react';
+import { FaDiscord } from 'react-icons/fa';
 import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
+
+const DISCORD_INVITE = 'https://discord.gg/CbbNwxpr';
 
 export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, onLogout, loading, user }) {
   const [discordUsername, setDiscordUsername] = useState('');
   const [nationalityConfirmed, setNationalityConfirmed] = useState(false);
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -28,7 +32,7 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
     return null;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validateUsername(discordUsername);
     if (validationError) {
@@ -40,7 +44,12 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
       return;
     }
     setError('');
-    onSubmit(discordUsername.trim().toLowerCase());
+    try {
+      await onSubmit(discordUsername.trim().toLowerCase());
+      setShowSuccess(true);
+    } catch (err) {
+      setError(err.message || 'Error al registrar');
+    }
   };
 
   const handleClose = () => {
@@ -48,6 +57,7 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
     setNationalityConfirmed(false);
     setError('');
     setActionLoading(null);
+    setShowSuccess(false);
     onClose();
   };
 
@@ -67,6 +77,50 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
     onLogout();
     handleClose();
   };
+
+  // Success state - show Discord invite
+  if (showSuccess) {
+    return (
+      <div className="discord-modal-overlay" onClick={handleClose}>
+        <div className="discord-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="discord-modal-header">
+            <h3>¡Registro Exitoso!</h3>
+            <p className="discord-modal-description">
+              Te has registrado correctamente al torneo.
+            </p>
+          </div>
+
+          <div className="discord-modal-content">
+            <div className="discord-invite-section">
+              <FaDiscord className="discord-invite-icon" />
+              <p className="discord-invite-text">Únete a nuestro Discord</p>
+              <p className="discord-invite-subtext">
+                Mantente al día con las novedades del torneo y conoce a otros jugadores.
+              </p>
+              <a
+                href={DISCORD_INVITE}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="discord-btn discord-invite-btn"
+              >
+                <FaDiscord size={20} /> Unirse al Discord
+              </a>
+            </div>
+
+            <div className="discord-modal-buttons">
+              <button
+                type="button"
+                className="discord-btn tertiary"
+                onClick={handleClose}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Registered user - show account actions
   if (isRegistered) {
