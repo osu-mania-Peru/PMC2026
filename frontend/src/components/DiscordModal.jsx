@@ -92,7 +92,7 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
 
           <div className="discord-modal-content">
             <div className="discord-invite-section">
-              <FaDiscord className="discord-invite-icon" />
+              <img src="/loginsuccesscat.png" alt="Success!" className="discord-success-cat" />
               <p className="discord-invite-text">Únete a nuestro Discord</p>
               <p className="discord-invite-subtext">
                 Mantente al día con las novedades del torneo y conoce a otros jugadores.

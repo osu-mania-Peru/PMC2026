@@ -333,6 +333,12 @@
   margin-bottom: 16px;
 }
 
+.discord-success-cat {
+  width: 120px;
+  height: auto;
+  margin-bottom: 16px;
+}
+
 .discord-invite-text {
   color: #f2f3f5;
   font-size: 20px;
