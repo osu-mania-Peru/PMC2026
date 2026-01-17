@@ -4,7 +4,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,79 +13,64 @@
 }
 
 .error-modal {
-  background: #1a1a1a;
-  border-radius: 8px;
+  background: #fff;
   width: 100%;
   max-width: 600px;
   max-height: 80vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  border: 1px solid #ef4444;
+  border: 1px solid #000;
 }
 
 .error-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  background: rgba(239, 68, 68, 0.1);
-  border-bottom: 1px solid #333;
+  padding: 10px;
+  border-bottom: 1px solid #000;
 }
 
 .error-modal-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #ef4444;
+  gap: 8px;
+  color: #000;
 }
 
 .error-modal-title h3 {
   margin: 0;
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: bold;
 }
 
 .error-close-btn {
   background: transparent;
-  border: none;
-  padding: 8px;
+  border: 1px solid #000;
+  padding: 4px 8px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  transition: color 0.15s ease;
-  clip-path: none;
+  color: #000;
 }
 
 .error-close-btn:hover {
-  color: #fff;
+  background: #eee;
 }
 
 .error-modal-content {
-  padding: 20px;
+  padding: 10px;
   overflow-y: auto;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+  color: #000;
 }
 
 .error-message-box {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 4px;
-  padding: 12px 16px;
-  color: #fca5a5;
+  border: 1px solid #000;
+  padding: 10px;
   font-size: 0.9rem;
   word-break: break-word;
-}
-
-.error-message-box strong {
-  color: #ef4444;
 }
 
 .error-info-row {
@@ -96,85 +81,69 @@
 }
 
 .error-info-label {
-  color: #888;
-  flex-shrink: 0;
+  font-weight: bold;
 }
 
 .error-info-row code {
-  background: #0d0d0d;
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: #fbbf24;
-  font-family: 'Monaco', 'Menlo', monospace;
+  background: #eee;
+  padding: 2px 6px;
+  font-family: monospace;
   font-size: 0.8rem;
-  word-break: break-all;
 }
 
 .error-dump-container {
-  background: #0d0d0d;
-  border: 1px solid #333;
-  border-radius: 4px;
-  overflow: hidden;
+  border: 1px solid #000;
 }
 
 .error-dump-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 12px;
-  background: #1a1a1a;
-  border-bottom: 1px solid #333;
-  color: #888;
+  padding: 6px 10px;
+  background: #eee;
+  border-bottom: 1px solid #000;
   font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .error-copy-btn {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: transparent;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 4px 8px;
-  color: #888;
+  background: #fff;
+  border: 1px solid #000;
+  padding: 2px 6px;
   font-size: 0.7rem;
   cursor: pointer;
-  transition: all 0.15s ease;
-  clip-path: none;
 }
 
 .error-copy-btn:hover {
-  border-color: #22c55e;
-  color: #22c55e;
+  background: #eee;
 }
 
 .error-dump {
   margin: 0;
-  padding: 12px;
-  color: #a3a3a3;
-  font-family: 'Monaco', 'Menlo', monospace;
+  padding: 10px;
+  font-family: monospace;
   font-size: 0.75rem;
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-all;
   max-height: 200px;
   overflow-y: auto;
+  background: #fff;
 }
 
 .error-help-text {
   margin: 0;
-  color: #666;
   font-size: 0.8rem;
   text-align: center;
 }
 
 .error-modal-footer {
   display: flex;
-  gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid #333;
+  gap: 10px;
+  padding: 10px;
+  border-top: 1px solid #000;
   justify-content: flex-end;
 }
 
@@ -182,34 +151,29 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border: 1px solid #000;
   font-size: 0.875rem;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
-  clip-path: none;
+  background: #fff;
+}
+
+.error-btn:hover {
+  background: #eee;
 }
 
 .error-btn-primary {
-  background: #ef4444;
+  background: #000;
   color: #fff;
 }
 
 .error-btn-primary:hover {
-  background: #dc2626;
+  background: #333;
 }
 
 .error-btn-secondary {
-  background: transparent;
-  border: 1px solid #444;
-  color: #888;
-}
-
-.error-btn-secondary:hover {
-  border-color: #22c55e;
-  color: #22c55e;
+  background: #fff;
+  color: #000;
 }
 
 @media (max-width: 600px) {
