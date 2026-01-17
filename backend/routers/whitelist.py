@@ -1,6 +1,6 @@
 """
 Whitelist management endpoints for nationality bypass.
-Stores whitelist in ~/.config/pmc/whitelist.json
+Stores whitelist in data/whitelist.json (mounted volume in docker)
 """
 import json
 import os
@@ -13,8 +13,8 @@ from models.user import User
 
 router = APIRouter(prefix="/whitelist", tags=["Whitelist"])
 
-# Config file path
-WHITELIST_PATH = Path.home() / ".config" / "pmc" / "whitelist.json"
+# Config file path - use environment variable or default to ./data/whitelist.json
+WHITELIST_PATH = Path(os.getenv("WHITELIST_PATH", "/app/data/whitelist.json"))
 
 
 def _ensure_config_dir():
