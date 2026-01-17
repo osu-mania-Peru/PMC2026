@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, LogOut, UserX } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
+import { api } from '../api';
 import catGif from '../assets/cat.gif';
 import './DiscordModal.css';
 
@@ -12,11 +13,19 @@ export default function DiscordModal({ isOpen, onClose, onSubmit, onUnregister, 
   const [error, setError] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [whitelist, setWhitelist] = useState([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      api.getWhitelist()
+        .then(data => setWhitelist(data.whitelist || []))
+        .catch(() => setWhitelist([]));
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const bypassUsers = ['Shaamii', 'guden'];
-  const isWhitelisted = bypassUsers.includes(user?.username);
+  const isWhitelisted = whitelist.includes(user?.username);
   const isPeruvian = user?.flag_code === 'PE' || isWhitelisted;
   const isRegistered = user?.is_registered;
 

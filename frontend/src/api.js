@@ -235,4 +235,14 @@ export const api = {
   seedSlots: () => api.fetch('/slots/seed', {
     method: 'POST',
   }),
+
+  // Whitelist
+  getWhitelist: () => api.fetch('/whitelist'),
+  addToWhitelist: (username) => api.fetch('/whitelist', {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+  }),
+  removeFromWhitelist: (username) => api.fetch(`/whitelist/${encodeURIComponent(username)}`, {
+    method: 'DELETE',
+  }),
 };

@@ -46,6 +46,7 @@ import Matches from "./pages/Matches";
 import Players from "./pages/Players";
 import Mappool from "./pages/Mappool";
 import StaffDiscord from "./pages/StaffDiscord";
+import StaffWhitelist from "./pages/StaffWhitelist";
 // Timba removed - tournament committee prohibits gambling
 
 // Components
@@ -88,9 +89,14 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <NavLink to="/players">JUGADORES</NavLink>
             <NavLink to="/maps">MAPPOOL</NavLink>
             {user?.is_staff && (
-              <NavLink to="/staff/discord" className="nav-staff-link">
-                DISCORD<span className="staff-badge">STAFF</span>
-              </NavLink>
+              <>
+                <NavLink to="/staff/discord" className="nav-staff-link">
+                  DISCORD<span className="staff-badge">STAFF</span>
+                </NavLink>
+                <NavLink to="/staff/whitelist" className="nav-staff-link">
+                  WHITELIST<span className="staff-badge">STAFF</span>
+                </NavLink>
+              </>
             )}
             {user ? (
               <>
@@ -177,6 +183,18 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             user?.is_staff ? (
               <main className="main has-container">
                 <StaffDiscord />
+              </main>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/staff/whitelist"
+          element={
+            user?.is_staff ? (
+              <main className="main has-container">
+                <StaffWhitelist />
               </main>
             ) : (
               <Navigate to="/" />
