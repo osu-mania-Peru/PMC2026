@@ -94,11 +94,11 @@
   color: #666;
 }
 
-/* Grid */
+/* List */
 .staff-discord-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 /* Card */
@@ -255,7 +255,7 @@
   }
 
   .staff-discord-grid {
-    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
 
   .staff-discord-search-input {
