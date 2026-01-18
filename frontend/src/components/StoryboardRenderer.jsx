@@ -369,21 +369,11 @@ function StoryboardRenderer({
       }
     }
     sorted.sort((a, b) => a.layer - b.layer || a.id - b.id);
-    console.log(`[Storyboard] Sprites: ${sorted.length} active, ${skippedLayer} skipped (layer 1/2), ${skippedNoRange} skipped (no commands)`);
-    if (loopCount > 0) {
-      console.log(`[Storyboard] Loops: ${loopCount} commands expanded to ${loopExpandedCount} sub-commands`);
-    }
-    if (triggerCount > 0) {
-      console.log(`[Storyboard] Triggers: ${triggerCount} commands expanded to ${triggerExpandedCount} instances (from ${hitTimes.length} hit times)`);
-    }
 
     for (const id in cmdMap) {
       // Stable sort: by start_time, then by original order
       cmdMap[id].sort((a, b) => a.start_time - b.start_time || (a._order ?? 0) - (b._order ?? 0));
     }
-
-    // Expose for debugging in console
-    window.__storyboardDebug = { sortedSprites: sorted, commandsBySprite: cmdMap };
 
     return {
       sortedSprites: sorted,
@@ -499,18 +489,15 @@ function StoryboardRenderer({
 
         if (loaded === total) {
           texturesRef.current = textures;
-          console.log(`[Storyboard] Loaded ${Object.keys(textures).length}/${total} textures`);
           setReady(true);
         }
       };
 
       img.onerror = () => {
-        console.warn(`[Storyboard] Failed to load: ${normalizedPath}`);
         loaded++;
         onProgress?.(loaded, total);
         if (loaded === total) {
           texturesRef.current = textures;
-          console.log(`[Storyboard] Loaded ${Object.keys(textures).length}/${total} textures`);
           setReady(true);
         }
       };
@@ -719,11 +706,7 @@ function StoryboardRenderer({
 
         const texInfo = textures[texturePath];
         if (!texInfo) {
-          // Log missing texture once per path
-          if (!missingTextures.has(texturePath)) {
-            missingTextures.add(texturePath);
-            console.warn(`[Storyboard] Missing texture: ${texturePath}`);
-          }
+          missingTextures.add(texturePath);
           continue;
         }
 
