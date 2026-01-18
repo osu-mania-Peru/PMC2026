@@ -108,6 +108,10 @@ export default function Preview({ user }) {
   });
   const [hitPositionEditMode, setHitPositionEditMode] = useState(false);
   const [hidePlayfield, setHidePlayfield] = useState(false);
+  const [bgOpacity, setBgOpacity] = useState(() => {
+    const stored = localStorage.getItem('pmc_bg_opacity');
+    return stored ? parseFloat(stored) : 0.1;
+  });
   const seekToRef = useRef(null);
   const playRef = useRef(null);
   const resetRef = useRef(null);
@@ -519,6 +523,7 @@ export default function Preview({ user }) {
             storyboard={storyboardChoice === 'accepted' ? notesData?.storyboard : null}
             storyboardBaseUrl={storyboardChoice === 'accepted' && notesData?.storyboard_base_url ? `${apiBaseUrl}${notesData.storyboard_base_url}` : null}
             hidePlayfield={hidePlayfield}
+            bgOpacity={bgOpacity}
             onAudioLoaded={onAudioLoaded}
             onSkinLoaded={onSkinLoaded}
             onStoryboardProgress={onStoryboardProgress}
@@ -612,6 +617,31 @@ export default function Preview({ user }) {
                   step="0.01"
                   value={volume}
                   onChange={(e) => { const v = parseFloat(e.target.value); setVolume(v); localStorage.setItem('pmc_preview_volume', v); }}
+                  className="volume-slider-input"
+                />
+              </div>
+            </div>
+
+            {/* Background opacity control */}
+            <div className="overlay-control-group">
+              <span className="overlay-label">BG</span>
+              <div className="volume-slider-container">
+                <div className="volume-slider-track" />
+                <div
+                  className="volume-slider-fill"
+                  style={{ clipPath: `polygon(0 50%, ${bgOpacity * 100}% ${50 - bgOpacity * 50}%, ${bgOpacity * 100}% ${50 + bgOpacity * 50}%)` }}
+                />
+                <div
+                  className="volume-slider-thumb"
+                  style={{ left: `${bgOpacity * 100}%` }}
+                />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={bgOpacity}
+                  onChange={(e) => { const v = parseFloat(e.target.value); setBgOpacity(v); localStorage.setItem('pmc_bg_opacity', v); }}
                   className="volume-slider-input"
                 />
               </div>

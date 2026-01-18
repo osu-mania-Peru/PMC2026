@@ -17,7 +17,6 @@
   bottom: 0;
   background-size: cover;
   background-position: center;
-  opacity: 0.1;
   pointer-events: none;
   z-index: 0;
 }

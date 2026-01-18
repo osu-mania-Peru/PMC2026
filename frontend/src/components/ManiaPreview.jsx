@@ -112,6 +112,7 @@ export default function ManiaPreview({
   storyboard = null,
   storyboardBaseUrl = null,
   hidePlayfield = false,
+  bgOpacity = 0.1,
   onAudioLoaded = null,
   onSkinLoaded = null,
   onStoryboardProgress = null,
@@ -1048,13 +1049,14 @@ export default function ManiaPreview({
 
   return (
     <div className="mania-preview">
-      {/* Background image at 10% opacity */}
+      {/* Background image with configurable opacity */}
       {/* Hide background when storyboard is present */}
       {notesData?.background_url_full && !storyboard?.sprites?.length && (
         <div
           className="mania-preview-background"
           style={{
             backgroundImage: `url(${notesData.background_url_full})`,
+            opacity: bgOpacity,
           }}
         />
       )}
