@@ -155,11 +155,18 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
 
     setSaving(true);
     try {
-      const currentSlot = slots[index];
-      const targetSlot = direction === 'up' ? slots[index - 1] : slots[index + 1];
+      // Create new order by swapping positions in array
+      const newSlots = [...slots];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      [newSlots[index], newSlots[targetIndex]] = [newSlots[targetIndex], newSlots[index]];
 
-      await api.updateSlot(currentSlot.id, { slot_order: targetSlot.slot_order });
-      await api.updateSlot(targetSlot.id, { slot_order: currentSlot.slot_order });
+      // Update all slots with new sequential order values
+      for (let i = 0; i < newSlots.length; i++) {
+        if (newSlots[i].slot_order !== i) {
+          await api.updateSlot(newSlots[i].id, { slot_order: i });
+        }
+      }
+
       await fetchSlots();
       onSlotsChange?.();
     } catch (err) {
