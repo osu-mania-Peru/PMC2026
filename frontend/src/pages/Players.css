@@ -62,6 +62,57 @@
   margin: 0 0 2rem 0;
 }
 
+/* Filters */
+.players-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #111;
+  border: 1px solid #333;
+  padding: 0.5rem 1rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-search svg {
+  color: #666;
+  flex-shrink: 0;
+}
+
+.filter-search input {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+}
+
+.filter-search input::placeholder {
+  color: #666;
+}
+
+.players-filters select {
+  background: #111;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.players-filters select:hover {
+  border-color: #444;
+}
+
 /* Player Grid */
 .players-grid {
   display: grid;

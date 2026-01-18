@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
+import { Search } from 'lucide-react';
 import './Players.css';
 
 // Icon components
@@ -13,19 +14,46 @@ const UsersIcon = () => (
 export default function Players() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('pp');
+  const [countryFilter, setCountryFilter] = useState('all');
 
   useEffect(() => {
-    // TODO: Change back to getRegisteredPlayers for production
     api.getAllUsers()
       .then(data => setPlayers(data.users))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
+  const registeredPlayers = useMemo(() => players.filter(p => p.is_registered), [players]);
 
-  const registeredPlayers = players.filter(p => p.is_registered);
-  const sortedPlayers = registeredPlayers.sort((a, b) => (b.mania_pp || 0) - (a.mania_pp || 0));
+  const countries = useMemo(() => {
+    const codes = [...new Set(registeredPlayers.map(p => p.flag_code))].sort();
+    return codes;
+  }, [registeredPlayers]);
+
+  const filteredPlayers = useMemo(() => {
+    let result = registeredPlayers;
+
+    if (search) {
+      result = result.filter(p => p.username.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    if (countryFilter !== 'all') {
+      result = result.filter(p => p.flag_code === countryFilter);
+    }
+
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'pp') return (b.mania_pp || 0) - (a.mania_pp || 0);
+      if (sortBy === 'rank') return (a.mania_country_rank || 9999) - (b.mania_country_rank || 9999);
+      if (sortBy === 'name') return a.username.localeCompare(b.username);
+      return 0;
+    });
+
+    return result;
+  }, [registeredPlayers, search, sortBy, countryFilter]);
+
+  if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
 
   return (
     <div className="players-page">
@@ -41,13 +69,36 @@ export default function Players() {
 
       <p className="players-subtitle">Lista de jugadores registrados en el torneo · Rangos nacionales (Perú)</p>
 
-      {players.length === 0 ? (
+      <div className="players-filters">
+        <div className="filter-search">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Buscar jugador..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="pp">Ordenar por PP</option>
+          <option value="rank">Ordenar por Rank</option>
+          <option value="name">Ordenar por Nombre</option>
+        </select>
+        <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)}>
+          <option value="all">Todos los países</option>
+          {countries.map(code => (
+            <option key={code} value={code}>{code}</option>
+          ))}
+        </select>
+      </div>
+
+      {filteredPlayers.length === 0 ? (
         <div className="players-empty">
-          <p>Aun no hay jugadores registrados.</p>
+          <p>No se encontraron jugadores.</p>
         </div>
       ) : (
         <div className="players-grid">
-          {sortedPlayers.map(player => (
+          {filteredPlayers.map(player => (
             <a
               key={player.id}
               href={`https://osu.ppy.sh/users/${player.osu_id}`}
