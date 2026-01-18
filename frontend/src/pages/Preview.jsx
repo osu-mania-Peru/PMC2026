@@ -401,13 +401,14 @@ export default function Preview({ user }) {
     if (skin === 'arrow') return 'Arrow';
     if (skin === 'circle') return 'Circle';
     if (skin === 'pmc') return 'PMC';
+    if (skin === 'bars') return 'Bars';
     const customSkin = customSkins.find((s) => s.id === skin);
     return customSkin?.name || 'Custom';
   };
 
   // Get current skin data for ManiaPreview
   const getCurrentSkinData = () => {
-    if (skin === 'arrow' || skin === 'circle' || skin === 'pmc') return null;
+    if (skin === 'arrow' || skin === 'circle' || skin === 'pmc' || skin === 'bars') return null;
     return customSkins.find((s) => s.id === skin) || null;
   };
 
@@ -856,7 +857,7 @@ export default function Preview({ user }) {
                 title="Select skin"
               >
                 <img
-                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : skin === 'pmc' ? '/mania-assets/pmc/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
+                  src={skin === 'arrow' ? '/mania-assets/left.png' : skin === 'circle' ? '/mania-assets/circle/Note1.png' : skin === 'pmc' ? '/mania-assets/pmc/Note1.png' : skin === 'bars' ? '/mania-assets/bars/Note1.png' : (customSkins.find((s) => s.id === skin)?.notes[0] || '/mania-assets/left.png')}
                   alt=""
                   className="overlay-skin-icon"
                 />
@@ -886,6 +887,13 @@ export default function Preview({ user }) {
                   >
                     <img src="/mania-assets/pmc/Note1.png" alt="" className="skin-dropdown-icon" />
                     <span>PMC</span>
+                  </button>
+                  <button
+                    className={`skin-dropdown-item ${skin === 'bars' ? 'active' : ''}`}
+                    onClick={() => { setSkin('bars'); setSkinDropdownOpen(false); }}
+                  >
+                    <img src="/mania-assets/bars/Note1.png" alt="" className="skin-dropdown-icon" />
+                    <span>Bars</span>
                   </button>
 
                   {customSkins.length > 0 && (

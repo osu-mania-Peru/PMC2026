@@ -654,7 +654,21 @@ export default function ManiaPreview({
       { name: 'pmc_holdcap', src: '/mania-assets/pmc/holdcap.png' },
     ];
 
-    const allImages = [...arrowImages, ...circleImages, ...pmcImages];
+    const barsImages = [
+      // Notes
+      { name: 'bars_note_0', src: '/mania-assets/bars/Note1.png' },
+      { name: 'bars_note_1', src: '/mania-assets/bars/Note2.png' },
+      { name: 'bars_note_2', src: '/mania-assets/bars/Note3.png' },
+      { name: 'bars_note_3', src: '/mania-assets/bars/Note4.png' },
+      // Receptors
+      { name: 'bars_receptor', src: '/mania-assets/bars/receptor.png' },
+      { name: 'bars_receptor_pressed', src: '/mania-assets/bars/receptorD.png' },
+      // Holds
+      { name: 'bars_holdbody', src: '/mania-assets/bars/holdbody.png' },
+      { name: 'bars_holdcap', src: '/mania-assets/bars/holdcap.png' },
+    ];
+
+    const allImages = [...arrowImages, ...circleImages, ...pmcImages, ...barsImages];
 
     const loadPromises = allImages.map(({ name, src }) => {
       return new Promise((resolve, reject) => {
@@ -822,7 +836,7 @@ export default function ManiaPreview({
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Determine skin type for rendering
-    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pmc';
+    const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pmc' && skin !== 'bars';
     const skinPrefix = isCustomSkin ? 'custom' : skin;
 
     // Draw receptors (use pressed image when key is pressed in play mode)
@@ -847,6 +861,13 @@ export default function ManiaPreview({
           receptorImg = images['pmc_receptor_pressed'] || images['pmc_receptor'];
         } else {
           receptorImg = images['pmc_receptor'];
+        }
+      } else if (skin === 'bars') {
+        // Bars skin uses same receptor for all columns
+        if (isPressed) {
+          receptorImg = images['bars_receptor_pressed'] || images['bars_receptor'];
+        } else {
+          receptorImg = images['bars_receptor'];
         }
       } else {
         // Circle skin
@@ -916,16 +937,16 @@ export default function ManiaPreview({
         : (images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null));
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
-      // For custom skins and PWC, preserve aspect ratio (fit to column width)
+      // For custom skins, PWC, and bars, preserve aspect ratio (fit to column width)
       let noteDrawWidth = NOTE_WIDTH;
       let noteDrawHeight = NOTE_HEIGHT;
-      if ((isCustomSkin || skin === 'pmc') && noteImg) {
+      if ((isCustomSkin || skin === 'pmc' || skin === 'bars') && noteImg) {
         const aspectRatio = noteImg.height / noteImg.width;
         noteDrawHeight = NOTE_WIDTH * aspectRatio;
       }
 
       let capDrawHeight = NOTE_HEIGHT / 2;
-      if ((isCustomSkin || skin === 'pmc') && holdCapImg) {
+      if ((isCustomSkin || skin === 'pmc' || skin === 'bars') && holdCapImg) {
         const capAspect = holdCapImg.height / holdCapImg.width;
         capDrawHeight = NOTE_WIDTH * capAspect;
       } else if (skin === 'circle') {
@@ -934,7 +955,7 @@ export default function ManiaPreview({
 
       if (type === 'hold' && end !== undefined) {
         const holdHeight = noteY - endY;
-        const capOverlap = (isCustomSkin || skin === 'pmc') ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
+        const capOverlap = (isCustomSkin || skin === 'pmc' || skin === 'bars') ? capDrawHeight * 0.4 : (skin === 'circle' ? 51 : 22);
 
         // Check if this hold is being held
         const isBeingHeld = playMode && activeHoldsRef.current.has(col) &&
