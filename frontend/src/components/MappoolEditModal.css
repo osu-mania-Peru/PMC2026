@@ -277,6 +277,16 @@
   width: calc(100% - 32px);
 }
 
+.mpm-add-map-btn.has-draft {
+  border-color: #ff0844;
+  color: #ff0844;
+  border-style: solid;
+}
+
+.mpm-add-map-btn.has-draft:hover {
+  background: rgba(255, 8, 68, 0.1);
+}
+
 /* Forms */
 .add-pool-form,
 .add-map-form {

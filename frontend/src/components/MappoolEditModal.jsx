@@ -560,7 +560,10 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
 
 // Pool Item Component
 function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots }) {
-  const [showAddMap, setShowAddMap] = useState(false);
+  const { addMapPoolId, addMapDraft } = useMappoolStore();
+  const hasDraft = addMapPoolId === pool.id && addMapDraft !== null;
+
+  const [showAddMap, setShowAddMap] = useState(hasDraft);
   const [deletingMap, setDeletingMap] = useState(null);
 
   const getSlotColor = (slotName) => {
@@ -651,11 +654,11 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
         />
       ) : (
         <button
-          className="mpm-add-map-btn"
+          className={`mpm-add-map-btn ${hasDraft ? 'has-draft' : ''}`}
           onClick={() => setShowAddMap(true)}
           disabled={loading}
         >
-          <PlusIcon /> Agregar Mapa
+          <PlusIcon /> {hasDraft ? 'Continuar donde lo dejaste' : 'Agregar Mapa'}
         </button>
       )}
     </div>
