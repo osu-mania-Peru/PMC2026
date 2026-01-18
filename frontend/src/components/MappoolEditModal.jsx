@@ -3,6 +3,7 @@ import { api } from '../api';
 import catGif from '../assets/cat.gif';
 import SlotEditModal from './SlotEditModal';
 import MapEditModal from './MapEditModal';
+import { useMappoolStore } from '../stores/mappoolStore';
 import './MappoolEditModal.css';
 
 // SVG Icons
@@ -95,12 +96,31 @@ const PencilIcon = () => (
 
 // Add Map Form
 function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
+  const {
+    addMapDraft,
+    addMapPoolId,
+    addMapStage,
+    beatmapsetData: storedBeatmapset,
+    setAddMapDraft,
+    clearAddMapDraft,
+  } = useMappoolStore();
+
+  // Restore from store if we have a draft for this pool
+  const hasDraft = addMapPoolId === poolId && addMapDraft !== null;
+
   const [urlInput, setUrlInput] = useState('');
-  const [beatmapsetData, setBeatmapsetData] = useState(null);
-  const [formData, setFormData] = useState(null);
-  const [bannerUrl, setBannerUrl] = useState(null);
+  const [beatmapsetData, setBeatmapsetData] = useState(hasDraft ? storedBeatmapset : null);
+  const [formData, setFormData] = useState(hasDraft ? addMapDraft : null);
+  const [bannerUrl, setBannerUrl] = useState(hasDraft && addMapDraft ? addMapDraft.banner_url : null);
   const [fetching, setFetching] = useState(false);
   const [fetchError, setFetchError] = useState(null);
+
+  // Save draft when formData changes
+  useEffect(() => {
+    if (formData) {
+      setAddMapDraft(poolId, formData, 'form', beatmapsetData);
+    }
+  }, [formData, poolId, beatmapsetData, setAddMapDraft]);
 
   // Parse URL to extract beatmapset ID and optional beatmap ID
   const parseOsuUrl = (input) => {
@@ -228,6 +248,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
     e.preventDefault();
     if (!formData || !formData.beatmap_id || !formData.title) return;
     await onAdd(poolId, formData);
+    clearAddMapDraft();
   };
 
   const handleBack = () => {
@@ -235,6 +256,12 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
     setBeatmapsetData(null);
     setBannerUrl(null);
     setUrlInput('');
+    clearAddMapDraft();
+  };
+
+  const handleCancel = () => {
+    clearAddMapDraft();
+    onCancel();
   };
 
   // Stage 1: URL Input
@@ -261,7 +288,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
             </div>
             {fetchError && <div className="map-fetch-error">{fetchError}</div>}
             <div className="map-form-actions">
-              <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel}>
+              <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleCancel}>
                 Cancelar
               </button>
             </div>
@@ -305,7 +332,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
           <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleBack}>
             Cambiar Mapa
           </button>
-          <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel}>
+          <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleCancel}>
             Cancelar
           </button>
         </div>
@@ -523,7 +550,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
         <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleBack} disabled={loading}>
           Cambiar Mapa
         </button>
-        <button type="button" className="mpm-btn mpm-btn-secondary" onClick={onCancel} disabled={loading}>
+        <button type="button" className="mpm-btn mpm-btn-secondary" onClick={handleCancel} disabled={loading}>
           Cancelar
         </button>
       </div>

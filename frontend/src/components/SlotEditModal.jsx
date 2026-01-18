@@ -35,7 +35,9 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
     setLoading(true);
     try {
       const data = await api.getSlots();
-      setSlots(data);
+      // Sort by slot_order to ensure correct ordering
+      const sorted = [...data].sort((a, b) => a.slot_order - b.slot_order);
+      setSlots(sorted);
       setEditedSlots({});
     } catch (err) {
       console.error('Failed to fetch slots:', err);

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import catGif from '../assets/cat.gif';
+import { useMappoolStore } from '../stores/mappoolStore';
 import './MapEditModal.css';
 
 // SVG Icons
@@ -17,28 +18,48 @@ const PencilIcon = () => (
 );
 
 export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEditSlots }) {
+  const {
+    editMapDraft,
+    editMapId,
+    setEditMapDraft,
+    clearEditMapDraft,
+  } = useMappoolStore();
+
   const [formData, setFormData] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  // Initialize form data when map changes
-  if (isOpen && map && !formData) {
-    setFormData({
-      slot: map.slot,
-      beatmap_id: map.beatmap_id,
-      artist: map.artist,
-      title: map.title,
-      difficulty_name: map.difficulty_name,
-      mapper: map.mapper,
-      star_rating: map.star_rating,
-      bpm: map.bpm,
-      length_seconds: map.length_seconds,
-      od: map.od,
-      hp: map.hp,
-      ln_percent: map.ln_percent || '0',
-      is_custom_map: map.is_custom_map || false,
-      is_custom_song: map.is_custom_song || false,
-    });
-  }
+  // Initialize form data when map changes - check for saved draft first
+  useEffect(() => {
+    if (isOpen && map) {
+      if (editMapId === map.id && editMapDraft) {
+        setFormData(editMapDraft);
+      } else {
+        setFormData({
+          slot: map.slot,
+          beatmap_id: map.beatmap_id,
+          artist: map.artist,
+          title: map.title,
+          difficulty_name: map.difficulty_name,
+          mapper: map.mapper,
+          star_rating: map.star_rating,
+          bpm: map.bpm,
+          length_seconds: map.length_seconds,
+          od: map.od,
+          hp: map.hp,
+          ln_percent: map.ln_percent || '0',
+          is_custom_map: map.is_custom_map || false,
+          is_custom_song: map.is_custom_song || false,
+        });
+      }
+    }
+  }, [isOpen, map, editMapId, editMapDraft]);
+
+  // Save draft when formData changes
+  useEffect(() => {
+    if (formData && map) {
+      setEditMapDraft(map.id, formData);
+    }
+  }, [formData, map, setEditMapDraft]);
 
   if (!isOpen || !map) return null;
 
@@ -56,6 +77,7 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
     try {
       await onSave(map.id, formData);
       setFormData(null);
+      clearEditMapDraft();
     } catch (err) {
       console.error('Failed to save map:', err);
     } finally {
@@ -64,6 +86,13 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
   };
 
   const handleClose = () => {
+    // Don't clear draft on close - allows recovery
+    setFormData(null);
+    onClose();
+  };
+
+  const handleCancel = () => {
+    clearEditMapDraft();
     setFormData(null);
     onClose();
   };
@@ -285,7 +314,7 @@ export default function MapEditModal({ isOpen, map, onSave, onClose, slots, onEd
                 <><img src={catGif} alt="" className="btn-loading-cat" /> Guardando...</>
               ) : 'Guardar Cambios'}
             </button>
-            <button type="button" className="map-edit-btn map-edit-btn-secondary" onClick={handleClose} disabled={saving}>
+            <button type="button" className="map-edit-btn map-edit-btn-secondary" onClick={handleCancel} disabled={saving}>
               Cancelar
             </button>
           </div>
