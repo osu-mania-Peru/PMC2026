@@ -252,6 +252,7 @@
 /* Beatmap card row - slot separate from card */
 .preview-beatmap-card {
   display: flex;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 0.5rem;
   background: transparent !important;
