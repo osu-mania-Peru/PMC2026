@@ -72,6 +72,9 @@ export default function Players() {
                   {player.mania_rank && (
                     <span className="player-rank">#{player.mania_rank.toLocaleString()}</span>
                   )}
+                  {player.mania_pp && (
+                    <span className="player-pp">{Math.round(player.mania_pp).toLocaleString()}pp</span>
+                  )}
                 </div>
               </div>
             </a>

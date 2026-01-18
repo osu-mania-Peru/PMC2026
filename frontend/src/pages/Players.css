@@ -157,6 +157,12 @@
   color: #666;
 }
 
+.player-pp {
+  font-family: 'JetBrains Mono', monospace;
+  color: #ff0844;
+  font-weight: 600;
+}
+
 /* Not registered state */
 .player-card.not-registered {
   opacity: 0.6;
