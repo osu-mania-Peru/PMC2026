@@ -117,6 +117,7 @@ def parse_osb_file(file_path: str) -> StoryboardData | None:
             elif cmd_type == "T" and len(parts) >= 4:
                 try:
                     # parts[1] is trigger_name (e.g., "HitSound", "Passing", "Failing")
+                    trigger_name = parts[1]
                     start_time = int(parts[2])
                     end_time = int(parts[3]) if len(parts) > 3 else start_time
                     loop_command = {
@@ -128,6 +129,7 @@ def parse_osb_file(file_path: str) -> StoryboardData | None:
                         "params": [],
                         "loop_count": None,
                         "sub_commands": [],
+                        "trigger_name": trigger_name,
                     }
                     in_loop = True
                 except ValueError:

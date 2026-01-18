@@ -111,6 +111,10 @@ export default function ManiaPreview({
   hitPositionEditMode = false,
   storyboard = null,
   storyboardBaseUrl = null,
+  hidePlayfield = false,
+  onAudioLoaded = null,
+  onSkinLoaded = null,
+  onStoryboardProgress = null,
 }) {
   // Refs
   const canvasRef = useRef(null);
@@ -121,6 +125,8 @@ export default function ManiaPreview({
   // Time interpolation refs for smooth animation at any playback speed
   const lastAudioTimeRef = useRef(0);
   const lastPerfTimeRef = useRef(0);
+  // Shared time ref for storyboard (avoids React re-renders)
+  const currentTimeRefForStoryboard = useRef(0);
 
   // State
   const [isPlaying, setIsPlaying] = useState(false);
@@ -467,6 +473,7 @@ export default function ManiaPreview({
         if (audioRef.current) {
           audioRef.current.currentTime = timeMs / 1000;
           setCurrentTime(timeMs);
+          currentTimeRefForStoryboard.current = timeMs; // Update storyboard time
           // Reset interpolation refs on seek
           lastAudioTimeRef.current = timeMs;
           lastPerfTimeRef.current = performance.now();
@@ -514,7 +521,8 @@ export default function ManiaPreview({
     if (audioRef.current) {
       audioRef.current.volume = toLogVolume(volume);
     }
-  }, [volume]);
+    onAudioLoaded?.();
+  }, [volume, onAudioLoaded]);
 
   // Sync playback speed to audio element
   useEffect(() => {
@@ -619,9 +627,12 @@ export default function ManiaPreview({
     });
 
     Promise.all(loadPromises)
-      .then(() => setImagesLoaded(true))
+      .then(() => {
+        setImagesLoaded(true);
+        onSkinLoaded?.();
+      })
       .catch((err) => console.error('Failed to load mania assets:', err));
-  }, []);
+  }, [onSkinLoaded]);
 
   // Load custom skin images when customSkinData or keyCount changes
   useEffect(() => {
@@ -694,6 +705,7 @@ export default function ManiaPreview({
     if (audioRef.current) {
       const time = audioRef.current.currentTime * 1000;
       setCurrentTime(time);
+      currentTimeRefForStoryboard.current = time; // Update ref for storyboard (no re-render)
       onAudioProgress?.({ currentTime: time, duration, isPlaying, notes: notesData?.notes });
     }
   }, [duration, isPlaying, onAudioProgress, notesData]);
@@ -754,6 +766,8 @@ export default function ManiaPreview({
         lastAudioTimeRef.current = audioTime;
         lastPerfTimeRef.current = perfTime;
       }
+      // Update storyboard time ref at 60fps (not just on timeupdate events)
+      currentTimeRefForStoryboard.current = currentTimeMs;
     }
 
     const timingPoints = notesData?.timing_points || [];
@@ -1035,7 +1049,8 @@ export default function ManiaPreview({
   return (
     <div className="mania-preview">
       {/* Background image at 10% opacity */}
-      {notesData?.background_url_full && (
+      {/* Hide background when storyboard is present */}
+      {notesData?.background_url_full && !storyboard?.sprites?.length && (
         <div
           className="mania-preview-background"
           style={{
@@ -1049,13 +1064,14 @@ export default function ManiaPreview({
           <StoryboardRenderer
             storyboard={storyboard}
             storyboardBaseUrl={storyboardBaseUrl}
-            currentTime={currentTime}
+            currentTimeRef={currentTimeRefForStoryboard}
             width={window.innerWidth}
             height={window.innerHeight}
-            playing={isPlaying}
+            onProgress={onStoryboardProgress}
+            hitTimes={notesData?.notes?.map(n => n.time) || []}
           />
         )}
-        <div className="mania-playfield-wrapper">
+        <div className="mania-playfield-wrapper" style={{ visibility: hidePlayfield ? 'hidden' : 'visible' }}>
           {/* Real-time stats panel - left side of playfield */}
           {playMode && (
             <div className="mania-stats-panel">

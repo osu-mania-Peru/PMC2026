@@ -26,6 +26,27 @@
   height: 64px;
 }
 
+.preview-loading-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.loading-status-item {
+  color: #666;
+  transition: color 0.2s;
+}
+
+.loading-status-item.loading {
+  color: #888;
+}
+
+.loading-status-item.done {
+  color: #4a4;
+}
+
 .preview-back-btn {
   padding: 0.75rem 1.5rem;
   background: #222 !important;

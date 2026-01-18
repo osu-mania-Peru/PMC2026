@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { X, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, MoveVertical } from 'lucide-react';
+import { X, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, MoveVertical, EyeOff, Eye } from 'lucide-react';
 import ManiaPreview from '../components/ManiaPreview';
 import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
 import catGif from '../assets/cat.gif';
@@ -68,10 +68,18 @@ export default function Preview({ user }) {
   const navigate = useNavigate();
   const beatmapId = searchParams.get('id');
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+
+  // Loading states
+  const [loadingStatus, setLoadingStatus] = useState({
+    api: { loading: true, text: 'Cargando datos del mapa...' },
+    audio: { loading: true, text: 'Cargando audio...' },
+    skin: { loading: true, text: 'Cargando skin...' },
+    storyboard: { loading: false, text: '' },
+  });
+  const [allAssetsReady, setAllAssetsReady] = useState(false);
 
   // Audio progress state
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
@@ -95,6 +103,7 @@ export default function Preview({ user }) {
     return stored ? parseInt(stored) : 100;
   });
   const [hitPositionEditMode, setHitPositionEditMode] = useState(false);
+  const [hidePlayfield, setHidePlayfield] = useState(false);
   const seekToRef = useRef(null);
   const playRef = useRef(null);
   const resetRef = useRef(null);
@@ -117,12 +126,10 @@ export default function Preview({ user }) {
   useEffect(() => {
     if (!beatmapId) {
       setError('No beatmap ID provided');
-      setLoading(false);
       return;
     }
 
     const fetchPreviewData = async () => {
-      setLoading(true);
       setError(null);
 
       try {
@@ -139,18 +146,56 @@ export default function Preview({ user }) {
         // Add full URLs for audio and background
         data.audio_url_full = `${apiBaseUrl}${data.audio_url}`;
         data.background_url_full = data.background_url ? `${apiBaseUrl}${data.background_url}` : null;
+
+        // Update storyboard loading status if there's a storyboard
+        if (data.storyboard?.images?.length > 0) {
+          setLoadingStatus(prev => ({
+            ...prev,
+            api: { loading: false, text: 'Datos del mapa cargados' },
+            storyboard: { loading: true, text: `Cargando storyboard (0/${data.storyboard.images.length})...` },
+          }));
+        } else {
+          setLoadingStatus(prev => ({
+            ...prev,
+            api: { loading: false, text: 'Datos del mapa cargados' },
+            storyboard: { loading: false, text: 'Sin storyboard' },
+          }));
+        }
+
         setNotesData(data);
         setAudioUrl(data.audio_url_full);
       } catch (err) {
         console.error('Error fetching preview data:', err);
         setError(err.message);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchPreviewData();
   }, [beatmapId, apiBaseUrl]);
+
+  // Check if all assets are ready
+  useEffect(() => {
+    const { api, audio, skin, storyboard } = loadingStatus;
+    const ready = !api.loading && !audio.loading && !skin.loading && !storyboard.loading;
+    setAllAssetsReady(ready);
+  }, [loadingStatus]);
+
+  // Callbacks for asset loading
+  const onAudioLoaded = useCallback(() => {
+    setLoadingStatus(prev => ({ ...prev, audio: { loading: false, text: 'Audio cargado' } }));
+  }, []);
+
+  const onSkinLoaded = useCallback(() => {
+    setLoadingStatus(prev => ({ ...prev, skin: { loading: false, text: 'Skin cargado' } }));
+  }, []);
+
+  const onStoryboardProgress = useCallback((loaded, total) => {
+    if (loaded === total) {
+      setLoadingStatus(prev => ({ ...prev, storyboard: { loading: false, text: 'Storyboard cargado' } }));
+    } else {
+      setLoadingStatus(prev => ({ ...prev, storyboard: { loading: true, text: `Cargando storyboard (${loaded}/${total})...` } }));
+    }
+  }, []);
 
   // Calculate note density curve
   useEffect(() => {
@@ -337,17 +382,6 @@ export default function Preview({ user }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [audioProgress.isPlaying, playMode]);
 
-  if (loading) {
-    return (
-      <div className="preview-page">
-        <div className="preview-page-loading">
-          <img src={catGif} alt="Loading..." className="preview-loading-cat" />
-          <span>Loading preview...</span>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="preview-page">
@@ -363,13 +397,29 @@ export default function Preview({ user }) {
 
   return (
     <div className="preview-page">
-      {/* Close button - hidden in play mode */}
-      <button className={`preview-page-close ${playMode ? 'hidden' : ''}`} onClick={handleClose}>
+      {/* Loading overlay */}
+      {!allAssetsReady && (
+        <div className="preview-page-loading">
+          <img src={catGif} alt="Loading..." className="preview-loading-cat" />
+          <div className="preview-loading-status">
+            {Object.entries(loadingStatus).map(([key, status]) => (
+              status.text && (
+                <div key={key} className={`loading-status-item ${status.loading ? 'loading' : 'done'}`}>
+                  {status.loading ? '⏳' : '✓'} {status.text}
+                </div>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Close button - hidden in play mode or while loading */}
+      <button className={`preview-page-close ${playMode || !allAssetsReady ? 'hidden' : ''}`} onClick={handleClose}>
         Salir de la preview
       </button>
 
-      {/* Main playfield - centered */}
-      <div className="preview-page-content">
+      {/* Main playfield - centered, hidden while loading */}
+      <div className="preview-page-content" style={{ visibility: allAssetsReady ? 'visible' : 'hidden' }}>
         {notesData && audioUrl && (
           <ManiaPreview
             notesData={notesData}
@@ -396,6 +446,10 @@ export default function Preview({ user }) {
             hitPositionEditMode={hitPositionEditMode}
             storyboard={notesData?.storyboard}
             storyboardBaseUrl={notesData?.storyboard_base_url ? `${apiBaseUrl}${notesData.storyboard_base_url}` : null}
+            hidePlayfield={hidePlayfield}
+            onAudioLoaded={onAudioLoaded}
+            onSkinLoaded={onSkinLoaded}
+            onStoryboardProgress={onStoryboardProgress}
           />
         )}
       </div>
@@ -527,6 +581,15 @@ export default function Preview({ user }) {
               title="Editar posición de hit"
             >
               <MoveVertical size={16} />
+            </button>
+
+            {/* Hide playfield button */}
+            <button
+              className={`overlay-keybindings-btn ${hidePlayfield ? 'active' : ''}`}
+              onClick={() => setHidePlayfield(!hidePlayfield)}
+              title={hidePlayfield ? 'Mostrar playfield' : 'Ocultar playfield'}
+            >
+              {hidePlayfield ? <Eye size={16} /> : <EyeOff size={16} />}
             </button>
 
             {/* Skin dropdown */}

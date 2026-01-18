@@ -1,295 +1,753 @@
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo, memo } from 'react';
 
-// osu! storyboard coordinate system: 640x480, origin at top-left
 const OSU_WIDTH = 640;
 const OSU_HEIGHT = 480;
 
-// Origin anchor points for sprites
-const ORIGINS = {
-  0: { x: 0, y: 0 },       // TopLeft
-  1: { x: 0.5, y: 0.5 },   // Centre
-  2: { x: 0, y: 0.5 },     // CentreLeft
-  3: { x: 1, y: 0 },       // TopRight
-  4: { x: 0.5, y: 1 },     // BottomCentre
-  5: { x: 0.5, y: 0 },     // TopCentre
-  6: { x: 0.5, y: 0.5 },   // Custom (default to centre)
-  7: { x: 1, y: 0.5 },     // CentreRight
-  8: { x: 0, y: 1 },       // BottomLeft
-  9: { x: 1, y: 1 },       // BottomRight
-};
-
-// Easing functions based on osu! storyboard spec
-const EASINGS = [
-  t => t,                                              // 0: Linear
-  t => t * t,                                          // 1: EasingOut (Quad)
-  t => t * (2 - t),                                    // 2: EasingIn (Quad)
-  t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,    // 3: QuadInOut
-  t => t * t * t,                                      // 4: CubicIn
-  t => 1 - Math.pow(1 - t, 3),                         // 5: CubicOut
-  t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, // 6: CubicInOut
-  t => t * t * t * t,                                  // 7: QuartIn
-  t => 1 - Math.pow(1 - t, 4),                         // 8: QuartOut
-  t => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2, // 9: QuartInOut
-  t => t * t * t * t * t,                             // 10: QuintIn
-  t => 1 - Math.pow(1 - t, 5),                        // 11: QuintOut
-  t => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2, // 12: QuintInOut
-  t => 1 - Math.cos(t * Math.PI / 2),                 // 13: SineIn
-  t => Math.sin(t * Math.PI / 2),                     // 14: SineOut
-  t => -(Math.cos(Math.PI * t) - 1) / 2,              // 15: SineInOut
-  t => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),       // 16: ExpoIn
-  t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),        // 17: ExpoOut
-  t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2, // 18: ExpoInOut
-  t => 1 - Math.sqrt(1 - t * t),                      // 19: CircIn
-  t => Math.sqrt(1 - Math.pow(t - 1, 2)),             // 20: CircOut
-  t => t < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2, // 21: CircInOut
+const ORIGINS = [
+  { x: 0, y: 0 },       // 0: TopLeft
+  { x: 0.5, y: 0.5 },   // 1: Centre
+  { x: 0, y: 0.5 },     // 2: CentreLeft
+  { x: 1, y: 0 },       // 3: TopRight
+  { x: 0.5, y: 1 },     // 4: BottomCentre
+  { x: 0.5, y: 0 },     // 5: TopCentre
+  { x: 0.5, y: 0.5 },   // 6: Custom
+  { x: 1, y: 0.5 },     // 7: CentreRight
+  { x: 0, y: 1 },       // 8: BottomLeft
+  { x: 1, y: 1 },       // 9: BottomRight
 ];
 
-function interpolate(start, end, progress, easing = 0) {
-  const easingFn = EASINGS[easing] || EASINGS[0];
-  const t = easingFn(progress < 0 ? 0 : progress > 1 ? 1 : progress);
-  return start + (end - start) * t;
+// Vertex shader - transforms sprite vertices
+const VERTEX_SHADER = `
+  attribute vec2 a_position;
+  attribute vec2 a_texCoord;
+
+  uniform vec2 u_resolution;
+  uniform vec2 u_translation;
+  uniform vec2 u_scale;
+  uniform vec2 u_origin;
+  uniform float u_rotation;
+
+  varying vec2 v_texCoord;
+
+  void main() {
+    // Offset by origin (so origin becomes the pivot point)
+    vec2 pos = a_position - u_origin;
+
+    // Apply scale
+    pos = pos * u_scale;
+
+    // Apply rotation around origin
+    float c = cos(u_rotation);
+    float s = sin(u_rotation);
+    vec2 rotated = vec2(
+      pos.x * c - pos.y * s,
+      pos.x * s + pos.y * c
+    );
+
+    // Translate to final position
+    vec2 position = rotated + u_translation;
+
+    // Convert to clip space (-1 to 1)
+    vec2 clipSpace = (position / u_resolution) * 2.0 - 1.0;
+    gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+    v_texCoord = a_texCoord;
+  }
+`;
+
+// Fragment shader - samples texture with alpha and color tint
+const FRAGMENT_SHADER = `
+  precision mediump float;
+
+  uniform sampler2D u_texture;
+  uniform float u_alpha;
+  uniform vec3 u_color; // RGB tint (1,1,1 = no tint)
+
+  varying vec2 v_texCoord;
+
+  void main() {
+    vec4 texColor = texture2D(u_texture, v_texCoord);
+    // Multiply texture color by tint color
+    vec3 tinted = texColor.rgb * u_color;
+    gl_FragColor = vec4(tinted, texColor.a * u_alpha);
+  }
+`;
+
+function createShader(gl, type, source) {
+  const shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+    gl.deleteShader(shader);
+    return null;
+  }
+  return shader;
 }
 
-function applyCommand(state, cmd, currentTime) {
-  const { type, easing, start_time, end_time, params } = cmd;
+function createProgram(gl, vertexShader, fragmentShader) {
+  const program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    console.error('Program link error:', gl.getProgramInfoLog(program));
+    gl.deleteProgram(program);
+    return null;
+  }
+  return program;
+}
 
-  if (currentTime < start_time) return;
-
-  const duration = end_time - start_time;
-  const progress = duration > 0 ? (currentTime - start_time) / duration : 1;
-  const clampedProgress = progress > 1 ? 1 : progress;
-
-  switch (type) {
-    case 'F': { // Fade
-      const startAlpha = params[0];
-      const endAlpha = params[1] ?? startAlpha;
-      state.alpha = interpolate(startAlpha, endAlpha, clampedProgress, easing);
-      break;
+// Easing functions based on osu! spec (0-34)
+// Reference: https://osu.ppy.sh/wiki/en/Storyboard/Scripting/Commands
+function getEasedValue(t, easing) {
+  switch (easing) {
+    case 0: return t; // Linear
+    case 1: return t * (2 - t); // Easing Out (start fast, slow down)
+    case 2: return t * t; // Easing In (start slow, speed up)
+    case 3: return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // Quad In/Out
+    case 4: return t * t; // Quad In
+    case 5: return 1 - (1 - t) * (1 - t); // Quad Out
+    case 6: return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // Quad In/Out
+    case 7: return t * t * t; // Cubic In
+    case 8: return 1 - Math.pow(1 - t, 3); // Cubic Out
+    case 9: return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // Cubic In/Out
+    case 10: return t * t * t * t; // Quart In
+    case 11: return 1 - Math.pow(1 - t, 4); // Quart Out
+    case 12: return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2; // Quart In/Out
+    case 13: return t * t * t * t * t; // Quint In
+    case 14: return 1 - Math.pow(1 - t, 5); // Quint Out
+    case 15: return t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2; // Quint In/Out
+    case 16: return 1 - Math.cos((t * Math.PI) / 2); // Sine In
+    case 17: return Math.sin((t * Math.PI) / 2); // Sine Out
+    case 18: return -(Math.cos(Math.PI * t) - 1) / 2; // Sine In/Out
+    case 19: return t === 0 ? 0 : Math.pow(2, 10 * t - 10); // Expo In
+    case 20: return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); // Expo Out
+    case 21: return t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2; // Expo In/Out
+    case 22: return 1 - Math.sqrt(1 - t * t); // Circ In
+    case 23: return Math.sqrt(1 - Math.pow(t - 1, 2)); // Circ Out
+    case 24: return t < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2; // Circ In/Out
+    case 25: { // Elastic In
+      const c4 = (2 * Math.PI) / 3;
+      return t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4);
     }
-    case 'M': { // Move
-      const startX = params[0], startY = params[1];
-      const endX = params[2] ?? startX, endY = params[3] ?? startY;
-      state.x = interpolate(startX, endX, clampedProgress, easing);
-      state.y = interpolate(startY, endY, clampedProgress, easing);
-      break;
+    case 26: { // Elastic Out
+      const c4 = (2 * Math.PI) / 3;
+      return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
     }
-    case 'MX': { // Move X
-      const startX = params[0], endX = params[1] ?? startX;
-      state.x = interpolate(startX, endX, clampedProgress, easing);
-      break;
+    case 27: // Elastic Half Out
+    case 28: // Elastic Quarter Out
+      return getEasedValue(t, 26); // Fallback to elastic out
+    case 29: { // Elastic In/Out
+      const c5 = (2 * Math.PI) / 4.5;
+      return t === 0 ? 0 : t === 1 ? 1 : t < 0.5
+        ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2
+        : (Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5)) / 2 + 1;
     }
-    case 'MY': { // Move Y
-      const startY = params[0], endY = params[1] ?? startY;
-      state.y = interpolate(startY, endY, clampedProgress, easing);
-      break;
+    case 30: return 2.70158 * t * t * t - 1.70158 * t * t; // Back In
+    case 31: return 1 + 2.70158 * Math.pow(t - 1, 3) + 1.70158 * Math.pow(t - 1, 2); // Back Out
+    case 32: { // Back In/Out
+      const c2 = 1.70158 * 1.525;
+      return t < 0.5
+        ? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+        : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
     }
-    case 'S': { // Scale
-      const startScale = params[0], endScale = params[1] ?? startScale;
-      const scale = interpolate(startScale, endScale, clampedProgress, easing);
-      state.scaleX = scale;
-      state.scaleY = scale;
-      break;
+    case 33: // Bounce In
+      return 1 - getEasedValue(1 - t, 34);
+    case 34: { // Bounce Out
+      const n1 = 7.5625, d1 = 2.75;
+      if (t < 1 / d1) return n1 * t * t;
+      if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + 0.75;
+      if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + 0.9375;
+      return n1 * (t -= 2.625 / d1) * t + 0.984375;
     }
-    case 'V': { // Vector scale
-      const startScaleX = params[0], startScaleY = params[1];
-      const endScaleX = params[2] ?? startScaleX, endScaleY = params[3] ?? startScaleY;
-      state.scaleX = interpolate(startScaleX, endScaleX, clampedProgress, easing);
-      state.scaleY = interpolate(startScaleY, endScaleY, clampedProgress, easing);
-      break;
-    }
-    case 'R': { // Rotate
-      const startRotation = params[0], endRotation = params[1] ?? startRotation;
-      state.rotation = interpolate(startRotation, endRotation, clampedProgress, easing);
-      break;
-    }
-    case 'C': { // Color
-      const startR = params[0], startG = params[1], startB = params[2];
-      const endR = params[3] ?? startR, endG = params[4] ?? startG, endB = params[5] ?? startB;
-      state.r = interpolate(startR, endR, clampedProgress, easing);
-      state.g = interpolate(startG, endG, clampedProgress, easing);
-      state.b = interpolate(startB, endB, clampedProgress, easing);
-      break;
-    }
-    case 'P': { // Parameter
-      if (currentTime <= end_time) {
-        const param = params[0];
-        if (param === 'H') state.flipH = true;
-        else if (param === 'V') state.flipV = true;
-        else if (param === 'A') state.additive = true;
-      }
-      break;
-    }
+    default: return t; // Unknown easing, use linear
   }
 }
 
-function calculateSpriteState(sprite, spriteCommands, currentTime) {
-  const state = {
-    x: sprite.x,
-    y: sprite.y,
-    scaleX: 1,
-    scaleY: 1,
-    rotation: 0,
-    alpha: 0,
-    r: 255,
-    g: 255,
-    b: 255,
-    flipH: false,
-    flipV: false,
-    additive: false,
-    frameIndex: 0,
-  };
+function lerp(a, b, t, easing) {
+  const et = getEasedValue(t < 0 ? 0 : t > 1 ? 1 : t, easing);
+  return a + (b - a) * et;
+}
 
-  // Process commands (already filtered for this sprite)
-  for (let i = 0; i < spriteCommands.length; i++) {
-    const cmd = spriteCommands[i];
+function StoryboardRenderer({
+  storyboard,
+  storyboardBaseUrl,
+  currentTimeRef, // Ref from parent - no React re-renders!
+  width = 640,
+  height = 480,
+  onProgress = null,
+  hitTimes = [], // Note hit times for trigger activation
+}) {
+  const canvasRef = useRef(null);
+  const glRef = useRef(null);
+  const programRef = useRef(null);
+  const texturesRef = useRef({});
+  const bufferRef = useRef(null);
+  const [ready, setReady] = useState(false);
+  const rafRef = useRef(null);
 
-    if (cmd.type === 'L' && cmd.sub_commands && cmd.loop_count) {
-      // Handle loops
-      let maxEnd = 0;
-      for (let j = 0; j < cmd.sub_commands.length; j++) {
-        if (cmd.sub_commands[j].end_time > maxEnd) maxEnd = cmd.sub_commands[j].end_time;
+  // Pre-process storyboard data with visibility time ranges
+  const { sortedSprites, commandsBySprite, imageList } = useMemo(() => {
+    if (!storyboard?.sprites?.length) {
+      return { sortedSprites: [], commandsBySprite: {}, imageList: [] };
+    }
+
+    const cmdMap = {};
+    const spriteTimeRanges = {};
+    const cmds = storyboard.commands || [];
+
+    // Helper to expand loop commands
+    const expandLoopCommand = (loopCmd) => {
+      const expanded = [];
+      const loopStart = loopCmd.start_time;
+      const loopCount = loopCmd.loop_count || 1;
+      const subCmds = loopCmd.sub_commands || [];
+
+      if (subCmds.length === 0) return expanded;
+
+      // Find the duration of one loop iteration (max end_time of sub_commands)
+      let loopDuration = 0;
+      for (const sub of subCmds) {
+        if (sub.end_time > loopDuration) loopDuration = sub.end_time;
       }
-      const loopDuration = maxEnd;
-      const timeSinceStart = currentTime - cmd.start_time;
 
-      if (timeSinceStart >= 0 && loopDuration > 0) {
-        const loopIteration = Math.floor(timeSinceStart / loopDuration);
-        if (loopIteration < cmd.loop_count) {
-          const timeInLoop = timeSinceStart % loopDuration;
-          for (let j = 0; j < cmd.sub_commands.length; j++) {
-            const subCmd = cmd.sub_commands[j];
-            applyCommand(state, subCmd, timeInLoop);
+      // Expand each iteration
+      let orderCounter = 0;
+      for (let iter = 0; iter < loopCount; iter++) {
+        const iterOffset = loopStart + iter * loopDuration;
+        for (const sub of subCmds) {
+          expanded.push({
+            type: sub.type,
+            start_time: iterOffset + sub.start_time,
+            end_time: iterOffset + sub.end_time,
+            easing: sub.easing || 0,
+            params: sub.params,
+            _order: orderCounter++,
+          });
+        }
+      }
+      return expanded;
+    };
+
+    // Helper to expand trigger commands based on hit times
+    // Triggers activate when an event (like HitSound) occurs within [start_time, end_time]
+    // Sub-commands have relative timing from the trigger activation moment
+    const expandTriggerCommand = (triggerCmd, hitTimesArray) => {
+      const expanded = [];
+      const triggerStart = triggerCmd.start_time;
+      const triggerEnd = triggerCmd.end_time;
+      const subCmds = triggerCmd.sub_commands || [];
+      const triggerName = triggerCmd.trigger_name || '';
+
+      if (subCmds.length === 0) return expanded;
+
+      // Only process HitSound triggers for now (most common for beat-sync effects)
+      // Other triggers: Failing, Passing, HitSoundClap, HitSoundFinish, HitSoundWhistle
+      if (!triggerName.startsWith('HitSound')) {
+        return expanded;
+      }
+
+      // Find hit times within the trigger's active window
+      let orderCounter = 0;
+      for (const hitTime of hitTimesArray) {
+        if (hitTime >= triggerStart && hitTime <= triggerEnd) {
+          // This hit activates the trigger - expand sub_commands relative to hit time
+          for (const sub of subCmds) {
+            expanded.push({
+              type: sub.type,
+              start_time: hitTime + sub.start_time,
+              end_time: hitTime + sub.end_time,
+              easing: sub.easing || 0,
+              params: sub.params,
+              _order: orderCounter++,
+            });
           }
         }
       }
-    } else {
-      applyCommand(state, cmd, currentTime);
-    }
-  }
+      return expanded;
+    };
 
-  // Animation frame
-  if (sprite.type === 'animation' && sprite.frame_count && sprite.frame_delay) {
-    const frameIndex = Math.floor(currentTime / sprite.frame_delay) % sprite.frame_count;
-    state.frameIndex = sprite.loop_type === 'LoopOnce'
-      ? Math.min(frameIndex, sprite.frame_count - 1)
-      : frameIndex;
-  }
+    for (let i = 0; i < cmds.length; i++) {
+      const cmd = cmds[i];
+      const id = cmd.sprite_id;
+      if (!cmdMap[id]) cmdMap[id] = [];
 
-  return state;
-}
-
-export default function StoryboardRenderer({
-  storyboard,
-  storyboardBaseUrl,
-  currentTime = 0,
-  width = 640,
-  height = 480,
-}) {
-  const canvasRef = useRef(null);
-  const [images, setImages] = useState({});
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-
-  // Pre-process: group commands by sprite ID (only once when storyboard changes)
-  const { sortedSprites, commandsBySprite } = useMemo(() => {
-    if (!storyboard?.sprites || !storyboard?.commands) {
-      return { sortedSprites: [], commandsBySprite: new Map() };
-    }
-
-    // Group commands by sprite_id
-    const cmdMap = new Map();
-    for (let i = 0; i < storyboard.commands.length; i++) {
-      const cmd = storyboard.commands[i];
-      if (!cmdMap.has(cmd.sprite_id)) {
-        cmdMap.set(cmd.sprite_id, []);
+      // Handle loop commands by expanding them
+      if (cmd.type === 'L' && cmd.sub_commands) {
+        const expanded = expandLoopCommand(cmd);
+        for (const expCmd of expanded) {
+          cmdMap[id].push(expCmd);
+          // Update time range
+          if (!spriteTimeRanges[id]) {
+            spriteTimeRanges[id] = { start: expCmd.start_time, end: expCmd.end_time };
+          } else {
+            if (expCmd.start_time < spriteTimeRanges[id].start) spriteTimeRanges[id].start = expCmd.start_time;
+            if (expCmd.end_time > spriteTimeRanges[id].end) spriteTimeRanges[id].end = expCmd.end_time;
+          }
+        }
+        continue;
       }
-      cmdMap.get(cmd.sprite_id).push(cmd);
+
+      // Handle trigger commands by expanding them based on hit times
+      if (cmd.type === 'T' && cmd.sub_commands) {
+        const expanded = expandTriggerCommand(cmd, hitTimes);
+        for (const expCmd of expanded) {
+          cmdMap[id].push(expCmd);
+          // Update time range
+          if (!spriteTimeRanges[id]) {
+            spriteTimeRanges[id] = { start: expCmd.start_time, end: expCmd.end_time };
+          } else {
+            if (expCmd.start_time < spriteTimeRanges[id].start) spriteTimeRanges[id].start = expCmd.start_time;
+            if (expCmd.end_time > spriteTimeRanges[id].end) spriteTimeRanges[id].end = expCmd.end_time;
+          }
+        }
+        continue;
+      }
+
+      cmdMap[id].push({
+        type: cmd.type,
+        start_time: cmd.start_time,
+        end_time: cmd.end_time,
+        easing: cmd.easing || 0,
+        params: cmd.params,
+        _order: i, // Preserve original order for stable sort
+      });
+
+      if (!spriteTimeRanges[id]) {
+        spriteTimeRanges[id] = { start: cmd.start_time, end: cmd.end_time };
+      } else {
+        if (cmd.start_time < spriteTimeRanges[id].start) {
+          spriteTimeRanges[id].start = cmd.start_time;
+        }
+        if (cmd.end_time > spriteTimeRanges[id].end) {
+          spriteTimeRanges[id].end = cmd.end_time;
+        }
+      }
     }
 
-    // Sort and filter sprites once
-    const sorted = storyboard.sprites
-      .filter(s => s.layer === 0 || s.layer === 3)
-      .sort((a, b) => a.layer - b.layer || a.id - b.id);
+    const sorted = [];
+    const sprites = storyboard.sprites;
+    let skippedLayer = 0, skippedNoRange = 0;
+    let triggerCount = 0, triggerExpandedCount = 0;
+    for (let i = 0; i < sprites.length; i++) {
+      const s = sprites[i];
+      if (s.layer === 0 || s.layer === 3) {
+        const range = spriteTimeRanges[s.id];
+        if (range) {
+          sorted.push({ ...s, startTime: range.start, endTime: range.end });
+        } else {
+          skippedNoRange++;
+        }
+      } else {
+        skippedLayer++;
+      }
+    }
+    // Count trigger commands
+    for (const cmd of cmds) {
+      if (cmd.type === 'T') {
+        triggerCount++;
+        const expanded = expandTriggerCommand(cmd, hitTimes);
+        triggerExpandedCount += expanded.length;
+      }
+    }
+    sorted.sort((a, b) => a.layer - b.layer || a.id - b.id);
+    console.log(`[Storyboard] Sprites: ${sorted.length} active, ${skippedLayer} skipped (layer 1/2), ${skippedNoRange} skipped (no commands)`);
+    if (triggerCount > 0) {
+      console.log(`[Storyboard] Triggers: ${triggerCount} commands expanded to ${triggerExpandedCount} instances (from ${hitTimes.length} hit times)`);
+    }
 
-    return { sortedSprites: sorted, commandsBySprite: cmdMap };
-  }, [storyboard]);
+    for (const id in cmdMap) {
+      // Stable sort: by start_time, then by original order
+      cmdMap[id].sort((a, b) => a.start_time - b.start_time || (a._order ?? 0) - (b._order ?? 0));
+    }
 
-  // Preload images
+    return {
+      sortedSprites: sorted,
+      commandsBySprite: cmdMap,
+      imageList: storyboard.images || []
+    };
+  }, [storyboard, hitTimes]);
+
+  // Initialize WebGL
   useEffect(() => {
-    if (!storyboard?.images || storyboard.images.length === 0) {
-      setImagesLoaded(true);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const gl = canvas.getContext('webgl', {
+      alpha: true,
+      premultipliedAlpha: false,
+      antialias: false,
+      preserveDrawingBuffer: false,
+    });
+
+    if (!gl) {
+      console.error('WebGL not supported, falling back to 2D');
       return;
     }
 
-    const loadedImages = {};
-    let loadedCount = 0;
-    const total = storyboard.images.length;
+    glRef.current = gl;
 
-    storyboard.images.forEach(path => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = img.onerror = () => {
-        if (img.complete && img.naturalWidth) loadedImages[path] = img;
-        if (++loadedCount === total) {
-          setImages(loadedImages);
-          setImagesLoaded(true);
-        }
-      };
-      img.src = `${storyboardBaseUrl}${path}`;
-    });
+    // Create shaders and program
+    const vertexShader = createShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER);
+    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER);
+    if (!vertexShader || !fragmentShader) return;
+
+    const program = createProgram(gl, vertexShader, fragmentShader);
+    if (!program) return;
+
+    programRef.current = program;
+
+    // Create vertex buffer for a unit quad
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    // Position (x, y) and texCoord (u, v) interleaved
+    const vertices = new Float32Array([
+      // Triangle 1
+      0, 0, 0, 0,
+      1, 0, 1, 0,
+      0, 1, 0, 1,
+      // Triangle 2
+      0, 1, 0, 1,
+      1, 0, 1, 0,
+      1, 1, 1, 1,
+    ]);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    bufferRef.current = buffer;
+
+    // Enable blending for transparency
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     return () => {
-      setImages({});
-      setImagesLoaded(false);
+      gl.deleteProgram(program);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      gl.deleteBuffer(buffer);
     };
-  }, [storyboard, storyboardBaseUrl]);
+  }, []);
 
-  // Render
+  // Load images as WebGL textures
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !imagesLoaded || sortedSprites.length === 0) return;
+    const gl = glRef.current;
+    if (!gl || !imageList.length) {
+      setReady(true);
+      onProgress?.(0, 0);
+      return;
+    }
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    let loaded = 0;
+    const total = imageList.length;
+    const textures = {};
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    onProgress?.(0, total);
 
-    const scaleX = canvas.width / OSU_WIDTH;
-    const scaleY = canvas.height / OSU_HEIGHT;
+    for (let i = 0; i < total; i++) {
+      const path = imageList[i];
+      // Normalize path for consistent key lookup
+      const normalizedPath = path.replace(/\\/g, '/');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
 
-    for (let i = 0; i < sortedSprites.length; i++) {
-      const sprite = sortedSprites[i];
-      const cmds = commandsBySprite.get(sprite.id) || [];
-      const state = calculateSpriteState(sprite, cmds, currentTime);
+      img.onload = () => {
+        // Create texture
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
 
-      if (state.alpha <= 0) continue;
+        // Set texture parameters for non-power-of-2 images
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-      let img;
-      if (sprite.type === 'animation' && sprite.frame_count) {
-        const basePath = sprite.filepath.replace(/\d*\.\w+$/, '');
-        const ext = sprite.filepath.split('.').pop();
-        img = images[`${basePath}${state.frameIndex}.${ext}`] || images[sprite.filepath];
-      } else {
-        img = images[sprite.filepath];
+        // Store with normalized path as key
+        textures[normalizedPath] = { texture, width: img.width, height: img.height };
+        loaded++;
+        onProgress?.(loaded, total);
+
+        if (loaded === total) {
+          texturesRef.current = textures;
+          console.log(`[Storyboard] Loaded ${Object.keys(textures).length}/${total} textures`);
+          setReady(true);
+        }
+      };
+
+      img.onerror = () => {
+        console.warn(`[Storyboard] Failed to load: ${normalizedPath}`);
+        loaded++;
+        onProgress?.(loaded, total);
+        if (loaded === total) {
+          texturesRef.current = textures;
+          console.log(`[Storyboard] Loaded ${Object.keys(textures).length}/${total} textures`);
+          setReady(true);
+        }
+      };
+
+      // Normalize path separators and encode special characters
+      img.src = `${storyboardBaseUrl}${encodeURI(normalizedPath)}`;
+    }
+
+    return () => {
+      // Cleanup textures
+      for (const path in textures) {
+        gl.deleteTexture(textures[path].texture);
+      }
+      setReady(false);
+    };
+  }, [imageList, storyboardBaseUrl, onProgress]);
+
+  // Animation loop with WebGL rendering
+  useEffect(() => {
+    if (!ready || !sortedSprites.length) return;
+
+    const gl = glRef.current;
+    const program = programRef.current;
+    if (!gl || !program) return;
+
+    const textures = texturesRef.current;
+    // Use uniform scaling to maintain aspect ratio
+    // Scale based on height, center horizontally (like osu! does on widescreen)
+    const scale = height / OSU_HEIGHT;
+    const offsetX = (width - OSU_WIDTH * scale) / 2; // Center horizontally
+
+    // Get attribute and uniform locations (cache these)
+    const aPosition = gl.getAttribLocation(program, 'a_position');
+    const aTexCoord = gl.getAttribLocation(program, 'a_texCoord');
+    const uResolution = gl.getUniformLocation(program, 'u_resolution');
+    const uTranslation = gl.getUniformLocation(program, 'u_translation');
+    const uScale = gl.getUniformLocation(program, 'u_scale');
+    const uOrigin = gl.getUniformLocation(program, 'u_origin');
+    const uRotation = gl.getUniformLocation(program, 'u_rotation');
+    const uAlpha = gl.getUniformLocation(program, 'u_alpha');
+    const uColor = gl.getUniformLocation(program, 'u_color');
+    const uTexture = gl.getUniformLocation(program, 'u_texture');
+
+    gl.useProgram(program);
+
+    // Set up vertex attributes
+    gl.bindBuffer(gl.ARRAY_BUFFER, bufferRef.current);
+    gl.enableVertexAttribArray(aPosition);
+    gl.enableVertexAttribArray(aTexCoord);
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 16, 0);
+    gl.vertexAttribPointer(aTexCoord, 2, gl.FLOAT, false, 16, 8);
+
+    // Set resolution uniform
+    gl.uniform2f(uResolution, width, height);
+    gl.uniform1i(uTexture, 0);
+
+    let frameCount = 0;
+    let lastLogTime = performance.now();
+    const missingTextures = new Set();
+
+    const render = () => {
+      const time = currentTimeRef?.current || 0;
+
+      // Clear with transparent
+      gl.viewport(0, 0, width, height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      // Reset blend mode at start of each frame
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      let lastBlendMode = 'normal';
+
+      let drawCalls = 0;
+
+      for (let i = 0; i < sortedSprites.length; i++) {
+        const sprite = sortedSprites[i];
+
+        // Skip sprites outside their active time range
+        if (time < sprite.startTime || time > sprite.endTime) continue;
+
+        const cmds = commandsBySprite[sprite.id];
+        if (!cmds) continue;
+
+        // Calculate state - defaults per osu! spec
+        let x = sprite.x, y = sprite.y;
+        let scX = 1, scY = 1, rot = 0;
+        let colorR = 1, colorG = 1, colorB = 1; // Default: no tint (white)
+        let flipH = false, flipV = false, additive = false;
+
+        // Track which properties have been initialized from their first command
+        // Before a command starts, use its start value (not the default)
+        let alpha = 1; // Default: visible
+        let hasInitF = false, hasInitS = false, hasInitV = false;
+        let hasInitM = false, hasInitMX = false, hasInitMY = false;
+        let hasInitR = false, hasInitC = false;
+
+        for (let j = 0; j < cmds.length; j++) {
+          const cmd = cmds[j];
+          const { type, start_time, end_time, params, easing } = cmd;
+
+          // Set initial values from first command of each type (before command starts)
+          if (time < start_time) {
+            if (type === 'F' && !hasInitF) { alpha = params[0]; hasInitF = true; }
+            else if (type === 'S' && !hasInitS) { scX = scY = params[0]; hasInitS = true; }
+            else if (type === 'V' && !hasInitV) { scX = params[0]; scY = params[1]; hasInitV = true; }
+            else if (type === 'M' && !hasInitM) { x = params[0]; y = params[1]; hasInitM = true; }
+            else if (type === 'MX' && !hasInitMX) { x = params[0]; hasInitMX = true; }
+            else if (type === 'MY' && !hasInitMY) { y = params[0]; hasInitMY = true; }
+            else if (type === 'R' && !hasInitR) { rot = params[0]; hasInitR = true; }
+            else if (type === 'C' && !hasInitC) { colorR = params[0]/255; colorG = params[1]/255; colorB = params[2]/255; hasInitC = true; }
+            continue;
+          }
+
+          const dur = end_time - start_time;
+          const prog = dur > 0 ? Math.min(1, (time - start_time) / dur) : 1;
+
+          switch (type) {
+            case 'F':
+              alpha = lerp(params[0], params[1] ?? params[0], prog, easing);
+              hasInitF = true;
+              break;
+            case 'M':
+              x = lerp(params[0], params[2] ?? params[0], prog, easing);
+              y = lerp(params[1], params[3] ?? params[1], prog, easing);
+              hasInitM = true;
+              break;
+            case 'MX':
+              x = lerp(params[0], params[1] ?? params[0], prog, easing);
+              hasInitMX = true;
+              break;
+            case 'MY':
+              y = lerp(params[0], params[1] ?? params[0], prog, easing);
+              hasInitMY = true;
+              break;
+            case 'S':
+              scX = scY = lerp(params[0], params[1] ?? params[0], prog, easing);
+              hasInitS = true;
+              break;
+            case 'V':
+              scX = lerp(params[0], params[2] ?? params[0], prog, easing);
+              scY = lerp(params[1], params[3] ?? params[1], prog, easing);
+              hasInitV = true;
+              break;
+            case 'R':
+              rot = lerp(params[0], params[1] ?? params[0], prog, easing);
+              hasInitR = true;
+              break;
+            case 'C':
+              // Color command: r1, g1, b1, r2, g2, b2 (0-255)
+              colorR = lerp(params[0], params[3] ?? params[0], prog, easing) / 255;
+              colorG = lerp(params[1], params[4] ?? params[1], prog, easing) / 255;
+              colorB = lerp(params[2], params[5] ?? params[2], prog, easing) / 255;
+              hasInitC = true;
+              break;
+            case 'P':
+              if (time <= end_time) {
+                if (params[0] === 'H') flipH = true;
+                else if (params[0] === 'V') flipV = true;
+                else if (params[0] === 'A') additive = true;
+              }
+              break;
+          }
+        }
+
+        if (alpha <= 0) continue;
+
+        // Handle animation sprites - calculate current frame
+        // Normalize path separators
+        let texturePath = sprite.filepath.replace(/\\/g, '/');
+        if (sprite.type === 'animation' && sprite.frame_count > 0) {
+          const frameDelay = sprite.frame_delay || 16.67; // Default ~60fps
+          const animTime = time - sprite.startTime;
+
+          if (animTime >= 0) {
+            let frameIndex = Math.floor(animTime / frameDelay);
+
+            // Handle loop type
+            if (sprite.loop_type === 'LoopOnce') {
+              frameIndex = Math.min(frameIndex, sprite.frame_count - 1);
+            } else {
+              // LoopForever (default)
+              frameIndex = frameIndex % sprite.frame_count;
+            }
+
+            // Build frame path: "path/file.png" -> "path/file0.png"
+            // Use normalized texturePath, not original filepath
+            const dotIdx = texturePath.lastIndexOf('.');
+            if (dotIdx > 0) {
+              texturePath = texturePath.slice(0, dotIdx) + frameIndex + texturePath.slice(dotIdx);
+            } else {
+              texturePath = texturePath + frameIndex;
+            }
+          }
+        }
+
+        const texInfo = textures[texturePath];
+        if (!texInfo) {
+          // Log missing texture once per path
+          if (!missingTextures.has(texturePath)) {
+            missingTextures.add(texturePath);
+            console.warn(`[Storyboard] Missing texture: ${texturePath}`);
+          }
+          continue;
+        }
+
+        // Set blend mode
+        const blendMode = additive ? 'additive' : 'normal';
+        if (blendMode !== lastBlendMode) {
+          if (additive) {
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+          } else {
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+          }
+          lastBlendMode = blendMode;
+        }
+
+        // Bind texture
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, texInfo.texture);
+
+        // Calculate origin (as fraction of image size, since quad is 0-1)
+        const origin = ORIGINS[sprite.origin] || ORIGINS[1];
+        const imgW = texInfo.width;
+        const imgH = texInfo.height;
+
+        // Set uniforms
+        // Origin is in 0-1 space (same as quad vertices)
+        gl.uniform2f(uOrigin, origin.x, origin.y);
+        // Translation is the sprite position in screen space (with horizontal centering offset)
+        gl.uniform2f(uTranslation, x * scale + offsetX, y * scale);
+        // Scale includes image size, sprite scale, and uniform screen scale
+        gl.uniform2f(uScale, imgW * scX * scale * (flipH ? -1 : 1), imgH * scY * scale * (flipV ? -1 : 1));
+        gl.uniform1f(uRotation, rot);
+        gl.uniform1f(uAlpha, alpha);
+        gl.uniform3f(uColor, colorR, colorG, colorB);
+
+        // Draw quad
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        drawCalls++;
       }
 
-      if (!img) continue;
+      // Log stats every second
+      frameCount++;
+      const now = performance.now();
+      if (now - lastLogTime >= 1000) {
+        // Count sprites with no commands, no texture, or zero alpha
+        let noCommands = 0, noTexture = 0, skippedTime = 0;
+        for (const sprite of sortedSprites) {
+          if (time < sprite.startTime || time > sprite.endTime) { skippedTime++; continue; }
+          if (!commandsBySprite[sprite.id]) { noCommands++; continue; }
+          // Use normalized path for texture check
+          const normPath = sprite.filepath.replace(/\\/g, '/');
+          if (!textures[normPath]) { noTexture++; continue; }
+        }
+        console.log(`[Storyboard] FPS: ${frameCount}, Draws: ${drawCalls}, Total: ${sortedSprites.length}, SkippedTime: ${skippedTime}, NoCmd: ${noCommands}, NoTex: ${noTexture}`);
+        frameCount = 0;
+        lastLogTime = now;
+      }
 
-      const origin = ORIGINS[sprite.origin] || ORIGINS[1];
-      const originX = img.width * origin.x;
-      const originY = img.height * origin.y;
+      rafRef.current = requestAnimationFrame(render);
+    };
 
-      ctx.save();
-      ctx.translate(state.x * scaleX, state.y * scaleY);
-      if (state.rotation !== 0) ctx.rotate(state.rotation);
-      ctx.scale(state.scaleX * scaleX, state.scaleY * scaleY);
-      if (state.flipH) ctx.scale(-1, 1);
-      if (state.flipV) ctx.scale(1, -1);
-      ctx.globalAlpha = state.alpha;
-      if (state.additive) ctx.globalCompositeOperation = 'lighter';
-      ctx.drawImage(img, -originX, -originY);
-      ctx.restore();
-    }
-  }, [currentTime, images, imagesLoaded, sortedSprites, commandsBySprite]);
+    rafRef.current = requestAnimationFrame(render);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [ready, sortedSprites, commandsBySprite, width, height]);
 
   if (!storyboard?.sprites?.length) return null;
 
@@ -298,7 +756,6 @@ export default function StoryboardRenderer({
       ref={canvasRef}
       width={width}
       height={height}
-      className="storyboard-canvas"
       style={{
         position: 'absolute',
         top: 0,
@@ -310,3 +767,6 @@ export default function StoryboardRenderer({
     />
   );
 }
+
+// Memoize to prevent re-renders when parent updates
+export default memo(StoryboardRenderer);
