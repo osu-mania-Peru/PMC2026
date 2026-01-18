@@ -262,8 +262,9 @@
 
 .mpm-add-pool-btn:hover,
 .mpm-add-map-btn:hover {
-  border-color: #666;
-  color: #fff;
+  border-color: #666 !important;
+  color: #fff !important;
+  background: transparent !important;
 }
 
 .mpm-add-pool-btn svg,
@@ -284,7 +285,8 @@
 }
 
 .mpm-add-map-btn.has-draft:hover {
-  background: rgba(255, 8, 68, 0.1);
+  background: rgba(255, 8, 68, 0.1) !important;
+  color: #ff0844 !important;
 }
 
 /* Forms */
@@ -533,7 +535,8 @@
 }
 
 .mpm-btn-primary:hover:not(:disabled) {
-  background: #cc0636;
+  background: #cc0636 !important;
+  color: #fff !important;
 }
 
 .mpm-btn-secondary {
@@ -543,8 +546,9 @@
 }
 
 .mpm-btn-secondary:hover:not(:disabled) {
-  border-color: #666;
-  color: #fff;
+  border-color: #666 !important;
+  color: #fff !important;
+  background: transparent !important;
 }
 
 /* Responsive */

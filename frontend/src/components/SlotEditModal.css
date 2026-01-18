@@ -63,8 +63,9 @@
 }
 
 .slot-header-btn:hover:not(:disabled) {
-  border-color: #666;
-  color: #fff;
+  border-color: #666 !important;
+  color: #fff !important;
+  background: #252525 !important;
 }
 
 .slot-header-btn:disabled {
@@ -439,9 +440,9 @@
 }
 
 .slot-add-row-btn:hover:not(:disabled) {
-  border-color: #22c55e;
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.05);
+  border-color: #22c55e !important;
+  color: #22c55e !important;
+  background: rgba(34, 197, 94, 0.05) !important;
 }
 
 .slot-paste-row-btn {
@@ -450,9 +451,9 @@
 }
 
 .slot-paste-row-btn:hover:not(:disabled) {
-  border-color: #60a5fa;
-  color: #60a5fa;
-  background: rgba(59, 130, 246, 0.1);
+  border-color: #60a5fa !important;
+  color: #60a5fa !important;
+  background: rgba(59, 130, 246, 0.1) !important;
 }
 
 .slot-add-row-btn:disabled {
@@ -491,7 +492,8 @@
 }
 
 .slot-btn-primary:hover:not(:disabled) {
-  background: #cc0636;
+  background: #cc0636 !important;
+  color: #fff !important;
 }
 
 .slot-btn-secondary {
@@ -501,8 +503,9 @@
 }
 
 .slot-btn-secondary:hover:not(:disabled) {
-  border-color: #666;
-  color: #fff;
+  border-color: #666 !important;
+  color: #fff !important;
+  background: transparent !important;
 }
 
 .slot-btn svg {
