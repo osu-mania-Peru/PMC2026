@@ -663,8 +663,11 @@ export default function ManiaPreview({
       // Receptors
       { name: 'bars_receptor', src: '/mania-assets/bars/receptor.png' },
       { name: 'bars_receptor_pressed', src: '/mania-assets/bars/receptorD.png' },
-      // Holds
-      { name: 'bars_holdbody', src: '/mania-assets/bars/holdbody.png' },
+      // Hold bodies per column
+      { name: 'bars_holdbody_0', src: '/mania-assets/bars/holdbody0.png' },
+      { name: 'bars_holdbody_1', src: '/mania-assets/bars/holdbody1.png' },
+      { name: 'bars_holdbody_2', src: '/mania-assets/bars/holdbody2.png' },
+      { name: 'bars_holdbody_3', src: '/mania-assets/bars/holdbody3.png' },
       { name: 'bars_holdcap', src: '/mania-assets/bars/holdcap.png' },
     ];
 
@@ -931,9 +934,9 @@ export default function ManiaPreview({
       // Get note image based on skin
       const skinCol = col % 4;
       const noteImg = images[`${skinPrefix}_note_${skinCol}`] || (isCustomSkin ? images['arrow_note_0'] : null);
-      // PWC has per-column hold bodies (different colors)
-      const holdBodyImg = skin === 'pmc'
-        ? images[`pmc_holdbody_${skinCol}`]
+      // PWC and Bars have per-column hold bodies (different colors)
+      const holdBodyImg = (skin === 'pmc' || skin === 'bars')
+        ? images[`${skinPrefix}_holdbody_${skinCol}`]
         : (images[`${skinPrefix}_holdbody`] || (isCustomSkin ? images['arrow_holdbody'] : null));
       const holdCapImg = images[`${skinPrefix}_holdcap`] || (isCustomSkin ? images['arrow_holdcap'] : null);
 
