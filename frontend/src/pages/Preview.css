@@ -179,10 +179,25 @@
   background: #333 !important;
 }
 
-.preview-page-close {
+/* Sidebar with close button and beatmap list */
+.preview-sidebar {
   position: absolute;
   top: 1rem;
   left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 10;
+  max-height: calc(100vh - 250px);
+  transition: opacity 0.3s ease;
+}
+
+.preview-sidebar.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preview-page-close {
   background: rgba(0, 0, 0, 0.5) !important;
   border: 1px solid #666 !important;
   border-radius: 8px;
@@ -191,9 +206,8 @@
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
-  z-index: 10;
   clip-path: none !important;
-  transition: opacity 0.3s ease, background 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .preview-page-close:hover {
@@ -201,9 +215,133 @@
   background: rgba(0, 0, 0, 0.7) !important;
 }
 
-.preview-page-close.hidden {
-  opacity: 0;
-  pointer-events: none;
+/* Beatmap list */
+.preview-beatmap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-beatmap-list-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-left: 0.25rem;
+}
+
+.preview-beatmap-list-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.preview-beatmap-list-items::-webkit-scrollbar {
+  width: 4px;
+}
+
+.preview-beatmap-list-items::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+/* Beatmap card row - slot separate from card */
+.preview-beatmap-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  text-align: left;
+  clip-path: none !important;
+  padding: 0 !important;
+}
+
+.beatmap-slot {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+  min-width: 36px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* The actual card with background */
+.beatmap-card-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  background: rgba(20, 20, 25, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.preview-beatmap-card:hover .beatmap-card-content {
+  transform: translateX(4px);
+  border-color: rgba(255, 8, 68, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.beatmap-card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+  transition: opacity 0.15s ease;
+}
+
+.preview-beatmap-card:hover .beatmap-card-bg {
+  opacity: 0.5;
+}
+
+.beatmap-card-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+  z-index: 1;
+}
+
+.beatmap-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.beatmap-artist {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .preview-page-content {

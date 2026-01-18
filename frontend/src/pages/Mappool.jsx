@@ -935,6 +935,13 @@ export default function Mappool({ user }) {
             {/* Density curve */}
             {densityPath && (
               <svg className="density-curve" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="densityGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(139, 92, 246, 0.7)" />
+                    <stop offset="50%" stopColor="rgba(99, 102, 241, 0.5)" />
+                    <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
+                  </linearGradient>
+                </defs>
                 <path d={densityPath} />
               </svg>
             )}

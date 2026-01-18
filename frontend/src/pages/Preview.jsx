@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { X, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, MoveVertical, EyeOff, Eye } from 'lucide-react';
+import { X, Play, Pause, Upload, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Trash2, Gamepad2, Keyboard, MoveVertical, EyeOff, Eye } from 'lucide-react';
 import ManiaPreview from '../components/ManiaPreview';
 import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
 import catGif from '../assets/cat.gif';
@@ -71,6 +71,8 @@ export default function Preview({ user }) {
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [availableMaps, setAvailableMaps] = useState([]); // All beatmaps from mappools
+  const [slots, setSlots] = useState([]); // Slot configurations with colors
 
   // Loading states
   const [loadingStatus, setLoadingStatus] = useState({
@@ -112,6 +114,9 @@ export default function Preview({ user }) {
     const stored = localStorage.getItem('pmc_bg_opacity');
     return stored ? parseFloat(stored) : 0.1;
   });
+  const [controlsCollapsed, setControlsCollapsed] = useState(false);
+  const [adjustScrollWithSpeed, setAdjustScrollWithSpeed] = useState(false);
+  const [showAjustarTooltip, setShowAjustarTooltip] = useState(false);
   const seekToRef = useRef(null);
   const playRef = useRef(null);
   const resetRef = useRef(null);
@@ -129,6 +134,12 @@ export default function Preview({ user }) {
   const [listeningForKey, setListeningForKey] = useState(null);
 
   const apiBaseUrl = import.meta.env.VITE_API_URL || '';
+
+  // Effective scroll speed: when adjust is on, compensate for playback rate
+  // At 0.5x speed, we want 2x scroll to maintain same visual speed
+  const effectiveScrollSpeed = adjustScrollWithSpeed
+    ? Math.round(scrollSpeed / playbackSpeed)
+    : scrollSpeed;
 
   // Fetch preview data
   useEffect(() => {
@@ -192,6 +203,68 @@ export default function Preview({ user }) {
     const ready = !api.loading && !audio.loading && !skin.loading && !storyboard.loading;
     setAllAssetsReady(ready);
   }, [loadingStatus]);
+
+  // Fetch all available beatmaps from mappools and slots
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch mappools and slots in parallel
+        const [mappoolsRes, slotsRes] = await Promise.all([
+          fetch(`${apiBaseUrl}/mappools`),
+          fetch(`${apiBaseUrl}/slots`)
+        ]);
+
+        if (mappoolsRes.ok) {
+          const data = await mappoolsRes.json();
+          // Flatten all maps from all pools
+          const allMaps = [];
+          for (const pool of data.pools || []) {
+            for (const map of pool.maps || []) {
+              allMaps.push({
+                ...map,
+                poolName: pool.name,
+              });
+            }
+          }
+          setAvailableMaps(allMaps);
+        }
+
+        if (slotsRes.ok) {
+          const slotsData = await slotsRes.json();
+          setSlots(slotsData);
+        }
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    };
+    fetchData();
+  }, [apiBaseUrl]);
+
+  // Get slot color by name
+  const getSlotColor = useCallback((slotName) => {
+    const slot = slots.find(s => s.name === slotName);
+    return slot?.color || '#3b82f6';
+  }, [slots]);
+
+  // Determine if text should be black or white based on background luminance
+  const getContrastText = (hexColor) => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5 ? '#000' : '#fff';
+  };
+
+  // Convert hex to rgba with opacity for frosted glass effect
+  const hexToRgba = (hexColor, opacity = 0.6) => {
+    const hex = hexColor.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
 
   // Callbacks for asset loading
   const onAudioLoaded = useCallback(() => {
@@ -401,9 +474,10 @@ export default function Preview({ user }) {
         if (audioProgress.isPlaying) {
           playRef.current?.toggle();
         }
-        // Exit play mode to show controls
+        // Exit play mode to show controls (collapsed)
         if (playMode) {
           setPlayMode(false);
+          setControlsCollapsed(true);
         }
       } else if (e.code === 'Space' && !playMode) {
         e.preventDefault();
@@ -489,10 +563,55 @@ export default function Preview({ user }) {
         </div>
       )}
 
-      {/* Close button - hidden in play mode or while loading */}
-      <button className={`preview-page-close ${playMode || !allAssetsReady ? 'hidden' : ''}`} onClick={handleClose}>
-        Salir de la preview
-      </button>
+      {/* Close button and beatmap list - hidden in play mode or while loading */}
+      <div className={`preview-sidebar ${playMode || !allAssetsReady ? 'hidden' : ''}`}>
+        <button className="preview-page-close" onClick={handleClose}>
+          Salir de la preview
+        </button>
+
+        {/* Available beatmaps list */}
+        {availableMaps.length > 0 && (
+          <div className="preview-beatmap-list">
+            <div className="preview-beatmap-list-title">Otros mapas</div>
+            <div className="preview-beatmap-list-items">
+              {availableMaps
+                .filter(map => String(map.beatmap_id) !== String(beatmapId))
+                .map((map) => {
+                  const slotColor = getSlotColor(map.slot);
+                  const textColor = getContrastText(slotColor);
+                  return (
+                  <button
+                    key={map.beatmap_id}
+                    className="preview-beatmap-card"
+                    onClick={() => navigate(`/preview?id=${map.beatmap_id}`)}
+                  >
+                    <span
+                      className="beatmap-slot"
+                      style={{ background: hexToRgba(slotColor, 0.7), color: textColor }}
+                    >
+                      {map.slot || '??'}
+                    </span>
+                    <div className="beatmap-card-content">
+                      <div
+                        className="beatmap-card-bg"
+                        style={{
+                          backgroundImage: map.beatmapset_id
+                            ? `url(https://assets.ppy.sh/beatmaps/${map.beatmapset_id}/covers/card.jpg)`
+                            : 'none'
+                        }}
+                      />
+                      <div className="beatmap-card-info">
+                        <span className="beatmap-title">{map.title || `Beatmap ${map.beatmap_id}`}</span>
+                        <span className="beatmap-artist">{map.artist || ''}</span>
+                      </div>
+                    </div>
+                  </button>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main playfield - centered, hidden while loading */}
       <div className="preview-page-content" style={{ visibility: allAssetsReady ? 'visible' : 'hidden' }}>
@@ -506,7 +625,7 @@ export default function Preview({ user }) {
             customSkinData={getCurrentSkinData()}
             volume={volume}
             playbackSpeed={playbackSpeed}
-            scrollSpeed={scrollSpeed}
+            scrollSpeed={effectiveScrollSpeed}
             playRef={playRef}
             playMode={playMode}
             onPlayModeChange={setPlayMode}
@@ -543,7 +662,7 @@ export default function Preview({ user }) {
 
       {/* Bottom controls - hidden in play mode, hit position edit mode, or while loading */}
       {createPortal(
-        <div className={`audio-progress-overlay preview-fullwidth ${playMode || hitPositionEditMode || !allAssetsReady ? 'hidden' : ''}`}>
+        <div className={`audio-progress-overlay preview-fullwidth ${playMode || hitPositionEditMode || !allAssetsReady ? 'hidden' : ''} ${controlsCollapsed ? 'collapsed' : ''}`}>
           <div className="overlay-toolbar">
             {/* Play/Pause */}
             <button
@@ -568,12 +687,27 @@ export default function Preview({ user }) {
                   </button>
                 ))}
               </div>
+              <div className="ajustar-btn-wrapper">
+                <button
+                  className={`overlay-ajustar-btn ${adjustScrollWithSpeed ? 'active' : ''}`}
+                  onClick={() => { setAdjustScrollWithSpeed(!adjustScrollWithSpeed); setShowAjustarTooltip(false); }}
+                  onMouseEnter={() => setShowAjustarTooltip(true)}
+                  onMouseLeave={() => setShowAjustarTooltip(false)}
+                >
+                  Ajustar
+                </button>
+                {showAjustarTooltip && (
+                  <div className="ajustar-tooltip">
+                    Ajusta el scroll automáticamente para mantener el mismo efecto visual al cambiar la velocidad
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Scroll speed */}
             <div className="overlay-control-group">
               <span className="overlay-label">Scroll</span>
-              <div className="overlay-btn-group">
+              <div className={`overlay-btn-group ${adjustScrollWithSpeed ? 'adjust-active' : ''}`}>
                 {SCROLL_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -584,17 +718,36 @@ export default function Preview({ user }) {
                   </button>
                 ))}
               </div>
-              <input
-                type="number"
-                min="1"
-                max="40"
-                value={scrollSpeed}
-                onChange={(e) => {
-                  const val = Math.min(40, Math.max(1, parseInt(e.target.value) || 1));
-                  setScrollSpeed(val);
-                }}
-                className="overlay-scroll-input"
-              />
+              <div className="scroll-input-group">
+                <button
+                  className="scroll-chevron-btn"
+                  onClick={() => setScrollSpeed(Math.max(1, scrollSpeed - 1))}
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  max="40"
+                  value={scrollSpeed}
+                  onChange={(e) => {
+                    const val = Math.min(40, Math.max(1, parseInt(e.target.value) || 1));
+                    setScrollSpeed(val);
+                  }}
+                  className="overlay-scroll-input"
+                />
+                <button
+                  className="scroll-chevron-btn"
+                  onClick={() => setScrollSpeed(Math.min(40, scrollSpeed + 1))}
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+              {adjustScrollWithSpeed && (
+                <span className="scroll-adjusted-label">
+                  Ajustado<br />a {effectiveScrollSpeed}
+                </span>
+              )}
             </div>
 
             {/* Volume control */}
@@ -659,12 +812,13 @@ export default function Preview({ user }) {
                   }
                 } else {
                   setPlayMode(false);
+                  setControlsCollapsed(true);
                 }
               }}
               title={playMode ? 'Disable game mode' : 'Enable game mode'}
             >
               <Gamepad2 size={16} />
-              <span>{playMode ? 'GAME ON' : 'GAME'}</span>
+              <span>{playMode ? 'Jugando' : 'Playtest'}</span>
             </button>
 
             {/* Keybindings button */}
@@ -785,11 +939,28 @@ export default function Preview({ user }) {
                 style={{ display: 'none' }}
               />
             </div>
+
+            {/* Collapse button */}
+            <button
+              className="overlay-collapse-btn"
+              onClick={() => setControlsCollapsed(true)}
+              title="Ocultar controles"
+            >
+              <ChevronDown size={14} />
+              <span>Ocultar</span>
+            </button>
           </div>
 
           <div className="audio-progress-bar" onClick={handleProgressBarClick}>
             {densityPath && (
               <svg className="density-curve" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="densityGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(139, 92, 246, 0.7)" />
+                    <stop offset="50%" stopColor="rgba(99, 102, 241, 0.5)" />
+                    <stop offset="100%" stopColor="rgba(59, 130, 246, 0.2)" />
+                  </linearGradient>
+                </defs>
                 <path d={densityPath} />
               </svg>
             )}
@@ -801,6 +972,138 @@ export default function Preview({ user }) {
               {formatTime(audioProgress.currentTime)} / {formatTime(audioProgress.duration)}
             </div>
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Show controls button when collapsed */}
+      {controlsCollapsed && !playMode && !hitPositionEditMode && allAssetsReady && createPortal(
+        <button
+          className="show-controls-btn"
+          onClick={() => setControlsCollapsed(false)}
+        >
+          <ChevronUp size={16} />
+          <span>Mostrar controles</span>
+        </button>,
+        document.body
+      )}
+
+      {/* Floating controls when collapsed */}
+      {controlsCollapsed && !playMode && !hitPositionEditMode && allAssetsReady && createPortal(
+        <div className="floating-controls">
+          <div className="floating-control-item" style={{ animationDelay: '0ms' }}>
+            <span className="floating-label">Speed</span>
+            <div className="floating-btn-group">
+              {SPEED_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`floating-speed-btn ${playbackSpeed === opt.value ? 'active' : ''}`}
+                  onClick={() => setPlaybackSpeed(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <div className="ajustar-btn-wrapper">
+              <button
+                className={`floating-ajustar-btn ${adjustScrollWithSpeed ? 'active' : ''}`}
+                onClick={() => { setAdjustScrollWithSpeed(!adjustScrollWithSpeed); setShowAjustarTooltip(false); }}
+                onMouseEnter={() => setShowAjustarTooltip(true)}
+                onMouseLeave={() => setShowAjustarTooltip(false)}
+              >
+                Ajustar
+              </button>
+              {showAjustarTooltip && (
+                <div className="ajustar-tooltip">
+                  Ajusta el scroll automáticamente para mantener el mismo efecto visual al cambiar la velocidad
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="floating-control-item" style={{ animationDelay: '50ms' }}>
+            <span className="floating-label">Scroll</span>
+            <div className={`floating-btn-group ${adjustScrollWithSpeed ? 'adjust-active' : ''}`}>
+              {SCROLL_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  className={`floating-speed-btn ${scrollSpeed === opt.value ? 'active' : ''}`}
+                  onClick={() => setScrollSpeed(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <div className="floating-scroll-input-group">
+              <button
+                className="floating-scroll-chevron"
+                onClick={() => setScrollSpeed(Math.max(1, scrollSpeed - 1))}
+              >
+                <ChevronLeft size={12} />
+              </button>
+              <input
+                type="number"
+                min="1"
+                max="40"
+                value={scrollSpeed}
+                onChange={(e) => {
+                  const val = Math.min(40, Math.max(1, parseInt(e.target.value) || 1));
+                  setScrollSpeed(val);
+                }}
+                className="floating-scroll-input"
+              />
+              <button
+                className="floating-scroll-chevron"
+                onClick={() => setScrollSpeed(Math.min(40, scrollSpeed + 1))}
+              >
+                <ChevronRight size={12} />
+              </button>
+            </div>
+            {adjustScrollWithSpeed && (
+              <span className="scroll-adjusted-label">
+                Ajustado<br />a {effectiveScrollSpeed}
+              </span>
+            )}
+          </div>
+          <div className="floating-control-item" style={{ animationDelay: '100ms' }}>
+            <span className="floating-label">Vol</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => { const v = parseFloat(e.target.value); setVolume(v); localStorage.setItem('pmc_preview_volume', v); }}
+              className="floating-slider"
+            />
+            <span className="floating-value">{Math.round(volume * 100)}%</span>
+          </div>
+          <div className="floating-control-item" style={{ animationDelay: '150ms' }}>
+            <span className="floating-label">BG</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={bgOpacity}
+              onChange={(e) => { const v = parseFloat(e.target.value); setBgOpacity(v); localStorage.setItem('pmc_bg_opacity', v); }}
+              className="floating-slider"
+            />
+            <span className="floating-value">{Math.round(bgOpacity * 100)}%</span>
+          </div>
+          <button
+            className="floating-playtest-btn"
+            style={{ animationDelay: '200ms' }}
+            onClick={() => {
+              setPlayMode(true);
+              setControlsCollapsed(false);
+              if (!audioProgress.isPlaying) {
+                playRef.current?.toggle();
+              }
+            }}
+          >
+            <Gamepad2 size={16} />
+            <span>Playtest</span>
+          </button>
         </div>,
         document.body
       )}

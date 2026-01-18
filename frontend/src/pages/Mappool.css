@@ -617,42 +617,412 @@ td.col-title::after {
   left: calc((100vh - 60px) / 2);
   right: 0;
   height: 200px;
-  background: rgba(0, 0, 0, 0.5);
+  background: transparent;
   z-index: 1000;
   display: flex;
+  align-items: stretch;
+  padding: 0;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.audio-progress-overlay.collapsed {
+  height: 0;
+  overflow: hidden;
+}
+
+.audio-progress-overlay .overlay-toolbar,
+.audio-progress-overlay .audio-progress-bar {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.audio-progress-overlay.collapsed .overlay-toolbar,
+.audio-progress-overlay.collapsed .audio-progress-bar {
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+}
+
+/* Collapse button - inline with toolbar */
+.overlay-collapse-btn {
+  height: 36px;
+  display: flex;
   align-items: center;
-  padding: 0 20px;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.15) 100%) !important;
+  border: 1px solid rgba(59, 130, 246, 0.4) !important;
+  border-radius: 8px;
+  color: #60a5fa !important;
+  cursor: pointer;
+  clip-path: none !important;
+  padding: 0 14px !important;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.overlay-collapse-btn span {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.overlay-collapse-btn:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.25) 100%) !important;
+  border-color: rgba(59, 130, 246, 0.6) !important;
+  color: #93c5fd !important;
+  transform: translateY(-1px);
+}
+
+.overlay-collapse-btn svg {
+  color: inherit !important;
+}
+
+/* Show controls button - appears when collapsed */
+.show-controls-btn {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  clip-path: none !important;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: showControlsFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes showControlsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.show-controls-btn:hover {
+  color: #fff !important;
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.98) 0%, rgba(20, 20, 20, 0.99) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+  transition: all 0.2s ease;
+}
+
+.show-controls-btn svg {
+  color: inherit !important;
+}
+
+/* Floating controls when collapsed */
+.floating-controls {
+  position: fixed;
+  left: 20px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+
+.floating-control-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(20, 20, 24, 0.95) 0%, rgba(12, 12, 16, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  animation: floatingSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes floatingSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.floating-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-width: 36px;
+}
+
+.floating-btn-group {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 1px;
+}
+
+.floating-speed-btn {
+  padding: 5px 8px !important;
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  border-radius: 4px;
+}
+
+.floating-speed-btn:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.floating-speed-btn.active {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: #fff !important;
+}
+
+/* Ajustar button - floating */
+.floating-ajustar-btn {
+  padding: 5px 10px !important;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: #4ade80 !important;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.floating-ajustar-btn:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.2) 100%) !important;
+  border-color: rgba(34, 197, 94, 0.6) !important;
+}
+
+.floating-ajustar-btn.active {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.4) 0%, rgba(22, 163, 74, 0.35) 100%) !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Ajustar button - toolbar */
+.overlay-ajustar-btn {
+  padding: 6px 12px !important;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.1) 100%) !important;
+  border: 1px solid rgba(34, 197, 94, 0.4) !important;
+  color: #4ade80 !important;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.overlay-ajustar-btn:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.2) 100%) !important;
+  border-color: rgba(34, 197, 94, 0.6) !important;
+}
+
+.overlay-ajustar-btn.active {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.4) 0%, rgba(22, 163, 74, 0.35) 100%) !important;
+  border-color: #22c55e !important;
+  color: #fff !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Ajustar button wrapper & tooltip */
+.ajustar-btn-wrapper {
+  position: relative;
+}
+
+.ajustar-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: rgba(15, 15, 20, 0.98);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 280px;
+  white-space: normal;
+  text-align: center;
+  z-index: 1001;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  animation: tooltipFadeIn 0.15s ease;
+}
+
+.ajustar-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(15, 15, 20, 0.98);
+}
+
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Green border on scroll buttons when adjust is active */
+.floating-btn-group.adjust-active,
+.overlay-btn-group.adjust-active {
+  border: 2px solid #22c55e;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
+}
+
+/* Adjusted scroll indicator */
+.scroll-adjusted-label {
+  color: #4ade80;
+  font-size: 0.65rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Floating playtest button */
+.floating-playtest-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px !important;
+  background: linear-gradient(135deg, #ff0844 0%, #c8003c 100%) !important;
+  border: 1px solid #ff0844 !important;
+  color: #fff !important;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  clip-path: none !important;
+  border-radius: 8px;
+  white-space: nowrap;
+  animation: floatingSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.floating-playtest-btn:hover {
+  background: linear-gradient(135deg, #ff3366 0%, #e0104a 100%) !important;
+  border-color: #ff3366 !important;
+  box-shadow: 0 0 16px rgba(255, 8, 68, 0.5);
+}
+
+.floating-playtest-btn svg {
+  color: inherit !important;
+}
+
+.floating-slider {
+  flex: 1;
+  min-width: 80px;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.floating-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.floating-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.floating-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.floating-value {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.72rem;
+  font-weight: 500;
+  min-width: 32px;
+  text-align: right;
 }
 
 .audio-progress-bar {
   flex: 1;
+  width: 100%;
   height: 100%;
-  background: transparent;
   position: relative;
+  cursor: pointer;
+  background: linear-gradient(180deg, rgba(15, 15, 20, 0.85) 0%, rgba(8, 8, 12, 0.95) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 -8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .audio-progress-marker {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
-  background: #ff8c00;
-  box-shadow: 0 0 8px rgba(255, 140, 0, 0.8);
+  width: 3px;
+  background: linear-gradient(180deg, #ff6b35 0%, #ff0844 100%);
+  box-shadow: 0 0 12px rgba(255, 8, 68, 0.6), 0 0 24px rgba(255, 107, 53, 0.3);
   transform: translateX(-50%);
-  transition: left 0.1s linear;
+  transition: left 0.08s linear;
   pointer-events: none;
-}
-
-.audio-progress-bar {
-  cursor: pointer;
+  border-radius: 2px;
 }
 
 .audio-progress-bar:hover .audio-progress-marker {
-  width: 6px;
-  box-shadow: 0 0 12px rgba(255, 140, 0, 1);
+  width: 4px;
+  box-shadow: 0 0 16px rgba(255, 8, 68, 0.8), 0 0 32px rgba(255, 107, 53, 0.4);
 }
 
-/* Density curve */
+/* Density curve - polished gradient */
 .density-curve {
   position: absolute;
   top: 0;
@@ -660,28 +1030,35 @@ td.col-title::after {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .density-curve path {
-  fill: rgba(59, 130, 246, 0.5);
-  stroke: rgba(59, 130, 246, 0.8);
-  stroke-width: 0.5;
+  fill: url(#densityGradient);
+  stroke: rgba(139, 92, 246, 0.6);
+  stroke-width: 1;
 }
 
-/* Time display */
+/* Time display - refined */
 .audio-time-display {
   position: absolute;
-  bottom: 12px;
-  left: 16px;
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  bottom: 16px;
+  left: 20px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
   pointer-events: none;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  letter-spacing: 0.02em;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 14px;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Overlay toolbar */
+/* Overlay toolbar - Polished glassmorphism design */
 .overlay-toolbar {
   position: absolute;
   bottom: 100%;
@@ -689,110 +1066,131 @@ td.col-title::after {
   right: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, rgba(12, 12, 14, 0.96) 0%, rgba(8, 8, 10, 0.98) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
 }
 
+/* Play button - prominent action */
 .overlay-play-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px;
   color: #fff !important;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   clip-path: none !important;
   padding: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .overlay-play-btn svg {
   color: #fff !important;
   stroke: #fff !important;
   fill: #fff !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 .overlay-play-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
+.overlay-play-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Control groups */
 .overlay-control-group {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 0;
 }
 
 .overlay-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.75rem;
-  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  min-width: 28px;
 }
 
+/* Button groups - pill style */
 .overlay-btn-group {
   display: flex;
-  gap: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 2px;
+  gap: 1px;
 }
 
 .overlay-speed-btn,
 .overlay-scroll-btn {
-  padding: 4px 8px !important;
+  padding: 6px 10px !important;
   background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-  font-size: 0.75rem;
-  font-weight: 500;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 0.72rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none !important;
+  border-radius: 6px;
 }
 
 .overlay-speed-btn:first-child,
 .overlay-scroll-btn:first-child {
-  border-radius: 3px 0 0 3px;
+  border-radius: 6px;
 }
 
 .overlay-speed-btn:last-child,
 .overlay-scroll-btn:last-child {
-  border-radius: 0 3px 3px 0;
+  border-radius: 6px;
 }
 
 .overlay-speed-btn:not(:first-child),
 .overlay-scroll-btn:not(:first-child) {
-  border-left: none;
+  border-left: none !important;
 }
 
 .overlay-speed-btn:hover,
 .overlay-scroll-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: #fff !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
 .overlay-speed-btn.active,
 .overlay-scroll-btn.active {
   background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
   color: #fff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+/* Scroll input */
 .overlay-scroll-input {
-  width: 45px;
-  padding: 4px 6px !important;
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 3px;
+  width: 42px;
+  padding: 6px 4px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px;
   color: #fff !important;
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.72rem;
+  font-weight: 600;
   text-align: center;
   -moz-appearance: textfield;
+  transition: all 0.15s ease;
 }
 
 .overlay-scroll-input::-webkit-outer-spin-button,
@@ -803,53 +1201,148 @@ td.col-title::after {
 
 .overlay-scroll-input:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
 }
 
+/* Scroll input with chevrons */
+.scroll-input-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.scroll-chevron-btn {
+  width: 24px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.6) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  padding: 0 !important;
+}
+
+.scroll-chevron-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+.scroll-chevron-btn svg {
+  color: inherit !important;
+}
+
+/* Floating scroll input with chevrons */
+.floating-scroll-input-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.floating-scroll-chevron {
+  width: 20px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5) !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  clip-path: none !important;
+  padding: 0 !important;
+}
+
+.floating-scroll-chevron:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #fff !important;
+}
+
+.floating-scroll-chevron svg {
+  color: inherit !important;
+}
+
+.floating-scroll-input {
+  width: 36px;
+  padding: 4px 2px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px;
+  color: #fff !important;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.floating-scroll-input::-webkit-outer-spin-button,
+.floating-scroll-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.floating-scroll-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Skin button */
 .overlay-skin-btn {
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
   color: #fff !important;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   margin-left: auto;
   clip-path: none !important;
-  padding: 4px 10px !important;
+  padding: 6px 12px !important;
 }
 
 .overlay-skin-btn span {
-  color: #fff !important;
+  color: rgba(255, 255, 255, 0.85) !important;
   font-size: 0.75rem;
   font-weight: 500;
 }
 
 .overlay-skin-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .overlay-skin-icon {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   object-fit: contain;
+  border-radius: 4px;
 }
 
-/* Volume slider in toolbar */
+/* Volume/BG slider in toolbar */
 .overlay-control-group .volume-slider-container {
-  width: 80px;
+  width: 70px;
 }
 
 .volume-slider-container {
   position: relative;
   width: 120px;
-  height: 24px;
+  height: 20px;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .volume-slider-track {
@@ -860,9 +1353,9 @@ td.col-title::after {
   height: 100%;
   transform: translateY(-50%);
   clip-path: polygon(0 50%, 100% 0, 100% 100%);
-  background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
-  opacity: 0.3;
-  border-radius: 2px;
+  background: linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #ef4444 100%);
+  opacity: 0.25;
+  border-radius: 6px;
 }
 
 .volume-slider-fill {
@@ -872,8 +1365,9 @@ td.col-title::after {
   width: 100%;
   height: 100%;
   transform: translateY(-50%);
-  background: linear-gradient(to right, #22c55e 0%, #eab308 50%, #ef4444 100%);
-  border-radius: 2px;
+  background: linear-gradient(to right, #22c55e 0%, #84cc16 25%, #eab308 50%, #f97316 75%, #ef4444 100%);
+  border-radius: 6px;
+  filter: brightness(1.1);
 }
 
 .volume-slider-input {
@@ -890,13 +1384,13 @@ td.col-title::after {
 .volume-slider-thumb {
   position: absolute;
   top: 50%;
-  width: 4px;
-  height: 28px;
+  width: 3px;
+  height: 24px;
   background: #fff;
   border-radius: 2px;
   transform: translate(-50%, -50%);
   pointer-events: none;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5), 0 0 2px rgba(255, 255, 255, 0.3);
 }
 
 /* Skin dropdown styles */
@@ -907,38 +1401,52 @@ td.col-title::after {
 
 .skin-dropdown-chevron {
   transition: transform 0.2s ease;
-  opacity: 0.7;
+  opacity: 0.6;
 }
 
 .skin-dropdown-chevron.open {
   transform: rotate(180deg);
+  opacity: 1;
 }
 
 .skin-dropdown-menu {
   position: absolute;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 10px);
   right: 0;
-  min-width: 220px;
-  background: rgba(20, 20, 20, 0.98);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  padding: 6px;
+  min-width: 240px;
+  background: linear-gradient(180deg, rgba(25, 25, 25, 0.98) 0%, rgba(15, 15, 15, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px;
   z-index: 1000;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px);
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .skin-dropdown-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: transparent !important;
   border: none !important;
-  border-radius: 4px;
-  color: #fff !important;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.85) !important;
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none !important;
@@ -946,26 +1454,28 @@ td.col-title::after {
 }
 
 .skin-dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .skin-dropdown-item.active {
-  background: rgba(255, 8, 68, 0.2) !important;
-  border-left: 2px solid #ff0844 !important;
+  background: linear-gradient(135deg, rgba(255, 8, 68, 0.18) 0%, rgba(255, 8, 68, 0.08) 100%) !important;
 }
 
 .skin-dropdown-icon {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   object-fit: contain;
   flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px;
 }
 
 .skin-dropdown-icon-placeholder {
-  width: 24px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
@@ -978,19 +1488,19 @@ td.col-title::after {
 
 .skin-dropdown-divider {
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 6px 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 8px 4px;
 }
 
 .skin-delete-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px !important;
+  padding: 6px !important;
   background: transparent !important;
   border: none !important;
-  color: rgba(255, 255, 255, 0.4) !important;
-  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.35) !important;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
   clip-path: none !important;
@@ -1019,68 +1529,105 @@ td.col-title::after {
 }
 
 /* Play Mode button */
+/* Game mode button */
 .overlay-play-mode-btn {
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 8px;
   color: #fff !important;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   clip-path: none !important;
-  padding: 4px 12px !important;
+  padding: 6px 14px !important;
 }
 
 .overlay-play-mode-btn span {
-  color: #fff !important;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.overlay-play-mode-btn svg {
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s ease;
 }
 
 .overlay-play-mode-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+.overlay-play-mode-btn:hover span,
+.overlay-play-mode-btn:hover svg {
+  color: #fff !important;
 }
 
 .overlay-play-mode-btn.active {
-  background: #ff0000 !important;
-  border-color: #ff0000 !important;
-  box-shadow: 0 0 12px rgba(255, 0, 0, 0.5);
+  background: linear-gradient(135deg, #ff2d55 0%, #ff0844 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 16px rgba(255, 8, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .overlay-play-mode-btn.active span {
   color: #fff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .overlay-play-mode-btn.active svg {
   color: #fff !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
-/* Keybindings button */
+.overlay-play-mode-btn.active:hover {
+  background: linear-gradient(135deg, #ff4466 0%, #ff1a55 100%) !important;
+  transform: translateY(-1px);
+}
+
+/* Icon buttons (keybindings, hit position, hide playfield) */
 .overlay-keybindings-btn {
   width: 36px;
   height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
-  border-radius: 4px;
-  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7) !important;
   cursor: pointer;
   clip-path: none !important;
   padding: 0 !important;
+  transition: all 0.2s ease;
 }
 
 .overlay-keybindings-btn:hover {
   background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+  transform: translateY(-1px);
+}
+
+.overlay-keybindings-btn:hover svg {
+  color: #fff !important;
 }
 
 .overlay-keybindings-btn svg {
-  color: #fff !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: color 0.15s ease;
+}
+
+.overlay-keybindings-btn.active {
+  background: rgba(255, 8, 68, 0.15) !important;
+  border-color: rgba(255, 8, 68, 0.4) !important;
+}
+
+.overlay-keybindings-btn.active svg {
+  color: #ff0844 !important;
 }

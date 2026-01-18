@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import './ManiaPreview.css';
 import StoryboardRenderer from './StoryboardRenderer';
 
@@ -37,25 +37,39 @@ function calculateScrollPosition(time, timingPoints) {
   return position;
 }
 
-// Timing windows in milliseconds (osu!mania style)
-const TIMING_WINDOWS = {
-  MAX: 16,    // 300g (rainbow)
-  300: 40,    // Perfect
-  200: 73,    // Great
-  100: 103,   // Good
-  50: 127,    // Ok
-  MISS: 150,  // Window to still count as miss vs ignore
+// Calculate timing windows based on OD (Overall Difficulty)
+// Formula from osu!mania wiki: https://osu.ppy.sh/wiki/en/Gameplay/Judgement/osu!mania
+// MAX (PERFECT): 16ms fixed
+// 300 (GREAT): 64 - 3 × OD
+// 200 (GOOD): 97 - 3 × OD
+// 100 (OK): 127 - 3 × OD
+// 50 (MEH): 151 - 3 × OD
+// MISS: 188 - 3 × OD
+function getTimingWindows(od = 8) {
+  return {
+    MAX: 16,
+    300: Math.floor(64 - 3 * od),
+    200: Math.floor(97 - 3 * od),
+    100: Math.floor(127 - 3 * od),
+    50: Math.floor(151 - 3 * od),
+    MISS: Math.floor(188 - 3 * od),
+  };
+}
+
+// osu!mania ScoreV1 values for each judgement
+// Score = BaseScore + BonusScore
+// BaseScore = (MaxScore * 0.5 / TotalNotes) * (HitValue / 320)
+// BonusScore = (MaxScore * 0.5 / TotalNotes) * (HitBonusValue * sqrt(Bonus) / 320)
+const SCORE_VALUES = {
+  MAX: { hitValue: 320, bonusValue: 32, hitBonus: 2, hitPunishment: 0 },
+  300: { hitValue: 300, bonusValue: 32, hitBonus: 1, hitPunishment: 0 },
+  200: { hitValue: 200, bonusValue: 16, hitBonus: 0, hitPunishment: 8 },
+  100: { hitValue: 100, bonusValue: 8, hitBonus: 0, hitPunishment: 24 },
+  50:  { hitValue: 50,  bonusValue: 4, hitBonus: 0, hitPunishment: 44 },
+  MISS: { hitValue: 0, bonusValue: 0, hitBonus: 0, hitPunishment: Infinity },
 };
 
-// Score values for each judgement
-const SCORE_VALUES = {
-  MAX: 320,
-  300: 300,
-  200: 200,
-  100: 100,
-  50: 50,
-  MISS: 0,
-};
+const MAX_SCORE = 1000000;
 
 // Colors for judgement display
 const JUDGEMENT_COLORS = {
@@ -154,6 +168,7 @@ export default function ManiaPreview({
   const scoreRef = useRef(0);
   const comboRef = useRef(0);
   const maxComboRef = useRef(0);
+  const bonusRef = useRef(100); // osu!mania bonus multiplier, starts at 100, range [0, 100]
   const hitCountsRef = useRef({ MAX: 0, 300: 0, 200: 0, 100: 0, 50: 0, MISS: 0 });
   const hitErrorsRef = useRef([]);
 
@@ -162,6 +177,10 @@ export default function ManiaPreview({
 
   // Get key count from beatmap metadata (default to 4K)
   const keyCount = notesData?.metadata?.keys || 4;
+
+  // Get OD from beatmap metadata and calculate timing windows
+  const od = notesData?.metadata?.od ?? 8;
+  const TIMING_WINDOWS = useMemo(() => getTimingWindows(od), [od]);
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
@@ -194,6 +213,7 @@ export default function ManiaPreview({
     scoreRef.current = 0;
     comboRef.current = 0;
     maxComboRef.current = 0;
+    bonusRef.current = 100;
     hitCountsRef.current = { MAX: 0, 300: 0, 200: 0, 100: 0, 50: 0, MISS: 0 };
     hitErrorsRef.current = [];
   }, []);
@@ -214,9 +234,9 @@ export default function ManiaPreview({
     if (absDiff <= TIMING_WINDOWS[100]) return '100';
     if (absDiff <= TIMING_WINDOWS[50]) return '50';
     return 'MISS';
-  }, []);
+  }, [TIMING_WINDOWS]);
 
-  // Record a hit
+  // Record a hit using osu!mania ScoreV1 formula
   const recordHit = useCallback((noteIndex, judgement, col, timeDiff = 0) => {
     const now = performance.now();
 
@@ -224,8 +244,29 @@ export default function ManiaPreview({
     hitNotesRef.current.add(noteIndex);
     setHitNotes(new Set(hitNotesRef.current));
 
-    // Update score
-    scoreRef.current += SCORE_VALUES[judgement];
+    // Calculate score using osu!mania ScoreV1 formula
+    // Score = BaseScore + BonusScore
+    // BaseScore = (MaxScore * 0.5 / TotalNotes) * (HitValue / 320)
+    // BonusScore = (MaxScore * 0.5 / TotalNotes) * (HitBonusValue * sqrt(Bonus) / 320)
+    const totalNotes = notesData?.notes?.length || 1;
+    const scoreData = SCORE_VALUES[judgement];
+
+    // Update bonus multiplier first
+    if (scoreData.hitBonus > 0) {
+      bonusRef.current = Math.min(100, bonusRef.current + scoreData.hitBonus);
+    } else if (scoreData.hitPunishment === Infinity) {
+      bonusRef.current = 0; // MISS resets bonus to 0
+    } else if (scoreData.hitPunishment > 0) {
+      bonusRef.current = Math.max(0, bonusRef.current - scoreData.hitPunishment);
+    }
+
+    // Calculate this hit's score contribution
+    const baseMultiplier = (MAX_SCORE * 0.5) / totalNotes;
+    const baseScore = baseMultiplier * (scoreData.hitValue / 320);
+    const bonusScore = baseMultiplier * (scoreData.bonusValue * Math.sqrt(bonusRef.current) / 320);
+    const hitScore = Math.round(baseScore + bonusScore);
+
+    scoreRef.current += hitScore;
     setScore(scoreRef.current);
 
     // Update combo
@@ -256,7 +297,7 @@ export default function ManiaPreview({
       hitErrorsRef.current = [...hitErrorsRef.current.filter(e => e.displayUntil > now), newError].slice(-20);
       setHitErrors([...hitErrorsRef.current]);
     }
-  }, []);
+  }, [notesData]);
 
   // Handle key press in play mode
   const handleKeyDown = useCallback((col, currentTimeMs) => {
@@ -305,7 +346,7 @@ export default function ManiaPreview({
         recordHit(closestIndex, judgement, col, closestDiff);
       }
     }
-  }, [playMode, notesData, getJudgement, recordHit]);
+  }, [playMode, notesData, getJudgement, recordHit, TIMING_WINDOWS]);
 
   // Handle key release in play mode
   const handleKeyUp = useCallback((col, currentTimeMs) => {
@@ -339,7 +380,7 @@ export default function ManiaPreview({
     // Use the worse timing diff for the error bar
     const finalTimeDiff = Math.abs(startTimeDiff) > Math.abs(endTimeDiff) ? startTimeDiff : endTimeDiff;
     recordHit(noteIndex, finalJudgement, col, finalTimeDiff);
-  }, [playMode, getJudgement, recordHit]);
+  }, [playMode, getJudgement, recordHit, TIMING_WINDOWS]);
 
   // Keyboard event handlers
   useEffect(() => {
@@ -419,7 +460,7 @@ export default function ManiaPreview({
 
     const interval = setInterval(checkMissedNotes, 16);
     return () => clearInterval(interval);
-  }, [playMode, isPlaying, notesData, recordHit]);
+  }, [playMode, isPlaying, notesData, recordHit, TIMING_WINDOWS]);
 
   // Handle hit line dragging
   useEffect(() => {
@@ -1038,7 +1079,7 @@ export default function ManiaPreview({
     };
   }, [imagesLoaded, render]);
 
-  // Close results screen
+  // Close results screen (just dismiss)
   const closeResults = useCallback(() => {
     setShowResults(false);
     resetPlayState();
@@ -1046,6 +1087,17 @@ export default function ManiaPreview({
       audioRef.current.currentTime = 0;
     }
   }, [resetPlayState]);
+
+  // Retry - restart the song and enter play mode
+  const retryPlay = useCallback(() => {
+    setShowResults(false);
+    resetPlayState();
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play();
+    }
+    onPlayModeChange?.(true);
+  }, [resetPlayState, onPlayModeChange]);
 
   return (
     <div className="mania-preview">
@@ -1195,8 +1247,8 @@ export default function ManiaPreview({
                   return 'D';
                 })()}</div>
                 <div className="results-buttons">
-                  <button className="results-btn retry-btn" onClick={closeResults}>
-                    Retry
+                  <button className="results-btn retry-btn" onClick={retryPlay}>
+                    Reintentar
                   </button>
                   {onBackToMappools && (
                     <button className="results-btn back-btn" onClick={onBackToMappools}>
