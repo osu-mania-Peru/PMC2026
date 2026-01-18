@@ -583,7 +583,7 @@ export default function Preview({ user }) {
                   <button
                     key={map.beatmap_id}
                     className="preview-beatmap-card"
-                    onClick={() => navigate(`/preview?id=${map.beatmap_id}`)}
+                    onClick={() => window.location.href = `/preview?id=${map.beatmap_id}`}
                   >
                     <span
                       className="beatmap-slot"
