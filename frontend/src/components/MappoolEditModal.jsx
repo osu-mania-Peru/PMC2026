@@ -559,16 +559,37 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
 }
 
 // Pool Item Component
-function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots }) {
+function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots, onRename }) {
   const { addMapPoolId, addMapDraft } = useMappoolStore();
   const hasDraft = addMapPoolId === pool.id && addMapDraft !== null;
 
   const [showAddMap, setShowAddMap] = useState(hasDraft);
   const [deletingMap, setDeletingMap] = useState(null);
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState(pool.stage_name);
 
   const getSlotColor = (slotName) => {
     const slot = slots?.find(s => s.name === slotName);
     return slot?.color || '#ff0844'; // Default color if not found
+  };
+
+  const handleRename = async () => {
+    if (!newName.trim() || newName === pool.stage_name) {
+      setEditingName(false);
+      setNewName(pool.stage_name);
+      return;
+    }
+    await onRename(pool.id, newName.trim());
+    setEditingName(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleRename();
+    } else if (e.key === 'Escape') {
+      setEditingName(false);
+      setNewName(pool.stage_name);
+    }
   };
 
   const handleAddMap = async (poolId, mapData) => {
@@ -603,7 +624,30 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
             <ChevronDownIcon />
           </button>
         </div>
-        <span className="mpm-pool-name">{pool.stage_name}</span>
+        {editingName ? (
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onBlur={handleRename}
+            onKeyDown={handleKeyDown}
+            className="mpm-pool-name-input"
+            autoFocus
+            disabled={loading}
+          />
+        ) : (
+          <span className="mpm-pool-name" onClick={() => !loading && setEditingName(true)} title="Click para editar">
+            {pool.stage_name}
+          </span>
+        )}
+        <button
+          className="mpm-icon-btn"
+          onClick={() => setEditingName(true)}
+          disabled={loading || editingName}
+          title="Editar nombre"
+        >
+          <EditIcon />
+        </button>
         <span className="mpm-pool-count">{pool.map_count} maps</span>
         <button
           className="mpm-icon-btn mpm-icon-btn-danger"
@@ -757,6 +801,18 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
     }
   };
 
+  const handleRenamePool = async (poolId, newName) => {
+    setLoading(true);
+    try {
+      await api.updateMappool(poolId, { stage_name: newName });
+      onRefresh();
+    } catch (err) {
+      console.error('Failed to rename pool:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAddMap = async (poolId, mapData) => {
     setLoading(true);
     try {
@@ -823,6 +879,7 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
                   onDeleteMap={handleDeleteMap}
                   onMoveUp={handleMoveUp}
                   onMoveDown={handleMoveDown}
+                  onRename={handleRenamePool}
                   isFirst={index === 0}
                   isLast={index === pools.length - 1}
                   loading={loading || deletingPool === pool.id}

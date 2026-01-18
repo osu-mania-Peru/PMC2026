@@ -973,7 +973,7 @@ export default function ManiaPreview({
       for (const error of hitErrorsRef.current) {
         if (error.displayUntil > now) {
           const opacity = Math.min(1, (error.displayUntil - now) / 1000);
-          const xPos = errorBarX + errorBarWidth / 2 + (error.timeDiff / maxError) * (errorBarWidth / 2);
+          const xPos = errorBarX + errorBarWidth / 2 - (error.timeDiff / maxError) * (errorBarWidth / 2);
           ctx.globalAlpha = opacity;
           ctx.fillStyle = JUDGEMENT_COLORS[error.judgement];
           ctx.fillRect(xPos - 1, errorBarY - 4, 2, errorBarHeight + 8);
