@@ -154,35 +154,30 @@
 
 .player-stats {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-top: 0.5rem;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.4rem;
 }
 
 .player-country-rank {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.95rem;
-}
-
-.rank-flag {
-  color: #888;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.rank-number {
-  color: #fff;
+  font-size: 1.1rem;
   font-weight: 700;
+  color: #fff;
 }
 
 .player-pp {
   font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
   color: #ff0844;
-  font-size: 0.9rem;
   font-weight: 600;
+}
+
+.pp-label {
+  font-size: 0.75rem;
+  color: #ff0844;
+  opacity: 0.7;
+  margin-left: 1px;
 }
 
 /* Not registered state */
