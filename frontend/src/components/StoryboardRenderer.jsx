@@ -184,8 +184,11 @@ function StoryboardRenderer({
   const programRef = useRef(null);
   const texturesRef = useRef({});
   const bufferRef = useRef(null);
+  const whitePixelRef = useRef(null); // 1x1 white texture for solid color drawing
   const [ready, setReady] = useState(false);
   const rafRef = useRef(null);
+  const [stats, setStats] = useState({ fps: 0, frameTime: 0, drawCalls: 0 });
+  const statsRef = useRef({ frameCount: 0, lastLogTime: performance.now(), lastFrameTime: performance.now(), drawCalls: 0 });
 
   // Pre-process storyboard data with visibility time ranges
   const { sortedSprites, commandsBySprite, imageList } = useMemo(() => {
@@ -206,13 +209,18 @@ function StoryboardRenderer({
 
       if (subCmds.length === 0) return expanded;
 
-      // Find the duration of one loop iteration (max end_time of sub_commands)
-      let loopDuration = 0;
+      // Find the duration of one loop iteration
+      // Duration is the SPAN of sub-commands (max_end - min_start), not max_end
+      let minStart = Infinity, maxEnd = 0;
       for (const sub of subCmds) {
-        if (sub.end_time > loopDuration) loopDuration = sub.end_time;
+        if (sub.start_time < minStart) minStart = sub.start_time;
+        if (sub.end_time > maxEnd) maxEnd = sub.end_time;
       }
+      const loopDuration = maxEnd - minStart;
 
       // Expand each iteration
+      // First iteration uses original times offset by loopStart
+      // Subsequent iterations add loopDuration offset
       let orderCounter = 0;
       for (let iter = 0; iter < loopCount; iter++) {
         const iterOffset = loopStart + iter * loopDuration;
@@ -374,6 +382,9 @@ function StoryboardRenderer({
       cmdMap[id].sort((a, b) => a.start_time - b.start_time || (a._order ?? 0) - (b._order ?? 0));
     }
 
+    // Expose for debugging in console
+    window.__storyboardDebug = { sortedSprites: sorted, commandsBySprite: cmdMap };
+
     return {
       sortedSprites: sorted,
       commandsBySprite: cmdMap,
@@ -431,11 +442,19 @@ function StoryboardRenderer({
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+    // Create 1x1 white pixel texture for solid color drawing (black bars)
+    const whitePixel = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, whitePixel);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
+      new Uint8Array([255, 255, 255, 255]));
+    whitePixelRef.current = whitePixel;
+
     return () => {
       gl.deleteProgram(program);
       gl.deleteShader(vertexShader);
       gl.deleteShader(fragmentShader);
       gl.deleteBuffer(buffer);
+      gl.deleteTexture(whitePixel);
     };
   }, []);
 
@@ -548,8 +567,10 @@ function StoryboardRenderer({
     gl.uniform2f(uResolution, width, height);
     gl.uniform1i(uTexture, 0);
 
-    let frameCount = 0;
-    let lastLogTime = performance.now();
+    // Reset stats tracking
+    statsRef.current.frameCount = 0;
+    statsRef.current.lastLogTime = performance.now();
+    statsRef.current.lastFrameTime = performance.now();
     const missingTextures = new Set();
 
     const render = () => {
@@ -566,6 +587,7 @@ function StoryboardRenderer({
 
       let drawCalls = 0;
 
+
       for (let i = 0; i < sortedSprites.length; i++) {
         const sprite = sortedSprites[i];
 
@@ -577,7 +599,10 @@ function StoryboardRenderer({
 
         // Calculate state - defaults per osu! spec
         let x = sprite.x, y = sprite.y;
-        let scX = 1, scY = 1, rot = 0;
+        // Track S (uniform) and V (vector) scale separately, then multiply at end
+        let uniformScale = 1;  // From S commands
+        let vectorScaleX = 1, vectorScaleY = 1;  // From V commands
+        let rot = 0;
         let colorR = 1, colorG = 1, colorB = 1; // Default: no tint (white)
         let flipH = false, flipV = false, additive = false;
 
@@ -595,8 +620,8 @@ function StoryboardRenderer({
           // Set initial values from first command of each type (before command starts)
           if (time < start_time) {
             if (type === 'F' && !hasInitF) { alpha = params[0]; hasInitF = true; }
-            else if (type === 'S' && !hasInitS) { scX = scY = params[0]; hasInitS = true; }
-            else if (type === 'V' && !hasInitV) { scX = params[0]; scY = params[1]; hasInitV = true; }
+            else if (type === 'S' && !hasInitS) { uniformScale = params[0]; hasInitS = true; }
+            else if (type === 'V' && !hasInitV) { vectorScaleX = params[0]; vectorScaleY = params[1]; hasInitV = true; }
             else if (type === 'M' && !hasInitM) { x = params[0]; y = params[1]; hasInitM = true; }
             else if (type === 'MX' && !hasInitMX) { x = params[0]; hasInitMX = true; }
             else if (type === 'MY' && !hasInitMY) { y = params[0]; hasInitMY = true; }
@@ -627,12 +652,12 @@ function StoryboardRenderer({
               hasInitMY = true;
               break;
             case 'S':
-              scX = scY = lerp(params[0], params[1] ?? params[0], prog, easing);
+              uniformScale = lerp(params[0], params[1] ?? params[0], prog, easing);
               hasInitS = true;
               break;
             case 'V':
-              scX = lerp(params[0], params[2] ?? params[0], prog, easing);
-              scY = lerp(params[1], params[3] ?? params[1], prog, easing);
+              vectorScaleX = lerp(params[0], params[2] ?? params[0], prog, easing);
+              vectorScaleY = lerp(params[1], params[3] ?? params[1], prog, easing);
               hasInitV = true;
               break;
             case 'R':
@@ -655,6 +680,11 @@ function StoryboardRenderer({
               break;
           }
         }
+
+        // Combine S (uniform) and V (vector) scale by multiplying
+        // This allows S and V to work together: S sets base scale, V adjusts x/y ratio
+        const scX = uniformScale * vectorScaleX;
+        const scY = uniformScale * vectorScaleY;
 
         if (alpha <= 0) continue;
 
@@ -733,50 +763,109 @@ function StoryboardRenderer({
         drawCalls++;
       }
 
-      // Log stats every second
-      frameCount++;
-      const now = performance.now();
-      if (now - lastLogTime >= 1000) {
-        // Count sprites with no commands, no texture, or zero alpha
-        let noCommands = 0, noTexture = 0, skippedTime = 0;
-        for (const sprite of sortedSprites) {
-          if (time < sprite.startTime || time > sprite.endTime) { skippedTime++; continue; }
-          if (!commandsBySprite[sprite.id]) { noCommands++; continue; }
-          // Use normalized path for texture check
-          const normPath = sprite.filepath.replace(/\\/g, '/');
-          if (!textures[normPath]) { noTexture++; continue; }
-        }
-        console.log(`[Storyboard] FPS: ${frameCount}, Draws: ${drawCalls}, Total: ${sortedSprites.length}, SkippedTime: ${skippedTime}, NoCmd: ${noCommands}, NoTex: ${noTexture}`);
-        frameCount = 0;
-        lastLogTime = now;
+      // Draw black bars at the sides AFTER sprites (4:3 storyboard on widescreen)
+      // Left bar: from 0 to offsetX, Right bar: from offsetX + OSU_WIDTH*scale to width
+      if (whitePixelRef.current && offsetX > 0) {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, whitePixelRef.current);
+
+        // Reset blend mode to normal for solid bars
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+        // Black color, full opacity
+        gl.uniform3f(uColor, 0, 0, 0);
+        gl.uniform1f(uAlpha, 1);
+        gl.uniform1f(uRotation, 0);
+        gl.uniform2f(uOrigin, 0, 0);
+
+        // Left bar
+        gl.uniform2f(uTranslation, 0, 0);
+        gl.uniform2f(uScale, offsetX, height);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        drawCalls++;
+
+        // Right bar
+        gl.uniform2f(uTranslation, offsetX + OSU_WIDTH * scale, 0);
+        gl.uniform2f(uScale, offsetX + 1, height); // +1 to cover any rounding gaps
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        drawCalls++;
       }
 
-      rafRef.current = requestAnimationFrame(render);
+      // Track stats using ref
+      const frameEnd = performance.now();
+      const frameTime = frameEnd - statsRef.current.lastFrameTime;
+      statsRef.current.lastFrameTime = frameEnd;
+      statsRef.current.frameCount++;
+      statsRef.current.drawCalls = drawCalls;
+
+      // Uncapped - run as fast as possible
+      rafRef.current = setTimeout(render, 0);
     };
 
-    rafRef.current = requestAnimationFrame(render);
+    rafRef.current = setTimeout(render, 0);
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (rafRef.current) clearTimeout(rafRef.current);
     };
   }, [ready, sortedSprites, commandsBySprite, width, height]);
+
+  // Separate interval for updating stats display (decoupled from render loop)
+  useEffect(() => {
+    if (!ready) return;
+
+    const statsInterval = setInterval(() => {
+      const now = performance.now();
+      const elapsed = now - statsRef.current.lastLogTime;
+      if (elapsed > 0) {
+        const fps = Math.round(statsRef.current.frameCount * (1000 / elapsed));
+        const frameTime = elapsed / Math.max(statsRef.current.frameCount, 1);
+        setStats({
+          fps,
+          frameTime: frameTime.toFixed(1),
+          drawCalls: statsRef.current.drawCalls,
+        });
+        statsRef.current.frameCount = 0;
+        statsRef.current.lastLogTime = now;
+      }
+    }, 500);
+
+    return () => clearInterval(statsInterval);
+  }, [ready]);
 
   if (!storyboard?.sprites?.length) return null;
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      style={{
+    <>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Stats overlay */}
+      <div style={{
         position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
+        top: 8,
+        right: 8,
+        background: 'rgba(0,0,0,0.7)',
+        color: '#0f0',
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        padding: '4px 8px',
+        borderRadius: '4px',
         pointerEvents: 'none',
-      }}
-    />
+        zIndex: 100,
+      }}>
+        {stats.fps} FPS | {stats.frameTime}ms | {stats.drawCalls} draws
+      </div>
+    </>
   );
 }
 

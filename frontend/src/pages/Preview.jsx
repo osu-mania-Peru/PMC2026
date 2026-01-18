@@ -81,6 +81,10 @@ export default function Preview({ user }) {
   });
   const [allAssetsReady, setAllAssetsReady] = useState(false);
 
+  // Storyboard prompt state: null = no storyboard, 'pending' = awaiting user choice, 'accepted' = load it, 'rejected' = skip it
+  const [storyboardChoice, setStoryboardChoice] = useState(null);
+  const [storyboardInfo, setStoryboardInfo] = useState(null); // { imageCount, spriteCount }
+
   // Audio progress state
   const [audioProgress, setAudioProgress] = useState({ currentTime: 0, duration: 0, isPlaying: false, notes: null });
   const [densityPath, setDensityPath] = useState('');
@@ -147,12 +151,17 @@ export default function Preview({ user }) {
         data.audio_url_full = `${apiBaseUrl}${data.audio_url}`;
         data.background_url_full = data.background_url ? `${apiBaseUrl}${data.background_url}` : null;
 
-        // Update storyboard loading status if there's a storyboard
+        // Check if there's a storyboard and prompt user
         if (data.storyboard?.images?.length > 0) {
+          setStoryboardInfo({
+            imageCount: data.storyboard.images.length,
+            spriteCount: data.storyboard.sprites?.length || 0,
+          });
+          setStoryboardChoice('pending');
           setLoadingStatus(prev => ({
             ...prev,
             api: { loading: false, text: 'Datos del mapa cargados' },
-            storyboard: { loading: true, text: `Cargando storyboard (0/${data.storyboard.images.length})...` },
+            storyboard: { loading: true, text: 'Esperando decision...' },
           }));
         } else {
           setLoadingStatus(prev => ({
@@ -195,6 +204,25 @@ export default function Preview({ user }) {
     } else {
       setLoadingStatus(prev => ({ ...prev, storyboard: { loading: true, text: `Cargando storyboard (${loaded}/${total})...` } }));
     }
+  }, []);
+
+  // Handle storyboard choice
+  const handleStoryboardAccept = useCallback(() => {
+    setStoryboardChoice('accepted');
+    if (storyboardInfo) {
+      setLoadingStatus(prev => ({
+        ...prev,
+        storyboard: { loading: true, text: `Cargando storyboard (0/${storyboardInfo.imageCount})...` },
+      }));
+    }
+  }, [storyboardInfo]);
+
+  const handleStoryboardReject = useCallback(() => {
+    setStoryboardChoice('rejected');
+    setLoadingStatus(prev => ({
+      ...prev,
+      storyboard: { loading: false, text: 'Storyboard omitido' },
+    }));
   }, []);
 
   // Calculate note density curve
@@ -397,18 +425,62 @@ export default function Preview({ user }) {
 
   return (
     <div className="preview-page">
-      {/* Loading overlay */}
+      {/* Loading overlay - pitch black with cat and status */}
       {!allAssetsReady && (
-        <div className="preview-page-loading">
-          <img src={catGif} alt="Loading..." className="preview-loading-cat" />
-          <div className="preview-loading-status">
-            {Object.entries(loadingStatus).map(([key, status]) => (
-              status.text && (
-                <div key={key} className={`loading-status-item ${status.loading ? 'loading' : 'done'}`}>
-                  {status.loading ? '⏳' : '✓'} {status.text}
+        <div className="preview-loading-overlay">
+          <div className="preview-loading-content">
+            <img src={catGif} alt="Loading..." className="preview-loading-cat" />
+            <div className="preview-loading-steps">
+              <div className={`loading-step ${!loadingStatus.api.loading ? 'done' : 'active'}`}>
+                <span className="loading-step-indicator">{loadingStatus.api.loading ? '>' : '+'}</span>
+                <span>{loadingStatus.api.text}</span>
+              </div>
+              <div className={`loading-step ${!loadingStatus.audio.loading ? 'done' : loadingStatus.api.loading ? '' : 'active'}`}>
+                <span className="loading-step-indicator">{loadingStatus.audio.loading ? (loadingStatus.api.loading ? ' ' : '>') : '+'}</span>
+                <span>{loadingStatus.audio.text}</span>
+              </div>
+              <div className={`loading-step ${!loadingStatus.skin.loading ? 'done' : loadingStatus.audio.loading ? '' : 'active'}`}>
+                <span className="loading-step-indicator">{loadingStatus.skin.loading ? (loadingStatus.audio.loading ? ' ' : '>') : '+'}</span>
+                <span>{loadingStatus.skin.text}</span>
+              </div>
+              {loadingStatus.storyboard.text && storyboardChoice !== 'pending' && (
+                <div className={`loading-step ${!loadingStatus.storyboard.loading ? 'done' : 'active'}`}>
+                  <span className="loading-step-indicator">{loadingStatus.storyboard.loading ? '>' : '+'}</span>
+                  <span>{loadingStatus.storyboard.text}</span>
+                  {loadingStatus.storyboard.loading && loadingStatus.storyboard.text.includes('/') && (
+                    <div className="loading-progress-bar">
+                      <div
+                        className="loading-progress-fill"
+                        style={{
+                          width: `${(() => {
+                            const match = loadingStatus.storyboard.text.match(/\((\d+)\/(\d+)\)/);
+                            if (match) return (parseInt(match[1]) / parseInt(match[2])) * 100;
+                            return 0;
+                          })()}%`
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
-              )
-            ))}
+              )}
+            </div>
+
+            {/* Storyboard prompt */}
+            {storyboardChoice === 'pending' && storyboardInfo && (
+              <div className="storyboard-prompt">
+                <p className="storyboard-prompt-text">
+                  Este mapa tiene storyboard ({storyboardInfo.spriteCount} sprites, {storyboardInfo.imageCount} imagenes)
+                </p>
+                <div className="storyboard-prompt-buttons">
+                  <button className="storyboard-prompt-btn accept" onClick={handleStoryboardAccept}>
+                    Cargar storyboard
+                  </button>
+                  <button className="storyboard-prompt-btn reject" onClick={handleStoryboardReject}>
+                    Omitir
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -444,8 +516,8 @@ export default function Preview({ user }) {
               localStorage.setItem('pmc_hit_position', pos.toString());
             }}
             hitPositionEditMode={hitPositionEditMode}
-            storyboard={notesData?.storyboard}
-            storyboardBaseUrl={notesData?.storyboard_base_url ? `${apiBaseUrl}${notesData.storyboard_base_url}` : null}
+            storyboard={storyboardChoice === 'accepted' ? notesData?.storyboard : null}
+            storyboardBaseUrl={storyboardChoice === 'accepted' && notesData?.storyboard_base_url ? `${apiBaseUrl}${notesData.storyboard_base_url}` : null}
             hidePlayfield={hidePlayfield}
             onAudioLoaded={onAudioLoaded}
             onSkinLoaded={onSkinLoaded}
@@ -464,9 +536,9 @@ export default function Preview({ user }) {
         </button>
       )}
 
-      {/* Bottom controls - hidden in play mode or hit position edit mode */}
+      {/* Bottom controls - hidden in play mode, hit position edit mode, or while loading */}
       {createPortal(
-        <div className={`audio-progress-overlay preview-fullwidth ${playMode || hitPositionEditMode ? 'hidden' : ''}`}>
+        <div className={`audio-progress-overlay preview-fullwidth ${playMode || hitPositionEditMode || !allAssetsReady ? 'hidden' : ''}`}>
           <div className="overlay-toolbar">
             {/* Play/Pause */}
             <button
