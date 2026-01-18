@@ -336,6 +336,7 @@ LAYER_MAP = {
     "Fail": 1,
     "Pass": 2,
     "Foreground": 3,
+    "Overlay": 4,
 }
 
 # Origin name to number mapping
@@ -479,13 +480,18 @@ def parse_storyboard(lines: list[str], widescreen: bool = False) -> StoryboardDa
                     end_time = int(end_time_str) if end_time_str else start_time
 
                     # Parse parameters (remaining values)
-                    params = []
+                    # P command uses string params (H, V, A), others use floats
+                    params: list = []
                     for p in parts[4:]:
                         if p:  # Skip empty strings
-                            try:
-                                params.append(float(p))
-                            except ValueError:
-                                pass
+                            if cmd_type == "P":
+                                # P command: H=horizontal flip, V=vertical flip, A=additive
+                                params.append(p)
+                            else:
+                                try:
+                                    params.append(float(p))
+                                except ValueError:
+                                    pass
 
                     command: StoryboardCommand = {
                         "sprite_id": current_sprite_id,
