@@ -152,6 +152,12 @@
   color: #888;
 }
 
+.player-stats {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
 .player-rank {
   font-family: 'JetBrains Mono', monospace;
   color: #666;
