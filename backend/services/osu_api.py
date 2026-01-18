@@ -188,6 +188,7 @@ class OsuAPIService:
                     "username": data.get("username"),
                     "country_code": data.get("country_code"),
                     "global_rank": stats.get("global_rank"),
+                    "country_rank": stats.get("country_rank"),
                     "pp": stats.get("pp"),
                     "accuracy": stats.get("hit_accuracy"),
                     "play_count": stats.get("play_count"),

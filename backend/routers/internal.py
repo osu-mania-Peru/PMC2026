@@ -678,10 +678,12 @@ async def sync_mania_ranks(
             data = await osu_api.get_user(user.osu_id, mode="mania")
             if data:
                 user.mania_rank = data.get("global_rank")
+                user.mania_country_rank = data.get("country_rank")
                 user.mania_pp = data.get("pp")
                 updated.append({
                     "username": user.username,
                     "mania_rank": user.mania_rank,
+                    "mania_country_rank": user.mania_country_rank,
                     "mania_pp": user.mania_pp
                 })
             else:

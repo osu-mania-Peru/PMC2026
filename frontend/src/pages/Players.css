@@ -155,17 +155,33 @@
 .player-stats {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
 }
 
-.player-rank {
+.player-country-rank {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: 'JetBrains Mono', monospace;
-  color: #666;
+  font-size: 0.95rem;
+}
+
+.rank-flag {
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.rank-number {
+  color: #fff;
+  font-weight: 700;
 }
 
 .player-pp {
   font-family: 'JetBrains Mono', monospace;
   color: #ff0844;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 

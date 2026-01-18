@@ -67,15 +67,16 @@ export default function Players() {
               />
               <div className="player-info">
                 <span className="player-name">{player.username}</span>
-                <div className="player-meta">
-                  <div className="player-stats">
-                    {player.mania_rank && (
-                      <span className="player-rank">#{player.mania_rank.toLocaleString()}</span>
-                    )}
-                    {player.mania_pp && (
-                      <span className="player-pp">{Math.round(player.mania_pp).toLocaleString()}pp</span>
-                    )}
-                  </div>
+                <div className="player-stats">
+                  {player.mania_country_rank && (
+                    <span className="player-country-rank">
+                      <span className="rank-flag">{player.flag_code}</span>
+                      <span className="rank-number">#{player.mania_country_rank}</span>
+                    </span>
+                  )}
+                  {player.mania_pp && (
+                    <span className="player-pp">{Math.round(player.mania_pp).toLocaleString()}pp</span>
+                  )}
                 </div>
               </div>
             </a>
