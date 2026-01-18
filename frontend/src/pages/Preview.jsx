@@ -76,7 +76,10 @@ export default function Preview({ user }) {
 
   // Loading states
   const [loadingStatus, setLoadingStatus] = useState({
-    api: { loading: true, text: 'Cargando datos del mapa...' },
+    database: { loading: true, text: 'Buscando en base de datos...' },
+    osu_api: { loading: false, text: '' },
+    download: { loading: false, text: '' },
+    parsing: { loading: false, text: '' },
     audio: { loading: true, text: 'Cargando audio...' },
     skin: { loading: true, text: 'Cargando skin...' },
     storyboard: { loading: false, text: '' },
@@ -148,59 +151,76 @@ export default function Preview({ user }) {
       return;
     }
 
-    const fetchPreviewData = async () => {
-      setError(null);
+    setError(null);
 
-      try {
-        const response = await fetch(`${apiBaseUrl}/mappools/preview/${beatmapId}`);
+    // Use SSE for progress streaming
+    const eventSource = new EventSource(`${apiBaseUrl}/mappools/preview/${beatmapId}/stream`);
 
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('Beatmap not found');
-          }
-          throw new Error(`Failed to fetch preview: ${response.status}`);
-        }
+    eventSource.addEventListener('progress', (event) => {
+      const data = JSON.parse(event.data);
+      const { step, message, done } = data;
 
-        const data = await response.json();
-        // Add full URLs for audio and background
-        data.audio_url_full = `${apiBaseUrl}${data.audio_url}`;
-        data.background_url_full = data.background_url ? `${apiBaseUrl}${data.background_url}` : null;
+      setLoadingStatus(prev => ({
+        ...prev,
+        [step]: { loading: !done, text: message },
+      }));
+    });
 
-        // Check if there's a storyboard and prompt user
-        if (data.storyboard?.images?.length > 0) {
-          setStoryboardInfo({
-            imageCount: data.storyboard.images.length,
-            spriteCount: data.storyboard.sprites?.length || 0,
-          });
-          setStoryboardChoice('pending');
-          setLoadingStatus(prev => ({
-            ...prev,
-            api: { loading: false, text: 'Datos del mapa cargados' },
-            storyboard: { loading: true, text: 'Esperando decision...' },
-          }));
-        } else {
-          setLoadingStatus(prev => ({
-            ...prev,
-            api: { loading: false, text: 'Datos del mapa cargados' },
-            storyboard: { loading: false, text: 'Sin storyboard' },
-          }));
-        }
+    eventSource.addEventListener('complete', (event) => {
+      const data = JSON.parse(event.data);
 
-        setNotesData(data);
-        setAudioUrl(data.audio_url_full);
-      } catch (err) {
-        console.error('Error fetching preview data:', err);
-        setError(err.message);
+      // Add full URLs for audio and background
+      data.audio_url_full = `${apiBaseUrl}${data.audio_url}`;
+      data.background_url_full = data.background_url ? `${apiBaseUrl}${data.background_url}` : null;
+
+      // Check if there's a storyboard and prompt user
+      if (data.storyboard?.images?.length > 0) {
+        setStoryboardInfo({
+          imageCount: data.storyboard.images.length,
+          spriteCount: data.storyboard.sprites?.length || 0,
+        });
+        setStoryboardChoice('pending');
+        setLoadingStatus(prev => ({
+          ...prev,
+          storyboard: { loading: true, text: 'Esperando decision...' },
+        }));
+      } else {
+        setLoadingStatus(prev => ({
+          ...prev,
+          storyboard: { loading: false, text: 'Sin storyboard' },
+        }));
       }
+
+      setNotesData(data);
+      setAudioUrl(data.audio_url_full);
+      eventSource.close();
+    });
+
+    eventSource.addEventListener('error', (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        setError(data.message || 'Error loading beatmap');
+      } catch {
+        setError('Connection error');
+      }
+      eventSource.close();
+    });
+
+    eventSource.onerror = () => {
+      // EventSource error (connection failed)
+      setError('Error de conexión al servidor');
+      eventSource.close();
     };
 
-    fetchPreviewData();
+    return () => {
+      eventSource.close();
+    };
   }, [beatmapId, apiBaseUrl]);
 
   // Check if all assets are ready
   useEffect(() => {
-    const { api, audio, skin, storyboard } = loadingStatus;
-    const ready = !api.loading && !audio.loading && !skin.loading && !storyboard.loading;
+    const { database, osu_api, download, parsing, audio, skin, storyboard } = loadingStatus;
+    const ready = !database.loading && !osu_api.loading && !download.loading && !parsing.loading && !audio.loading && !skin.loading && !storyboard.loading;
     setAllAssetsReady(ready);
   }, [loadingStatus]);
 
@@ -510,16 +530,38 @@ export default function Preview({ user }) {
           <div className="preview-loading-content">
             <img src={catGif} alt="Loading..." className="preview-loading-cat" />
             <div className="preview-loading-steps">
-              <div className={`loading-step ${!loadingStatus.api.loading ? 'done' : 'active'}`}>
-                <span className="loading-step-indicator">{loadingStatus.api.loading ? '>' : '+'}</span>
-                <span>{loadingStatus.api.text}</span>
-              </div>
-              <div className={`loading-step ${!loadingStatus.audio.loading ? 'done' : loadingStatus.api.loading ? '' : 'active'}`}>
-                <span className="loading-step-indicator">{loadingStatus.audio.loading ? (loadingStatus.api.loading ? ' ' : '>') : '+'}</span>
+              {/* Backend data loading steps */}
+              {loadingStatus.database.text && (
+                <div className={`loading-step ${!loadingStatus.database.loading ? 'done' : 'active'}`}>
+                  <span className="loading-step-indicator">{loadingStatus.database.loading ? '>' : '+'}</span>
+                  <span>{loadingStatus.database.text}</span>
+                </div>
+              )}
+              {loadingStatus.osu_api.text && (
+                <div className={`loading-step ${!loadingStatus.osu_api.loading ? 'done' : 'active'}`}>
+                  <span className="loading-step-indicator">{loadingStatus.osu_api.loading ? '>' : '+'}</span>
+                  <span>{loadingStatus.osu_api.text}</span>
+                </div>
+              )}
+              {loadingStatus.download.text && (
+                <div className={`loading-step ${!loadingStatus.download.loading ? 'done' : 'active'}`}>
+                  <span className="loading-step-indicator">{loadingStatus.download.loading ? '>' : '+'}</span>
+                  <span>{loadingStatus.download.text}</span>
+                </div>
+              )}
+              {loadingStatus.parsing.text && (
+                <div className={`loading-step ${!loadingStatus.parsing.loading ? 'done' : 'active'}`}>
+                  <span className="loading-step-indicator">{loadingStatus.parsing.loading ? '>' : '+'}</span>
+                  <span>{loadingStatus.parsing.text}</span>
+                </div>
+              )}
+              {/* Frontend asset loading steps */}
+              <div className={`loading-step ${!loadingStatus.audio.loading ? 'done' : 'active'}`}>
+                <span className="loading-step-indicator">{loadingStatus.audio.loading ? '>' : '+'}</span>
                 <span>{loadingStatus.audio.text}</span>
               </div>
-              <div className={`loading-step ${!loadingStatus.skin.loading ? 'done' : loadingStatus.audio.loading ? '' : 'active'}`}>
-                <span className="loading-step-indicator">{loadingStatus.skin.loading ? (loadingStatus.audio.loading ? ' ' : '>') : '+'}</span>
+              <div className={`loading-step ${!loadingStatus.skin.loading ? 'done' : 'active'}`}>
+                <span className="loading-step-indicator">{loadingStatus.skin.loading ? '>' : '+'}</span>
                 <span>{loadingStatus.skin.text}</span>
               </div>
               {loadingStatus.storyboard.text && storyboardChoice !== 'pending' && (

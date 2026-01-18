@@ -1,6 +1,9 @@
 """Endpoints for tournament mappool management."""
+import asyncio
+import json
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
@@ -491,3 +494,102 @@ async def get_beatmap_preview_data(
         notes_data["storyboard_base_url"] = f"/beatmaps/{beatmapset_id}/"
 
     return notes_data
+
+
+@router.get("/preview/{beatmap_id}/stream")
+async def get_beatmap_preview_stream(
+    beatmap_id: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Stream progress events while loading beatmap preview data (SSE).
+
+    Returns Server-Sent Events with progress updates during:
+    - Database lookup
+    - osu! API lookup
+    - Beatmap download
+    - Extraction and parsing
+    """
+    async def event_generator():
+        def send_event(event: str, data: dict):
+            return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+
+        try:
+            # Step 1: Check database
+            yield send_event("progress", {"step": "database", "message": "Buscando en base de datos..."})
+            await asyncio.sleep(0.1)  # Small delay to ensure event is sent
+
+            map_obj = db.query(MappoolMap).filter(MappoolMap.beatmap_id == beatmap_id).first()
+            beatmapset_id = None
+            difficulty_name = None
+
+            if map_obj:
+                beatmapset_id = map_obj.beatmapset_id
+                difficulty_name = map_obj.difficulty_name
+                yield send_event("progress", {"step": "database", "message": "Encontrado en base de datos", "done": True})
+            else:
+                yield send_event("progress", {"step": "database", "message": "No encontrado localmente", "done": True})
+
+            # Step 2: osu! API lookup if needed
+            if not beatmapset_id:
+                yield send_event("progress", {"step": "osu_api", "message": "Consultando osu! API..."})
+                beatmap_data = await osu_api.get_beatmap(int(beatmap_id))
+                if not beatmap_data:
+                    yield send_event("error", {"message": "Beatmap no encontrado en osu!"})
+                    return
+                beatmapset_id = str(beatmap_data.get("beatmapset_id"))
+                if not difficulty_name:
+                    difficulty_name = beatmap_data.get("version")
+                if map_obj and beatmapset_id:
+                    map_obj.beatmapset_id = beatmapset_id
+                    db.commit()
+                yield send_event("progress", {"step": "osu_api", "message": "Datos obtenidos de osu!", "done": True})
+
+            # Step 3: Download if needed
+            if not beatmap_downloader.exists(beatmapset_id):
+                yield send_event("progress", {"step": "download", "message": "Descargando beatmap..."})
+                download_result = await beatmap_downloader.download(beatmapset_id)
+                if download_result["status"] == "error":
+                    yield send_event("error", {"message": f"Error de descarga: {download_result.get('error')}"})
+                    return
+                if download_result["status"] == "not_found":
+                    yield send_event("error", {"message": "Beatmap no encontrado en mirror"})
+                    return
+                yield send_event("progress", {"step": "download", "message": "Beatmap descargado", "done": True})
+            else:
+                yield send_event("progress", {"step": "download", "message": "Beatmap ya descargado", "done": True})
+
+            # Step 4: Parse notes
+            yield send_event("progress", {"step": "parsing", "message": "Procesando notas..."})
+            notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty_name)
+            if not notes_data:
+                beatmap_downloader.generate_notes_json(beatmapset_id)
+                notes_data = beatmap_downloader.get_notes_json(beatmapset_id, difficulty_name)
+
+            if not notes_data:
+                yield send_event("error", {"message": "No se pudo procesar el beatmap"})
+                return
+
+            yield send_event("progress", {"step": "parsing", "message": "Notas procesadas", "done": True})
+
+            # Add URLs
+            notes_data["audio_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('audio_file', '')}"
+            notes_data["background_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('background_file', '')}"
+            if notes_data.get("storyboard"):
+                notes_data["storyboard_base_url"] = f"/beatmaps/{beatmapset_id}/"
+
+            # Step 5: Complete - send full data
+            yield send_event("complete", notes_data)
+
+        except Exception as e:
+            yield send_event("error", {"message": str(e)})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
