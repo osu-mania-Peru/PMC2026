@@ -410,11 +410,14 @@
   max-width: calc(100% - 12px);
 }
 
-/* Table footer */
-.slot-table-footer {
-  padding-top: 20px;
+/* Modal footer - sticky at bottom */
+.slot-modal-footer {
   display: flex;
   gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #333;
+  background: #1a1a1a;
+  flex-shrink: 0;
 }
 
 .slot-add-row-btn {

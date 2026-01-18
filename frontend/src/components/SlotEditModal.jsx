@@ -392,32 +392,34 @@ export default function SlotEditModal({ isOpen, onClose, onSlotsChange }) {
                       </div>
                     </div>
                   ))}
-
-                  <div className="slot-table-footer">
-                    <button
-                      className="slot-add-row-btn"
-                      onClick={() => handleAddSlot(slots.length - 1)}
-                      disabled={saving}
-                    >
-                      {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : <Plus size={18} />}
-                      Agregar Slot
-                    </button>
-                    {hasClipboard && (
-                      <button
-                        className="slot-add-row-btn slot-paste-row-btn"
-                        onClick={handlePaste}
-                        disabled={saving}
-                      >
-                        <ClipboardPaste size={18} />
-                        Pegar Slot Copiado
-                      </button>
-                    )}
-                  </div>
                 </div>
               )}
             </>
           )}
         </div>
+
+        {slots.length > 0 && (
+          <div className="slot-modal-footer">
+            <button
+              className="slot-add-row-btn"
+              onClick={() => handleAddSlot(slots.length - 1)}
+              disabled={saving}
+            >
+              {saving ? <img src={catGif} alt="" className="btn-loading-cat" /> : <Plus size={18} />}
+              Agregar Slot
+            </button>
+            {hasClipboard && (
+              <button
+                className="slot-add-row-btn slot-paste-row-btn"
+                onClick={handlePaste}
+                disabled={saving}
+              >
+                <ClipboardPaste size={18} />
+                Pegar Slot Copiado
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
