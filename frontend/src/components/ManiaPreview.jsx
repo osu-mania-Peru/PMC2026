@@ -131,9 +131,12 @@ export default function ManiaPreview({
   onSkinLoaded = null,
   onStoryboardProgress = null,
   onAudioLoadProgress = null,
+  autoMode = false,
+  onAutoModeChange = null,
 }) {
   // Refs
   const canvasRef = useRef(null);
+  const kpsCanvasRef = useRef(null);
   const audioRef = useRef(null);
   const animationRef = useRef(null);
   const imagesRef = useRef({});
@@ -162,11 +165,14 @@ export default function ManiaPreview({
   const [hitCounts, setHitCounts] = useState({ MAX: 0, 300: 0, 200: 0, 100: 0, 50: 0, MISS: 0 });
   const [showResults, setShowResults] = useState(false);
   const [hitErrors, setHitErrors] = useState([]); // {timeDiff, displayUntil, judgement}
+  const [bouncingJudgement, setBouncingJudgement] = useState(null); // Which judgement is currently bouncing
 
   // Refs for play mode (to avoid stale closures)
   const hitNotesRef = useRef(new Set());
   const activeHoldsRef = useRef(new Map());
   const pressedKeysRef = useRef(new Set());
+  const keyPressTimesRef = useRef(new Map()); // Track when each key was pressed
+  const keyPressHistoryRef = useRef([]); // History of key presses for visualization {col, startTime, endTime}
   const scoreRef = useRef(0);
   const comboRef = useRef(0);
   const maxComboRef = useRef(0);
@@ -176,6 +182,9 @@ export default function ManiaPreview({
 
   // Dragging state for hit position
   const [isDraggingHitLine, setIsDraggingHitLine] = useState(false);
+
+  // Auto mode ref for tracking hold notes
+  const autoHoldsRef = useRef(new Map());
 
   // Get key count from beatmap metadata (default to 4K)
   const keyCount = notesData?.metadata?.keys || 4;
@@ -212,6 +221,9 @@ export default function ManiaPreview({
     setHitErrors([]);
     hitNotesRef.current = new Set();
     activeHoldsRef.current = new Map();
+    autoHoldsRef.current = new Map();
+    keyPressTimesRef.current = new Map();
+    keyPressHistoryRef.current = [];
     scoreRef.current = 0;
     comboRef.current = 0;
     maxComboRef.current = 0;
@@ -286,6 +298,10 @@ export default function ManiaPreview({
     // Update hit counts
     hitCountsRef.current[judgement] += 1;
     setHitCounts({ ...hitCountsRef.current });
+
+    // Trigger bounce animation for this judgement
+    setBouncingJudgement(judgement);
+    setTimeout(() => setBouncingJudgement(null), 150);
 
     // Add judgement popup
     setJudgements((prev) => [
@@ -403,6 +419,10 @@ export default function ManiaPreview({
       pressedKeysRef.current.add(col);
       setPressedKeys(new Set(pressedKeysRef.current));
 
+      // Track key press start time for visualization
+      const now = performance.now();
+      keyPressTimesRef.current.set(col, now);
+
       // Get current time
       const currentTimeMs = audioRef.current ? audioRef.current.currentTime * 1000 : 0;
       handleKeyDown(col, currentTimeMs);
@@ -417,6 +437,17 @@ export default function ManiaPreview({
       // Update pressed keys
       pressedKeysRef.current.delete(col);
       setPressedKeys(new Set(pressedKeysRef.current));
+
+      // Record key press history for visualization
+      const now = performance.now();
+      const startTime = keyPressTimesRef.current.get(col);
+      if (startTime) {
+        keyPressHistoryRef.current.push({ col, startTime, endTime: now });
+        // Keep only last 2 seconds of history
+        const cutoff = now - 2000;
+        keyPressHistoryRef.current = keyPressHistoryRef.current.filter(h => h.endTime > cutoff);
+        keyPressTimesRef.current.delete(col);
+      }
 
       // Get current time
       const currentTimeMs = audioRef.current ? audioRef.current.currentTime * 1000 : 0;
@@ -451,7 +482,9 @@ export default function ManiaPreview({
           if (holdInfo && holdInfo.noteIndex === i) continue;
         }
 
-        const timeDiff = currentTimeMs - note.time;
+        // For hold notes, use end time (tail); for tap notes, use start time (head)
+        const relevantTime = note.type === 'hold' && note.end !== undefined ? note.end : note.time;
+        const timeDiff = currentTimeMs - relevantTime;
 
         // Note has passed the miss window
         if (timeDiff > TIMING_WINDOWS.MISS) {
@@ -463,6 +496,72 @@ export default function ManiaPreview({
     const interval = setInterval(checkMissedNotes, 16);
     return () => clearInterval(interval);
   }, [playMode, isPlaying, notesData, recordHit, TIMING_WINDOWS]);
+
+  // Auto mode - automatically hit notes with perfect timing
+  useEffect(() => {
+    if (!autoMode || !playMode || !isPlaying || !notesData?.notes) return;
+
+    const autoPlay = () => {
+      const currentTimeMs = audioRef.current ? audioRef.current.currentTime * 1000 : 0;
+      const now = performance.now();
+      const notes = notesData.notes;
+
+      for (let i = 0; i < notes.length; i++) {
+        if (hitNotesRef.current.has(i)) continue;
+
+        const note = notes[i];
+        const col = note.col;
+
+        if (note.type === 'hold') {
+          // Hold note: press at start time, release at end time
+          if (!autoHoldsRef.current.has(i) && currentTimeMs >= note.time && currentTimeMs < note.end) {
+            // Start the hold
+            autoHoldsRef.current.set(i, true);
+            // Track key press for visualization
+            pressedKeysRef.current.add(col);
+            keyPressTimesRef.current.set(col, now);
+            handleKeyDown(col, note.time); // Perfect timing
+          } else if (autoHoldsRef.current.has(i) && currentTimeMs >= note.end) {
+            // Release the hold
+            autoHoldsRef.current.delete(i);
+            // Track key release for visualization
+            pressedKeysRef.current.delete(col);
+            const startTime = keyPressTimesRef.current.get(col);
+            if (startTime) {
+              keyPressHistoryRef.current.push({ col, startTime, endTime: now });
+              const cutoff = now - 2000;
+              keyPressHistoryRef.current = keyPressHistoryRef.current.filter(h => h.endTime > cutoff);
+              keyPressTimesRef.current.delete(col);
+            }
+            handleKeyUp(col, note.end); // Perfect timing
+          }
+        } else {
+          // Tap note: hit at exact time (simulate quick press)
+          if (currentTimeMs >= note.time && currentTimeMs < note.time + 50) {
+            // Track key press for visualization (brief light up)
+            keyPressTimesRef.current.set(col, now);
+            // Schedule key release after 50ms
+            setTimeout(() => {
+              const startTime = keyPressTimesRef.current.get(col);
+              if (startTime === now) {
+                keyPressTimesRef.current.delete(col);
+                keyPressHistoryRef.current.push({ col, startTime, endTime: performance.now() });
+                const cutoff = performance.now() - 2000;
+                keyPressHistoryRef.current = keyPressHistoryRef.current.filter(h => h.endTime > cutoff);
+              }
+            }, 50);
+            handleKeyDown(col, note.time); // Perfect timing
+          }
+        }
+      }
+    };
+
+    const interval = setInterval(autoPlay, 8); // Check every 8ms for precision
+    return () => {
+      clearInterval(interval);
+      autoHoldsRef.current.clear();
+    };
+  }, [autoMode, playMode, isPlaying, notesData, handleKeyDown, handleKeyUp]);
 
   // Handle hit line dragging
   useEffect(() => {
@@ -1060,9 +1159,14 @@ export default function ManiaPreview({
           ctx.restore();
         }
 
-        // Draw note head at start (unless being held past start)
-        if (noteImg && (!isBeingHeld || currentTimeMs < time)) {
-          ctx.drawImage(noteImg, x, noteY - noteDrawHeight / 2, noteDrawWidth, noteDrawHeight);
+        // Draw note head
+        if (noteImg) {
+          if (isBeingHeld) {
+            // When holding, keep head at receptor
+            ctx.drawImage(noteImg, x, RECEPTOR_Y - noteDrawHeight / 2, noteDrawWidth, noteDrawHeight);
+          } else {
+            ctx.drawImage(noteImg, x, noteY - noteDrawHeight / 2, noteDrawWidth, noteDrawHeight);
+          }
         }
       } else {
         // Draw regular note
@@ -1074,6 +1178,55 @@ export default function ManiaPreview({
 
     // Draw play mode UI overlay
     if (playMode) {
+      // Calculate current accuracy and rank
+      const totalHits = Object.values(hitCountsRef.current).reduce((a, b) => a + b, 0);
+      let accuracy = 0;
+      if (totalHits > 0) {
+        const weighted = (hitCountsRef.current.MAX * 320 + hitCountsRef.current[300] * 300 +
+          hitCountsRef.current[200] * 200 + hitCountsRef.current[100] * 100 +
+          hitCountsRef.current[50] * 50) / (totalHits * 320);
+        accuracy = weighted * 100;
+      }
+      const rank = accuracy >= 100 ? 'SS' : accuracy >= 95 ? 'S' : accuracy >= 90 ? 'A' :
+        accuracy >= 80 ? 'B' : accuracy >= 70 ? 'C' : 'D';
+
+      // Draw song progress pie chart
+      const progressRadius = 14;
+      const progressX = CANVAS_WIDTH - 200;
+      const progressY = 24;
+      const audioDuration = audioRef.current?.duration || 0;
+      const progress = audioDuration > 0 ? Math.min(1, currentTimeMs / (audioDuration * 1000)) : 0;
+
+      // Background circle (dark)
+      ctx.beginPath();
+      ctx.arc(progressX, progressY, progressRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Progress pie slice (circular sector)
+      const drawProgress = Math.max(0.01, progress); // Always show at least a sliver
+      ctx.beginPath();
+      ctx.moveTo(progressX, progressY);
+      ctx.arc(progressX, progressY, progressRadius - 1, -Math.PI / 2, -Math.PI / 2 + drawProgress * Math.PI * 2);
+      ctx.closePath();
+      ctx.fillStyle = '#0fc';
+      ctx.fill();
+
+      // Draw percentage and rank next to pie
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 14px Poppins, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`${accuracy.toFixed(1)}%`, progressX + progressRadius + 8, progressY + 5);
+
+      // Draw rank
+      ctx.font = 'bold 18px Poppins, sans-serif';
+      ctx.fillStyle = rank === 'SS' || rank === 'S' ? '#ffd700' : rank === 'A' ? '#0f0' :
+        rank === 'B' ? '#00bfff' : rank === 'C' ? '#ff69b4' : '#f44';
+      ctx.fillText(rank, progressX + progressRadius + 60, progressY + 5);
+
       // Draw score
       ctx.fillStyle = '#fff';
       ctx.font = 'bold 24px Poppins, sans-serif';
@@ -1119,16 +1272,31 @@ export default function ManiaPreview({
       }
       ctx.globalAlpha = 1;
 
-      // Draw latest judgement (centered)
+      // Draw latest judgement (centered) with bounce effect
       const latestJudgement = judgements.filter(j => j.displayUntil > now).pop();
       if (latestJudgement) {
-        const opacity = Math.min(1, (latestJudgement.displayUntil - now) / 300);
+        const timeLeft = latestJudgement.displayUntil - now;
+        const age = 500 - timeLeft; // How long since judgement appeared (500ms total duration)
+        const opacity = Math.min(1, timeLeft / 300);
+
+        // Bounce: scale up quickly then settle back to 1
+        // Peak at ~50ms, then ease back down
+        let scale = 1;
+        if (age < 50) {
+          scale = 1 + (age / 50) * 0.4; // Scale up to 1.4
+        } else if (age < 150) {
+          scale = 1.4 - ((age - 50) / 100) * 0.4; // Scale back to 1
+        }
+
+        ctx.save();
         ctx.globalAlpha = opacity;
         ctx.fillStyle = JUDGEMENT_COLORS[latestJudgement.type];
         ctx.font = 'bold 24px Poppins, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(latestJudgement.type, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-        ctx.globalAlpha = 1;
+        ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        ctx.scale(scale, scale);
+        ctx.fillText(latestJudgement.type, 0, 0);
+        ctx.restore();
       }
 
     }
@@ -1156,6 +1324,104 @@ export default function ManiaPreview({
       ctx.font = '14px Poppins, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`Hit Position: ${hitPosition}px`, CANVAS_WIDTH / 2, RECEPTOR_VISUAL_Y - 20);
+    }
+
+    // Draw key press visualization on KPS canvas
+    const kpsCanvas = kpsCanvasRef.current;
+    if (kpsCanvas && playMode) {
+      const kpsCtx = kpsCanvas.getContext('2d');
+      const kpsWidth = kpsCanvas.width;
+      const kpsHeight = kpsCanvas.height;
+      const kpsBarWidth = 55;
+      const kpsGap = 15;
+      const kpsBaseY = kpsHeight - 60;
+      const kpsMaxHeight = kpsHeight - 100;
+      const msPerPixel = 1.2; // 1.2ms per pixel (same for height and scroll)
+
+      // Clear canvas
+      kpsCtx.clearRect(0, 0, kpsWidth, kpsHeight);
+
+      // Draw background
+      kpsCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      kpsCtx.fillRect(0, 0, kpsWidth, kpsHeight);
+
+      // Draw key labels at bottom with highlight when pressed
+      const keyLabels = keyCount === 4 ? ['D', 'F', 'J', 'K'] :
+        keyCount === 7 ? ['S', 'D', 'F', '␣', 'J', 'K', 'L'] :
+        Array.from({ length: keyCount }, (_, i) => (i + 1).toString());
+      for (let col = 0; col < keyCount; col++) {
+        const x = 20 + col * (kpsBarWidth + kpsGap);
+        const centerX = x + kpsBarWidth / 2;
+        const isPressed = keyPressTimesRef.current.has(col);
+
+        // Draw key background (lights up when pressed)
+        if (isPressed) {
+          // Glowing background when pressed
+          kpsCtx.fillStyle = '#0fc';
+          kpsCtx.shadowColor = '#0fc';
+          kpsCtx.shadowBlur = 15;
+          kpsCtx.fillRect(x, kpsBaseY + 5, kpsBarWidth, 50);
+          kpsCtx.shadowBlur = 0;
+          kpsCtx.fillStyle = '#000';
+        } else {
+          // Dim background when not pressed
+          kpsCtx.fillStyle = 'rgba(50, 50, 50, 0.8)';
+          kpsCtx.fillRect(x, kpsBaseY + 5, kpsBarWidth, 50);
+          kpsCtx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        }
+
+        // Draw key label
+        kpsCtx.font = 'bold 20px Poppins, sans-serif';
+        kpsCtx.textAlign = 'center';
+        kpsCtx.fillText(keyLabels[col] || (col + 1).toString(), centerX, kpsBaseY + 38);
+      }
+
+      // Clean up old history (2 seconds)
+      const cutoff = now - 2000;
+      keyPressHistoryRef.current = keyPressHistoryRef.current.filter(h => h.endTime > cutoff);
+
+      // Draw historical key presses (bars that scroll up after release)
+      for (const press of keyPressHistoryRef.current) {
+        const col = press.col;
+        const x = 20 + col * (kpsBarWidth + kpsGap);
+        const duration = press.endTime - press.startTime;
+        const isTap = duration < 100; // Taps are short presses
+        // Taps get half the height (thinner bars)
+        const barHeight = isTap
+          ? Math.max(3, Math.min(kpsMaxHeight, duration / msPerPixel / 2))
+          : Math.max(6, Math.min(kpsMaxHeight, duration / msPerPixel));
+        const timeSinceEnd = now - press.endTime;
+        const scrollY = timeSinceEnd / msPerPixel;
+
+        // Bar position (bottom edge scrolls up from kpsBaseY)
+        const barBottom = kpsBaseY - scrollY;
+        const barTop = barBottom - barHeight;
+
+        // Only draw if any part is visible
+        if (barBottom > 0 && barTop < kpsBaseY) {
+          const alpha = Math.max(0.1, 1 - timeSinceEnd / 2000);
+          kpsCtx.fillStyle = `rgba(0, 200, 180, ${alpha * 0.8})`;
+          const drawTop = Math.max(0, barTop);
+          const drawHeight = barBottom - drawTop;
+          if (drawHeight > 0) {
+            kpsCtx.fillRect(x, drawTop, kpsBarWidth, drawHeight);
+          }
+        }
+      }
+
+      // Draw currently held keys (bars anchored at bottom, growing up)
+      for (let col = 0; col < keyCount; col++) {
+        const startTime = keyPressTimesRef.current.get(col);
+        if (startTime) {
+          const duration = now - startTime;
+          const barHeight = Math.min(kpsMaxHeight, duration / msPerPixel);
+          const x = 20 + col * (kpsBarWidth + kpsGap);
+
+          // Bright bar anchored at bottom
+          kpsCtx.fillStyle = '#0fc';
+          kpsCtx.fillRect(x, kpsBaseY - barHeight, kpsBarWidth, barHeight);
+        }
+      }
     }
 
     // Continue animation loop using ref to avoid stale closure
@@ -1225,31 +1491,37 @@ export default function ManiaPreview({
           {/* Real-time stats panel - left side of playfield */}
           {playMode && (
             <div className="mania-stats-panel">
+              <button
+                className={`auto-toggle-btn ${autoMode ? 'active' : ''}`}
+                onClick={() => onAutoModeChange?.(!autoMode)}
+              >
+                AUTO {autoMode ? 'ON' : 'OFF'}
+              </button>
               <div className="stats-combo">
                 <span className="stats-combo-value">{combo}x</span>
               </div>
               <div className="stats-judgements">
-                <div className="stats-row stats-300g">
-                  <span className="stats-label">300</span>
+                <div className={`stats-row stats-300g ${bouncingJudgement === 'MAX' ? 'bounce' : ''}`}>
+                  <span className="stats-label">MAX</span>
                   <span className="stats-value">{hitCounts.MAX}</span>
                 </div>
-                <div className="stats-row stats-300">
+                <div className={`stats-row stats-300 ${bouncingJudgement === '300' ? 'bounce' : ''}`}>
                   <span className="stats-label">300</span>
                   <span className="stats-value">{hitCounts[300]}</span>
                 </div>
-                <div className="stats-row stats-200">
+                <div className={`stats-row stats-200 ${bouncingJudgement === '200' ? 'bounce' : ''}`}>
                   <span className="stats-label">200</span>
                   <span className="stats-value">{hitCounts[200]}</span>
                 </div>
-                <div className="stats-row stats-100">
+                <div className={`stats-row stats-100 ${bouncingJudgement === '100' ? 'bounce' : ''}`}>
                   <span className="stats-label">100</span>
                   <span className="stats-value">{hitCounts[100]}</span>
                 </div>
-                <div className="stats-row stats-50">
+                <div className={`stats-row stats-50 ${bouncingJudgement === '50' ? 'bounce' : ''}`}>
                   <span className="stats-label">50</span>
                   <span className="stats-value">{hitCounts[50]}</span>
                 </div>
-                <div className="stats-row stats-miss">
+                <div className={`stats-row stats-miss ${bouncingJudgement === 'MISS' ? 'bounce' : ''}`}>
                   <span className="stats-label">MISS</span>
                   <span className="stats-value">{hitCounts.MISS}</span>
                 </div>
@@ -1264,6 +1536,16 @@ export default function ManiaPreview({
             className={`mania-preview-canvas ${isDraggingHitLine ? 'dragging-hit-line' : ''}`}
             style={{ cursor: hitPositionEditMode ? 'ns-resize' : 'default' }}
           />
+
+          {/* Key press visualization panel - right side */}
+          {playMode && (
+            <canvas
+              ref={kpsCanvasRef}
+              width={keyCount * 70 + 40}
+              height={1000}
+              className="mania-kps-canvas"
+            />
+          )}
         </div>
         {!imagesLoaded && (
           <div className="mania-preview-loading">

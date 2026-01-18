@@ -124,6 +124,7 @@ export default function Preview({ user }) {
   const playRef = useRef(null);
   const resetRef = useRef(null);
   const [playMode, setPlayMode] = useState(false);
+  const [autoMode, setAutoMode] = useState(false);
   const [keybindingsModalOpen, setKeybindingsModalOpen] = useState(false);
   const [customKeyBindings, setCustomKeyBindings] = useState(() => {
     try {
@@ -708,6 +709,8 @@ export default function Preview({ user }) {
             playRef={playRef}
             playMode={playMode}
             onPlayModeChange={setPlayMode}
+            autoMode={autoMode}
+            onAutoModeChange={setAutoMode}
             customKeyBindings={customKeyBindings}
             resetRef={resetRef}
             onBackToMappools={handleClose}
@@ -926,6 +929,15 @@ export default function Preview({ user }) {
               title={hidePlayfield ? 'Mostrar playfield' : 'Ocultar playfield'}
             >
               {hidePlayfield ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+
+            {/* Auto mode toggle */}
+            <button
+              className={`overlay-keybindings-btn ${autoMode ? 'active' : ''}`}
+              onClick={() => setAutoMode(!autoMode)}
+              title={autoMode ? 'Desactivar AUTO' : 'Activar AUTO'}
+            >
+              <span style={{ fontSize: '0.7rem', fontWeight: 700 }}>AUTO</span>
             </button>
 
             {/* Skin dropdown */}
