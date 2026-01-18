@@ -726,10 +726,10 @@ function StoryboardRenderer({
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      // Draw black bars at the sides AFTER sprites (only for 4:3 storyboards on widescreen display)
-      // Widescreen storyboards (854x480) should fill the screen without black bars
+      // Draw black bars at the sides AFTER sprites
+      // Both 4:3 (640x480) and 16:9 (854x480) storyboards need bars if display is wider
       // Left bar: from 0 to offsetX, Right bar: from offsetX + OSU_WIDTH*scale to width
-      if (whitePixelRef.current && offsetX > 0 && !isWidescreen) {
+      if (whitePixelRef.current && offsetX > 0) {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, whitePixelRef.current);
 
