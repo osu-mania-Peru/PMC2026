@@ -463,7 +463,7 @@ export default function Preview({ user }) {
     if (resetRef.current) {
       resetRef.current();
     }
-    navigate(-1);
+    navigate('/maps');
   }, [navigate]);
 
   // Handle keyboard shortcuts
