@@ -83,6 +83,7 @@ class MetadataDict(TypedDict):
     version: str
     keys: int
     audio_filename: str
+    widescreen_storyboard: bool
 
 
 class ParsedBeatmap(TypedDict):
@@ -657,6 +658,7 @@ def parse_osu_file(file_path: str) -> ParsedBeatmap:
             "version": str(metadata_dict.get("version", "")),
             "keys": key_count,
             "audio_filename": str(metadata_dict.get("audio_filename", "")),
+            "widescreen_storyboard": widescreen,
         },
         "notes": notes,
         "timing_points": timing_points,

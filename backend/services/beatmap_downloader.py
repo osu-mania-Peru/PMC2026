@@ -270,6 +270,11 @@ class BeatmapDownloader:
                 osu_storyboard = parsed.get("storyboard")
                 merged_storyboard = merge_storyboards(osb_storyboard, osu_storyboard)
 
+                # Apply widescreen flag from .osu metadata to merged storyboard
+                # (the flag is in [General] section, not [Events], so may be lost if .osu has no storyboard)
+                if merged_storyboard is not None:
+                    merged_storyboard["widescreen"] = parsed["metadata"].get("widescreen_storyboard", False)
+
                 # Add audio, background, timing, and storyboard info
                 output = {
                     "metadata": parsed["metadata"],
