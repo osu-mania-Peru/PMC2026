@@ -68,7 +68,6 @@ export default function Players() {
               <div className="player-info">
                 <span className="player-name">{player.username}</span>
                 <div className="player-meta">
-                  <span className="player-flag">{player.flag_code}</span>
                   <div className="player-stats">
                     {player.mania_rank && (
                       <span className="player-rank">#{player.mania_rank.toLocaleString()}</span>
