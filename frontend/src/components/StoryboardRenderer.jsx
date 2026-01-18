@@ -187,8 +187,6 @@ function StoryboardRenderer({
   const whitePixelRef = useRef(null); // 1x1 white texture for solid color drawing
   const [ready, setReady] = useState(false);
   const rafRef = useRef(null);
-  const [stats, setStats] = useState({ fps: 0, frameTime: 0, drawCalls: 0 });
-  const statsRef = useRef({ frameCount: 0, lastLogTime: performance.now(), lastFrameTime: performance.now(), drawCalls: 0 });
 
   // Pre-process storyboard data with visibility time ranges
   const { sortedSprites, commandsBySprite, imageList } = useMemo(() => {
@@ -352,7 +350,22 @@ function StoryboardRenderer({
       if (s.layer === 0 || s.layer === 3) {
         const range = spriteTimeRanges[s.id];
         if (range) {
-          sorted.push({ ...s, startTime: range.start, endTime: range.end });
+          // Pre-compute normalized filepath to avoid string ops in render loop
+          const normalizedPath = s.filepath.replace(/\\/g, '/');
+          // Pre-compute animation frame paths if this is an animation sprite
+          let framePaths = null;
+          if (s.type === 'animation' && s.frame_count > 0) {
+            framePaths = [];
+            const dotIdx = normalizedPath.lastIndexOf('.');
+            for (let f = 0; f < s.frame_count; f++) {
+              if (dotIdx > 0) {
+                framePaths.push(normalizedPath.slice(0, dotIdx) + f + normalizedPath.slice(dotIdx));
+              } else {
+                framePaths.push(normalizedPath + f);
+              }
+            }
+          }
+          sorted.push({ ...s, startTime: range.start, endTime: range.end, normalizedPath, framePaths });
         } else {
           skippedNoRange++;
         }
@@ -554,10 +567,6 @@ function StoryboardRenderer({
     gl.uniform2f(uResolution, width, height);
     gl.uniform1i(uTexture, 0);
 
-    // Reset stats tracking
-    statsRef.current.frameCount = 0;
-    statsRef.current.lastLogTime = performance.now();
-    statsRef.current.lastFrameTime = performance.now();
     const missingTextures = new Set();
 
     const render = () => {
@@ -571,9 +580,6 @@ function StoryboardRenderer({
       // Reset blend mode at start of each frame
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       let lastBlendMode = 'normal';
-
-      let drawCalls = 0;
-
 
       for (let i = 0; i < sortedSprites.length; i++) {
         const sprite = sortedSprites[i];
@@ -675,10 +681,9 @@ function StoryboardRenderer({
 
         if (alpha <= 0) continue;
 
-        // Handle animation sprites - calculate current frame
-        // Normalize path separators
-        let texturePath = sprite.filepath.replace(/\\/g, '/');
-        if (sprite.type === 'animation' && sprite.frame_count > 0) {
+        // Handle animation sprites - calculate current frame using pre-computed paths
+        let texturePath = sprite.normalizedPath;
+        if (sprite.framePaths && sprite.frame_count > 0) {
           const frameDelay = sprite.frame_delay || 16.67; // Default ~60fps
           const animTime = time - sprite.startTime;
 
@@ -693,14 +698,8 @@ function StoryboardRenderer({
               frameIndex = frameIndex % sprite.frame_count;
             }
 
-            // Build frame path: "path/file.png" -> "path/file0.png"
-            // Use normalized texturePath, not original filepath
-            const dotIdx = texturePath.lastIndexOf('.');
-            if (dotIdx > 0) {
-              texturePath = texturePath.slice(0, dotIdx) + frameIndex + texturePath.slice(dotIdx);
-            } else {
-              texturePath = texturePath + frameIndex;
-            }
+            // Use pre-computed frame path
+            texturePath = sprite.framePaths[frameIndex];
           }
         }
 
@@ -743,7 +742,6 @@ function StoryboardRenderer({
 
         // Draw quad
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        drawCalls++;
       }
 
       // Draw black bars at the sides AFTER sprites (4:3 storyboard on widescreen)
@@ -765,90 +763,40 @@ function StoryboardRenderer({
         gl.uniform2f(uTranslation, 0, 0);
         gl.uniform2f(uScale, offsetX, height);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        drawCalls++;
 
         // Right bar
         gl.uniform2f(uTranslation, offsetX + OSU_WIDTH * scale, 0);
         gl.uniform2f(uScale, offsetX + 1, height); // +1 to cover any rounding gaps
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        drawCalls++;
       }
 
-      // Track stats using ref
-      const frameEnd = performance.now();
-      const frameTime = frameEnd - statsRef.current.lastFrameTime;
-      statsRef.current.lastFrameTime = frameEnd;
-      statsRef.current.frameCount++;
-      statsRef.current.drawCalls = drawCalls;
-
-      // Uncapped - run as fast as possible
-      rafRef.current = setTimeout(render, 0);
+      // Use requestAnimationFrame for proper vsync (60fps cap)
+      rafRef.current = requestAnimationFrame(render);
     };
 
-    rafRef.current = setTimeout(render, 0);
+    rafRef.current = requestAnimationFrame(render);
 
     return () => {
-      if (rafRef.current) clearTimeout(rafRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [ready, sortedSprites, commandsBySprite, width, height]);
-
-  // Separate interval for updating stats display (decoupled from render loop)
-  useEffect(() => {
-    if (!ready) return;
-
-    const statsInterval = setInterval(() => {
-      const now = performance.now();
-      const elapsed = now - statsRef.current.lastLogTime;
-      if (elapsed > 0) {
-        const fps = Math.round(statsRef.current.frameCount * (1000 / elapsed));
-        const frameTime = elapsed / Math.max(statsRef.current.frameCount, 1);
-        setStats({
-          fps,
-          frameTime: frameTime.toFixed(1),
-          drawCalls: statsRef.current.drawCalls,
-        });
-        statsRef.current.frameCount = 0;
-        statsRef.current.lastLogTime = now;
-      }
-    }, 500);
-
-    return () => clearInterval(statsInterval);
-  }, [ready]);
 
   if (!storyboard?.sprites?.length) return null;
 
   return (
-    <>
-      <canvas
-        ref={canvasRef}
-        width={width}
-        height={height}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-        }}
-      />
-      {/* Stats overlay */}
-      <div style={{
+    <canvas
+      ref={canvasRef}
+      width={width}
+      height={height}
+      style={{
         position: 'absolute',
-        top: 8,
-        right: 8,
-        background: 'rgba(0,0,0,0.7)',
-        color: '#0f0',
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        padding: '4px 8px',
-        borderRadius: '4px',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
         pointerEvents: 'none',
-        zIndex: 100,
-      }}>
-        {stats.fps} FPS | {stats.frameTime}ms | {stats.drawCalls} draws
-      </div>
-    </>
+      }}
+    />
   );
 }
 
