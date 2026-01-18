@@ -673,7 +673,9 @@ function StoryboardRenderer({
         item.texInfo = texInfo;
         item.texturePath = texturePath;
         item.additive = additive;
-        item.x = x * scale + offsetX;
+        // Widescreen storyboards use coordinates from -107 to 747 (center at 320)
+        // Need to shift X by 107 to convert to 0-854 range
+        item.x = (x + (isWidescreen ? 107 : 0)) * scale + offsetX;
         item.y = y * scale;
         item.scX = texInfo.width * scX * scale * (flipH ? -1 : 1);
         item.scY = texInfo.height * scY * scale * (flipV ? -1 : 1);
