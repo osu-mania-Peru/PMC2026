@@ -102,6 +102,7 @@ export default function ManiaPreview({
   onPlayModeChange,
   onGameEnd,
   customKeyBindings = null,
+  resetRef = null,
 }) {
   // Refs
   const canvasRef = useRef(null);
@@ -415,6 +416,27 @@ export default function ManiaPreview({
       };
     }
   }, [seekToRef]);
+
+  // Expose full reset function via ref (for closing preview)
+  useEffect(() => {
+    if (resetRef) {
+      resetRef.current = () => {
+        // Stop audio
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        // Reset state
+        setIsPlaying(false);
+        setCurrentTime(0);
+        // Reset play mode state
+        resetPlayState();
+        // Reset interpolation refs
+        lastAudioTimeRef.current = 0;
+        lastPerfTimeRef.current = performance.now();
+      };
+    }
+  }, [resetRef, resetPlayState]);
 
   // Convert linear slider value to logarithmic volume for natural perception
   const toLogVolume = (linear) => {

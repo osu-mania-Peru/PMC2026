@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import ManiaPreview from './ManiaPreview';
@@ -21,6 +21,7 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
   const [error, setError] = useState(null);
   const [notesData, setNotesData] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
+  const resetRef = useRef(null);
 
   // Fetch preview data when map changes
   useEffect(() => {
@@ -74,17 +75,33 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
     };
   }, [isOpen]);
 
+  // Full close handler - resets everything
+  const handleClose = useCallback(() => {
+    // Reset via ManiaPreview's exposed reset function
+    if (resetRef.current) {
+      resetRef.current();
+    }
+    // Reset progress callback
+    onAudioProgress?.({ currentTime: 0, duration: 0, isPlaying: false });
+    // Reset play mode if active
+    if (playMode) {
+      onPlayModeChange?.(false);
+    }
+    // Call the original onClose
+    onClose();
+  }, [onClose, onAudioProgress, playMode, onPlayModeChange]);
+
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        handleClose();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   // Get display title
   const getTitle = () => {
@@ -100,7 +117,7 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
       <div className="preview-panel-header">
         <button
           className="preview-panel-close"
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close preview panel"
         >
           <X size={24} />
@@ -136,6 +153,7 @@ export default function PreviewPanel({ isOpen, onClose, map, apiBaseUrl, onAudio
             playMode={playMode}
             onPlayModeChange={onPlayModeChange}
             customKeyBindings={customKeyBindings}
+            resetRef={resetRef}
           />
         )}
 
