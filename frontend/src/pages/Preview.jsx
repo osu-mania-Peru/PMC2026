@@ -292,13 +292,21 @@ export default function Preview({ user }) {
   }, []);
 
   const onAudioLoadProgress = useCallback((loaded, total) => {
-    const percent = Math.round((loaded / total) * 100);
     const loadedMB = (loaded / 1024 / 1024).toFixed(1);
-    const totalMB = (total / 1024 / 1024).toFixed(1);
-    setLoadingStatus(prev => ({
-      ...prev,
-      audio: { loading: true, text: `Descargando audio (${loadedMB}/${totalMB} MB)...`, progress: percent },
-    }));
+    if (total > 0) {
+      const percent = Math.round((loaded / total) * 100);
+      const totalMB = (total / 1024 / 1024).toFixed(1);
+      setLoadingStatus(prev => ({
+        ...prev,
+        audio: { loading: true, text: `Descargando audio (${loadedMB}/${totalMB} MB)...`, progress: percent },
+      }));
+    } else {
+      // Unknown total size - just show downloaded amount
+      setLoadingStatus(prev => ({
+        ...prev,
+        audio: { loading: true, text: `Descargando audio (${loadedMB} MB)...`, progress: 0 },
+      }));
+    }
   }, []);
 
   const onSkinLoaded = useCallback(() => {

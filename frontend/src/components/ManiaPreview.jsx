@@ -587,6 +587,9 @@ export default function ManiaPreview({
         const chunks = [];
         let loaded = 0;
 
+        // Report initial progress
+        onAudioLoadProgress?.(0, total);
+
         while (true) {
           const { done, value } = await reader.read();
 
@@ -595,9 +598,8 @@ export default function ManiaPreview({
           chunks.push(value);
           loaded += value.length;
 
-          if (total > 0) {
-            onAudioLoadProgress?.(loaded, total);
-          }
+          // Always report progress (total may be 0 if server doesn't send Content-Length)
+          onAudioLoadProgress?.(loaded, total);
         }
 
         const blob = new Blob(chunks);
