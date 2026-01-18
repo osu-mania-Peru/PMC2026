@@ -402,6 +402,20 @@ def parse_storyboard(lines: list[str]) -> StoryboardData | None:
         # Check if this is a command (starts with _ or space followed by command)
         is_command = line.startswith("_") or line.startswith(" ")
 
+        # Count indentation depth (1 = regular command, 2+ = inside loop/trigger)
+        indent_depth = 0
+        for ch in line:
+            if ch in (" ", "_"):
+                indent_depth += 1
+            else:
+                break
+
+        # If we're in a loop but this command has depth 1, close the loop first
+        if in_loop and loop_command and is_command and indent_depth == 1:
+            commands.append(loop_command)
+            in_loop = False
+            loop_command = None
+
         if is_command and current_sprite_id >= 0:
             # Parse command
             cmd_line = stripped.lstrip("_")
