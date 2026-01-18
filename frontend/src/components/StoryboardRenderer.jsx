@@ -326,6 +326,15 @@ function StoryboardRenderer({
       }
     }
 
+    // Count loop expansions for logging
+    let loopCount = 0, loopExpandedCount = 0;
+    for (const cmd of cmds) {
+      if (cmd.type === 'L' && cmd.sub_commands) {
+        loopCount++;
+        loopExpandedCount += expandLoopCommand(cmd).length;
+      }
+    }
+
     const sorted = [];
     const sprites = storyboard.sprites;
     let skippedLayer = 0, skippedNoRange = 0;
@@ -353,6 +362,9 @@ function StoryboardRenderer({
     }
     sorted.sort((a, b) => a.layer - b.layer || a.id - b.id);
     console.log(`[Storyboard] Sprites: ${sorted.length} active, ${skippedLayer} skipped (layer 1/2), ${skippedNoRange} skipped (no commands)`);
+    if (loopCount > 0) {
+      console.log(`[Storyboard] Loops: ${loopCount} commands expanded to ${loopExpandedCount} sub-commands`);
+    }
     if (triggerCount > 0) {
       console.log(`[Storyboard] Triggers: ${triggerCount} commands expanded to ${triggerExpandedCount} instances (from ${hitTimes.length} hit times)`);
     }
