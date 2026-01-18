@@ -237,7 +237,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                   <th className="col-sr">SR</th>
                   <th className="col-bpm">BPM</th>
                   <th className="col-length">Length</th>
-                  <th className="col-stats">OD | HP | LN%</th>
+                  <th className="col-stats">OD | HP</th>
                   <th className="col-mapper">Mapper</th>
                   <th className="col-beatmap">Beatmap ID</th>
                 </tr>
@@ -329,10 +329,8 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                           <InlineEditCell value={map.od} mapId={map.id} field="od" onSave={onInlineSave} type="number" />
                           {' | '}
                           <InlineEditCell value={map.hp} mapId={map.id} field="hp" onSave={onInlineSave} type="number" />
-                          {' | '}
-                          <InlineEditCell value={map.ln_percent} mapId={map.id} field="ln_percent" onSave={onInlineSave} />
                         </>
-                      ) : `${map.od} | ${map.hp} | ${map.ln_percent}`}
+                      ) : `${map.od} | ${map.hp}`}
                     </td>
                     <td className="col-mapper">
                       {user?.is_staff ? (
