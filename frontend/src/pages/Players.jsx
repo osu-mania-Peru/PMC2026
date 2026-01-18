@@ -25,7 +25,7 @@ export default function Players() {
   if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
 
   const registeredPlayers = players.filter(p => p.is_registered);
-  const sortedPlayers = registeredPlayers.sort((a, b) => (a.seed_number || 999) - (b.seed_number || 999));
+  const sortedPlayers = registeredPlayers.sort((a, b) => (b.mania_pp || 0) - (a.mania_pp || 0));
 
   return (
     <div className="players-page">
