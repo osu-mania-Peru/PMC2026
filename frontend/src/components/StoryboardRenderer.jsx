@@ -3,18 +3,9 @@ import { useRef, useEffect, useState, useMemo, memo } from 'react';
 const OSU_WIDTH = 640;
 const OSU_HEIGHT = 480;
 
-const ORIGINS = [
-  { x: 0, y: 0 },       // 0: TopLeft
-  { x: 0.5, y: 0.5 },   // 1: Centre
-  { x: 0, y: 0.5 },     // 2: CentreLeft
-  { x: 1, y: 0 },       // 3: TopRight
-  { x: 0.5, y: 1 },     // 4: BottomCentre
-  { x: 0.5, y: 0 },     // 5: TopCentre
-  { x: 0.5, y: 0.5 },   // 6: Custom
-  { x: 1, y: 0.5 },     // 7: CentreRight
-  { x: 0, y: 1 },       // 8: BottomLeft
-  { x: 1, y: 1 },       // 9: BottomRight
-];
+// Pre-computed origin values as flat arrays for faster access
+const ORIGIN_X = [0, 0.5, 0, 1, 0.5, 0.5, 0.5, 1, 0, 1];
+const ORIGIN_Y = [0, 0.5, 0.5, 0, 1, 0, 0.5, 0.5, 1, 1];
 
 // Vertex shader - transforms sprite vertices
 const VERTEX_SHADER = `
@@ -332,54 +323,58 @@ function StoryboardRenderer({
       }
     }
 
-    // Count loop expansions for logging
-    let loopCount = 0, loopExpandedCount = 0;
-    for (const cmd of cmds) {
-      if (cmd.type === 'L' && cmd.sub_commands) {
-        loopCount++;
-        loopExpandedCount += expandLoopCommand(cmd).length;
-      }
-    }
-
     const sorted = [];
     const sprites = storyboard.sprites;
-    let skippedLayer = 0, skippedNoRange = 0;
-    let triggerCount = 0, triggerExpandedCount = 0;
     for (let i = 0; i < sprites.length; i++) {
       const s = sprites[i];
-      if (s.layer === 0 || s.layer === 3) {
-        const range = spriteTimeRanges[s.id];
-        if (range) {
-          // Pre-compute normalized filepath to avoid string ops in render loop
-          const normalizedPath = s.filepath.replace(/\\/g, '/');
-          // Pre-compute animation frame paths if this is an animation sprite
-          let framePaths = null;
-          if (s.type === 'animation' && s.frame_count > 0) {
-            framePaths = [];
-            const dotIdx = normalizedPath.lastIndexOf('.');
-            for (let f = 0; f < s.frame_count; f++) {
-              if (dotIdx > 0) {
-                framePaths.push(normalizedPath.slice(0, dotIdx) + f + normalizedPath.slice(dotIdx));
-              } else {
-                framePaths.push(normalizedPath + f);
-              }
-            }
+      // Only process Background (0) and Foreground (3) layers
+      if (s.layer !== 0 && s.layer !== 3) continue;
+
+      const range = spriteTimeRanges[s.id];
+      if (!range) continue;
+
+      // Pre-compute normalized filepath to avoid string ops in render loop
+      const normalizedPath = s.filepath.replace(/\\/g, '/');
+
+      // Pre-compute origin values for faster lookup
+      const originIdx = s.origin || 0;
+      const originX = ORIGIN_X[originIdx] ?? 0.5;
+      const originY = ORIGIN_Y[originIdx] ?? 0.5;
+
+      // Pre-compute animation data
+      let framePaths = null;
+      let frameDelay = 0;
+      let frameCount = 0;
+      const isLoopOnce = s.loop_type === 'LoopOnce';
+
+      if (s.type === 'animation' && s.frame_count > 0) {
+        frameCount = s.frame_count;
+        frameDelay = s.frame_delay || 16.67; // Default ~60fps
+        framePaths = new Array(frameCount);
+        const dotIdx = normalizedPath.lastIndexOf('.');
+        for (let f = 0; f < frameCount; f++) {
+          if (dotIdx > 0) {
+            framePaths[f] = normalizedPath.slice(0, dotIdx) + f + normalizedPath.slice(dotIdx);
+          } else {
+            framePaths[f] = normalizedPath + f;
           }
-          sorted.push({ ...s, startTime: range.start, endTime: range.end, normalizedPath, framePaths });
-        } else {
-          skippedNoRange++;
         }
-      } else {
-        skippedLayer++;
       }
-    }
-    // Count trigger commands
-    for (const cmd of cmds) {
-      if (cmd.type === 'T') {
-        triggerCount++;
-        const expanded = expandTriggerCommand(cmd, hitTimes);
-        triggerExpandedCount += expanded.length;
-      }
+
+      sorted.push({
+        id: s.id,
+        x: s.x,
+        y: s.y,
+        startTime: range.start,
+        endTime: range.end,
+        normalizedPath,
+        originX,
+        originY,
+        framePaths,
+        frameDelay,
+        frameCount,
+        isLoopOnce,
+      });
     }
     sorted.sort((a, b) => a.layer - b.layer || a.id - b.id);
 
@@ -395,6 +390,9 @@ function StoryboardRenderer({
     };
   }, [storyboard, hitTimes]);
 
+  // Detect Firefox for performance optimizations
+  const isFirefox = typeof navigator !== 'undefined' && navigator.userAgent.includes('Firefox');
+
   // Initialize WebGL
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -405,6 +403,8 @@ function StoryboardRenderer({
       premultipliedAlpha: false,
       antialias: false,
       preserveDrawingBuffer: false,
+      powerPreference: 'high-performance',
+      desynchronized: true, // Reduces input latency, helps Firefox
     });
 
     if (!gl) {
@@ -569,18 +569,15 @@ function StoryboardRenderer({
 
     const missingTextures = new Set();
 
+    // Pre-allocate render batch array to avoid GC
+    const renderBatch = new Array(sortedSprites.length);
+    let batchSize = 0;
+
     const render = () => {
       const time = currentTimeRef?.current || 0;
+      batchSize = 0;
 
-      // Clear with transparent
-      gl.viewport(0, 0, width, height);
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-
-      // Reset blend mode at start of each frame
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      let lastBlendMode = 'normal';
-
+      // === PASS 1: Compute all visible sprite states ===
       for (let i = 0; i < sortedSprites.length; i++) {
         const sprite = sortedSprites[i];
 
@@ -592,26 +589,29 @@ function StoryboardRenderer({
 
         // Calculate state - defaults per osu! spec
         let x = sprite.x, y = sprite.y;
-        // Track S (uniform) and V (vector) scale separately, then multiply at end
-        let uniformScale = 1;  // From S commands
-        let vectorScaleX = 1, vectorScaleY = 1;  // From V commands
+        let uniformScale = 1, vectorScaleX = 1, vectorScaleY = 1;
         let rot = 0;
-        let colorR = 1, colorG = 1, colorB = 1; // Default: no tint (white)
+        let colorR = 1, colorG = 1, colorB = 1;
         let flipH = false, flipV = false, additive = false;
-
-        // Track which properties have been initialized from their first command
-        // Before a command starts, use its start value (not the default)
-        let alpha = 1; // Default: visible
+        let alpha = 1;
         let hasInitF = false, hasInitS = false, hasInitV = false;
         let hasInitM = false, hasInitMX = false, hasInitMY = false;
         let hasInitR = false, hasInitC = false;
 
-        for (let j = 0; j < cmds.length; j++) {
-          const cmd = cmds[j];
-          const { type, start_time, end_time, params, easing } = cmd;
+        const cmdLen = cmds.length;
+        let passedActiveWindow = false;
 
-          // Set initial values from first command of each type (before command starts)
+        for (let j = 0; j < cmdLen; j++) {
+          const cmd = cmds[j];
+          const type = cmd.type;
+          const start_time = cmd.start_time;
+          const params = cmd.params;
+
           if (time < start_time) {
+            if (!passedActiveWindow) {
+              passedActiveWindow = true;
+              if (hasInitF && hasInitS && hasInitV && hasInitM && hasInitMX && hasInitMY && hasInitR && hasInitC) break;
+            }
             if (type === 'F' && !hasInitF) { alpha = params[0]; hasInitF = true; }
             else if (type === 'S' && !hasInitS) { uniformScale = params[0]; hasInitS = true; }
             else if (type === 'V' && !hasInitV) { vectorScaleX = params[0]; vectorScaleY = params[1]; hasInitV = true; }
@@ -620,85 +620,38 @@ function StoryboardRenderer({
             else if (type === 'MY' && !hasInitMY) { y = params[0]; hasInitMY = true; }
             else if (type === 'R' && !hasInitR) { rot = params[0]; hasInitR = true; }
             else if (type === 'C' && !hasInitC) { colorR = params[0]/255; colorG = params[1]/255; colorB = params[2]/255; hasInitC = true; }
+            if (hasInitF && hasInitS && hasInitV && hasInitM && hasInitMX && hasInitMY && hasInitR && hasInitC) break;
             continue;
           }
 
+          const end_time = cmd.end_time;
+          const easing = cmd.easing;
           const dur = end_time - start_time;
           const prog = dur > 0 ? Math.min(1, (time - start_time) / dur) : 1;
 
           switch (type) {
-            case 'F':
-              alpha = lerp(params[0], params[1] ?? params[0], prog, easing);
-              hasInitF = true;
-              break;
-            case 'M':
-              x = lerp(params[0], params[2] ?? params[0], prog, easing);
-              y = lerp(params[1], params[3] ?? params[1], prog, easing);
-              hasInitM = true;
-              break;
-            case 'MX':
-              x = lerp(params[0], params[1] ?? params[0], prog, easing);
-              hasInitMX = true;
-              break;
-            case 'MY':
-              y = lerp(params[0], params[1] ?? params[0], prog, easing);
-              hasInitMY = true;
-              break;
-            case 'S':
-              uniformScale = lerp(params[0], params[1] ?? params[0], prog, easing);
-              hasInitS = true;
-              break;
-            case 'V':
-              vectorScaleX = lerp(params[0], params[2] ?? params[0], prog, easing);
-              vectorScaleY = lerp(params[1], params[3] ?? params[1], prog, easing);
-              hasInitV = true;
-              break;
-            case 'R':
-              rot = lerp(params[0], params[1] ?? params[0], prog, easing);
-              hasInitR = true;
-              break;
-            case 'C':
-              // Color command: r1, g1, b1, r2, g2, b2 (0-255)
-              colorR = lerp(params[0], params[3] ?? params[0], prog, easing) / 255;
-              colorG = lerp(params[1], params[4] ?? params[1], prog, easing) / 255;
-              colorB = lerp(params[2], params[5] ?? params[2], prog, easing) / 255;
-              hasInitC = true;
-              break;
-            case 'P':
-              if (time <= end_time) {
-                if (params[0] === 'H') flipH = true;
-                else if (params[0] === 'V') flipV = true;
-                else if (params[0] === 'A') additive = true;
-              }
-              break;
+            case 'F': alpha = lerp(params[0], params[1] ?? params[0], prog, easing); hasInitF = true; break;
+            case 'M': x = lerp(params[0], params[2] ?? params[0], prog, easing); y = lerp(params[1], params[3] ?? params[1], prog, easing); hasInitM = true; break;
+            case 'MX': x = lerp(params[0], params[1] ?? params[0], prog, easing); hasInitMX = true; break;
+            case 'MY': y = lerp(params[0], params[1] ?? params[0], prog, easing); hasInitMY = true; break;
+            case 'S': uniformScale = lerp(params[0], params[1] ?? params[0], prog, easing); hasInitS = true; break;
+            case 'V': vectorScaleX = lerp(params[0], params[2] ?? params[0], prog, easing); vectorScaleY = lerp(params[1], params[3] ?? params[1], prog, easing); hasInitV = true; break;
+            case 'R': rot = lerp(params[0], params[1] ?? params[0], prog, easing); hasInitR = true; break;
+            case 'C': colorR = lerp(params[0], params[3] ?? params[0], prog, easing) / 255; colorG = lerp(params[1], params[4] ?? params[1], prog, easing) / 255; colorB = lerp(params[2], params[5] ?? params[2], prog, easing) / 255; hasInitC = true; break;
+            case 'P': if (time <= end_time) { if (params[0] === 'H') flipH = true; else if (params[0] === 'V') flipV = true; else if (params[0] === 'A') additive = true; } break;
           }
         }
 
-        // Combine S (uniform) and V (vector) scale by multiplying
-        // This allows S and V to work together: S sets base scale, V adjusts x/y ratio
-        const scX = uniformScale * vectorScaleX;
-        const scY = uniformScale * vectorScaleY;
-
         if (alpha <= 0) continue;
 
-        // Handle animation sprites - calculate current frame using pre-computed paths
+        // Handle animation sprites
         let texturePath = sprite.normalizedPath;
-        if (sprite.framePaths && sprite.frame_count > 0) {
-          const frameDelay = sprite.frame_delay || 16.67; // Default ~60fps
+        const frameCount = sprite.frameCount;
+        if (frameCount > 0) {
           const animTime = time - sprite.startTime;
-
           if (animTime >= 0) {
-            let frameIndex = Math.floor(animTime / frameDelay);
-
-            // Handle loop type
-            if (sprite.loop_type === 'LoopOnce') {
-              frameIndex = Math.min(frameIndex, sprite.frame_count - 1);
-            } else {
-              // LoopForever (default)
-              frameIndex = frameIndex % sprite.frame_count;
-            }
-
-            // Use pre-computed frame path
+            let frameIndex = (animTime / sprite.frameDelay) | 0;
+            frameIndex = sprite.isLoopOnce ? (frameIndex < frameCount ? frameIndex : frameCount - 1) : frameIndex % frameCount;
             texturePath = sprite.framePaths[frameIndex];
           }
         }
@@ -709,38 +662,61 @@ function StoryboardRenderer({
           continue;
         }
 
-        // Set blend mode
-        const blendMode = additive ? 'additive' : 'normal';
-        if (blendMode !== lastBlendMode) {
-          if (additive) {
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-          } else {
-            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-          }
-          lastBlendMode = blendMode;
+        // Store in batch (reuse object slots to avoid GC)
+        const scX = uniformScale * vectorScaleX;
+        const scY = uniformScale * vectorScaleY;
+        const item = renderBatch[batchSize] || (renderBatch[batchSize] = {});
+        item.texInfo = texInfo;
+        item.texturePath = texturePath;
+        item.additive = additive;
+        item.x = x * scale + offsetX;
+        item.y = y * scale;
+        item.scX = texInfo.width * scX * scale * (flipH ? -1 : 1);
+        item.scY = texInfo.height * scY * scale * (flipV ? -1 : 1);
+        item.rot = rot;
+        item.alpha = alpha;
+        item.colorR = colorR;
+        item.colorG = colorG;
+        item.colorB = colorB;
+        item.originX = sprite.originX;
+        item.originY = sprite.originY;
+        batchSize++;
+      }
+
+      // === PASS 2: Draw with minimal state changes ===
+      // Note: We can't sort by texture because z-order matters for storyboards
+      // But we still cache texture/blend to avoid redundant binds
+      gl.viewport(0, 0, width, height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.activeTexture(gl.TEXTURE0);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      let lastBlendMode = false; // false = normal, true = additive
+      let lastTexture = null;
+
+      for (let i = 0; i < batchSize; i++) {
+        const item = renderBatch[i];
+
+        // Only switch blend mode when needed
+        if (item.additive !== lastBlendMode) {
+          gl.blendFunc(gl.SRC_ALPHA, item.additive ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+          lastBlendMode = item.additive;
         }
 
-        // Bind texture
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, texInfo.texture);
+        // Only bind texture when it changes
+        if (item.texInfo.texture !== lastTexture) {
+          gl.bindTexture(gl.TEXTURE_2D, item.texInfo.texture);
+          lastTexture = item.texInfo.texture;
+        }
 
-        // Calculate origin (as fraction of image size, since quad is 0-1)
-        const origin = ORIGINS[sprite.origin] || ORIGINS[1];
-        const imgW = texInfo.width;
-        const imgH = texInfo.height;
-
-        // Set uniforms
-        // Origin is in 0-1 space (same as quad vertices)
-        gl.uniform2f(uOrigin, origin.x, origin.y);
-        // Translation is the sprite position in screen space (with horizontal centering offset)
-        gl.uniform2f(uTranslation, x * scale + offsetX, y * scale);
-        // Scale includes image size, sprite scale, and uniform screen scale
-        gl.uniform2f(uScale, imgW * scX * scale * (flipH ? -1 : 1), imgH * scY * scale * (flipV ? -1 : 1));
-        gl.uniform1f(uRotation, rot);
-        gl.uniform1f(uAlpha, alpha);
-        gl.uniform3f(uColor, colorR, colorG, colorB);
-
-        // Draw quad
+        // Set uniforms and draw
+        gl.uniform2f(uOrigin, item.originX, item.originY);
+        gl.uniform2f(uTranslation, item.x, item.y);
+        gl.uniform2f(uScale, item.scX, item.scY);
+        gl.uniform1f(uRotation, item.rot);
+        gl.uniform1f(uAlpha, item.alpha);
+        gl.uniform3f(uColor, item.colorR, item.colorG, item.colorB);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
@@ -770,16 +746,29 @@ function StoryboardRenderer({
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      // Use requestAnimationFrame for proper vsync (60fps cap)
-      rafRef.current = requestAnimationFrame(render);
+      // Firefox: Use setTimeout to give GC breathing room
+      // Chrome: Use requestAnimationFrame for smooth vsync
+      if (isFirefox) {
+        rafRef.current = setTimeout(render, 16); // ~60fps
+      } else {
+        rafRef.current = requestAnimationFrame(render);
+      }
     };
 
-    rafRef.current = requestAnimationFrame(render);
+    if (isFirefox) {
+      rafRef.current = setTimeout(render, 16);
+    } else {
+      rafRef.current = requestAnimationFrame(render);
+    }
 
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (isFirefox) {
+        clearTimeout(rafRef.current);
+      } else {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
-  }, [ready, sortedSprites, commandsBySprite, width, height]);
+  }, [ready, sortedSprites, commandsBySprite, width, height, isFirefox]);
 
   if (!storyboard?.sprites?.length) return null;
 
