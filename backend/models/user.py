@@ -2,7 +2,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import String, Boolean, Integer, DateTime, Index
+from sqlalchemy import String, Boolean, Integer, Float, DateTime, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -23,6 +23,8 @@ class User(Base):
         is_registered: Whether user is registered for tournament.
         registered_at: Timestamp of tournament registration.
         seed_number: Player seeding for bracket placement.
+        mania_rank: osu!mania global rank.
+        mania_pp: osu!mania performance points.
         created_at: Account creation timestamp.
         updated_at: Last update timestamp.
     """
@@ -37,6 +39,8 @@ class User(Base):
     is_registered: Mapped[bool] = mapped_column(Boolean, default=False, comment='Registered for the tournament')
     registered_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, comment='When they registered')
     seed_number: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='Player ranking/seed for bracket placement')
+    mania_rank: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='osu!mania global rank')
+    mania_pp: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment='osu!mania performance points')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

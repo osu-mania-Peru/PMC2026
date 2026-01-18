@@ -40,6 +40,8 @@ async def get_all_users_public(db: Session = Depends(get_db)):
                 "is_staff": u.is_staff,
                 "is_registered": u.is_registered,
                 "seed_number": u.seed_number,
+                "mania_rank": u.mania_rank,
+                "mania_pp": u.mania_pp,
             }
             for u in users
         ],

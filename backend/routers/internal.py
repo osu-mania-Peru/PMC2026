@@ -658,3 +658,44 @@ async def admin_get_all_matches(
         })
 
     return {"matches": result, "total": len(result)}
+
+
+@router.post("/admin/sync-mania-ranks")
+async def sync_mania_ranks(
+    db: Session = Depends(get_db),
+    _: bool = Depends(verify_admin_password)
+):
+    """Fetch and update mania ranks for all users from osu! API."""
+    from services.osu_api import osu_api
+    import asyncio
+
+    users = db.query(User).all()
+    updated = []
+    errors = []
+
+    for user in users:
+        try:
+            data = await osu_api.get_user(user.osu_id, mode="mania")
+            if data:
+                user.mania_rank = data.get("global_rank")
+                user.mania_pp = data.get("pp")
+                updated.append({
+                    "username": user.username,
+                    "mania_rank": user.mania_rank,
+                    "mania_pp": user.mania_pp
+                })
+            else:
+                errors.append({"username": user.username, "error": "User not found"})
+            # Rate limit: small delay between requests
+            await asyncio.sleep(0.1)
+        except Exception as e:
+            errors.append({"username": user.username, "error": str(e)})
+
+    db.commit()
+
+    return {
+        "updated": len(updated),
+        "errors": len(errors),
+        "users": updated,
+        "error_details": errors
+    }

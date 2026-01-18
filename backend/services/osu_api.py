@@ -155,5 +155,51 @@ class OsuAPIService:
             return None
 
 
+    async def get_user(self, osu_id: int, mode: str = "mania") -> dict | None:
+        """
+        Fetch user data from osu! API.
+
+        Args:
+            osu_id: The osu! user ID.
+            mode: Game mode (osu, taiko, fruits, mania).
+
+        Returns:
+            Dictionary with user data or None if not found.
+        """
+        try:
+            token = await self._get_token()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{self.BASE_URL}/users/{osu_id}/{mode}",
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+
+                if response.status_code == 404:
+                    return None
+
+                response.raise_for_status()
+                data = response.json()
+
+                stats = data.get("statistics", {})
+
+                return {
+                    "osu_id": data.get("id"),
+                    "username": data.get("username"),
+                    "country_code": data.get("country_code"),
+                    "global_rank": stats.get("global_rank"),
+                    "pp": stats.get("pp"),
+                    "accuracy": stats.get("hit_accuracy"),
+                    "play_count": stats.get("play_count"),
+                }
+
+        except httpx.HTTPStatusError as e:
+            print(f"osu! API error: {e}")
+            return None
+        except Exception as e:
+            print(f"Error fetching user: {e}")
+            return None
+
+
 # Singleton instance
 osu_api = OsuAPIService()

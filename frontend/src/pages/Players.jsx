@@ -69,6 +69,9 @@ export default function Players() {
                 <span className="player-name">{player.username}</span>
                 <div className="player-meta">
                   <span className="player-flag">{player.flag_code}</span>
+                  {player.mania_rank && (
+                    <span className="player-rank">#{player.mania_rank.toLocaleString()}</span>
+                  )}
                 </div>
               </div>
             </a>
