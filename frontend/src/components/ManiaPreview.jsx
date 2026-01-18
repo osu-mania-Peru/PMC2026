@@ -130,6 +130,7 @@ export default function ManiaPreview({
   onAudioLoaded = null,
   onSkinLoaded = null,
   onStoryboardProgress = null,
+  onAudioLoadProgress = null,
 }) {
   // Refs
   const canvasRef = useRef(null);
@@ -148,6 +149,7 @@ export default function ManiaPreview({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [audioBlobUrl, setAudioBlobUrl] = useState(null);
 
   // Play mode state
   const [score, setScore] = useState(0);
@@ -557,6 +559,74 @@ export default function ManiaPreview({
       audioRef.current.volume = toLogVolume(volume);
     }
   }, [volume]);
+
+  // Download audio with progress tracking
+  useEffect(() => {
+    if (!audioUrl) return;
+
+    const controller = new AbortController();
+
+    const downloadAudio = async () => {
+      try {
+        const response = await fetch(audioUrl, { signal: controller.signal });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch audio: ${response.status}`);
+        }
+
+        const contentLength = response.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+
+        if (!response.body) {
+          // Fallback: no streaming support, just use URL directly
+          setAudioBlobUrl(audioUrl);
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const chunks = [];
+        let loaded = 0;
+
+        while (true) {
+          const { done, value } = await reader.read();
+
+          if (done) break;
+
+          chunks.push(value);
+          loaded += value.length;
+
+          if (total > 0) {
+            onAudioLoadProgress?.(loaded, total);
+          }
+        }
+
+        const blob = new Blob(chunks);
+        const blobUrl = URL.createObjectURL(blob);
+        setAudioBlobUrl(blobUrl);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error downloading audio:', err);
+          // Fallback to direct URL
+          setAudioBlobUrl(audioUrl);
+        }
+      }
+    };
+
+    downloadAudio();
+
+    return () => {
+      controller.abort();
+    };
+  }, [audioUrl, onAudioLoadProgress]);
+
+  // Cleanup blob URL on unmount
+  useEffect(() => {
+    return () => {
+      if (audioBlobUrl && audioBlobUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioBlobUrl);
+      }
+    };
+  }, [audioBlobUrl]);
 
   // Ensure volume is set when audio can play
   const handleCanPlay = useCallback(() => {
@@ -1288,7 +1358,7 @@ export default function ManiaPreview({
 
       <audio
         ref={audioRef}
-        src={audioUrl}
+        src={audioBlobUrl}
         onLoadedMetadata={handleLoadedMetadata}
         onCanPlay={handleCanPlay}
         onTimeUpdate={handleTimeUpdate}

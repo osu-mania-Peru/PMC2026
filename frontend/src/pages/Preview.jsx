@@ -291,6 +291,16 @@ export default function Preview({ user }) {
     setLoadingStatus(prev => ({ ...prev, audio: { loading: false, text: 'Audio cargado' } }));
   }, []);
 
+  const onAudioLoadProgress = useCallback((loaded, total) => {
+    const percent = Math.round((loaded / total) * 100);
+    const loadedMB = (loaded / 1024 / 1024).toFixed(1);
+    const totalMB = (total / 1024 / 1024).toFixed(1);
+    setLoadingStatus(prev => ({
+      ...prev,
+      audio: { loading: true, text: `Descargando audio (${loadedMB}/${totalMB} MB)...`, progress: percent },
+    }));
+  }, []);
+
   const onSkinLoaded = useCallback(() => {
     setLoadingStatus(prev => ({ ...prev, skin: { loading: false, text: 'Skin cargado' } }));
   }, []);
@@ -559,6 +569,14 @@ export default function Preview({ user }) {
               <div className={`loading-step ${!loadingStatus.audio.loading ? 'done' : 'active'}`}>
                 <span className="loading-step-indicator">{loadingStatus.audio.loading ? '>' : '+'}</span>
                 <span>{loadingStatus.audio.text}</span>
+                {loadingStatus.audio.loading && loadingStatus.audio.progress > 0 && (
+                  <div className="loading-progress-bar">
+                    <div
+                      className="loading-progress-fill"
+                      style={{ width: `${loadingStatus.audio.progress}%` }}
+                    />
+                  </div>
+                )}
               </div>
               <div className={`loading-step ${!loadingStatus.skin.loading ? 'done' : 'active'}`}>
                 <span className="loading-step-indicator">{loadingStatus.skin.loading ? '>' : '+'}</span>
@@ -687,6 +705,7 @@ export default function Preview({ user }) {
             hidePlayfield={hidePlayfield}
             bgOpacity={bgOpacity}
             onAudioLoaded={onAudioLoaded}
+            onAudioLoadProgress={onAudioLoadProgress}
             onSkinLoaded={onSkinLoaded}
             onStoryboardProgress={onStoryboardProgress}
           />
