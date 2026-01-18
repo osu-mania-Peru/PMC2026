@@ -675,7 +675,7 @@ export default function Preview({ user }) {
 
             {/* Playback speed */}
             <div className="overlay-control-group">
-              <span className="overlay-label">Speed</span>
+              <span className="overlay-label">Velocidad</span>
               <div className="overlay-btn-group">
                 {SPEED_OPTIONS.map((opt) => (
                   <button
@@ -992,7 +992,7 @@ export default function Preview({ user }) {
       {controlsCollapsed && !playMode && !hitPositionEditMode && allAssetsReady && createPortal(
         <div className="floating-controls">
           <div className="floating-control-item" style={{ animationDelay: '0ms' }}>
-            <span className="floating-label">Speed</span>
+            <span className="floating-label">Velocidad</span>
             <div className="floating-btn-group">
               {SPEED_OPTIONS.map((opt) => (
                 <button
