@@ -39,7 +39,7 @@ export default function Players() {
         </div>
       </div>
 
-      <p className="players-subtitle">Lista de jugadores registrados en el torneo</p>
+      <p className="players-subtitle">Lista de jugadores registrados en el torneo · Rangos nacionales (Perú)</p>
 
       {players.length === 0 ? (
         <div className="players-empty">
