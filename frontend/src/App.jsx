@@ -45,6 +45,7 @@ import Brackets from "./pages/Brackets";
 import Matches from "./pages/Matches";
 import Players from "./pages/Players";
 import Mappool from "./pages/Mappool";
+import Preview from "./pages/Preview";
 import StaffDiscord from "./pages/StaffDiscord";
 import StaffWhitelist from "./pages/StaffWhitelist";
 // Timba removed - tournament committee prohibits gambling
@@ -200,6 +201,10 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
               <Navigate to="/" />
             )
           }
+        />
+        <Route
+          path="/preview"
+          element={<Preview />}
         />
       </Routes>
 
