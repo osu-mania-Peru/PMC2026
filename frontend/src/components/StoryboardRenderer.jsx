@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 
 // osu! storyboard coordinate system: 640x480, origin at top-left
 const OSU_WIDTH = 640;
@@ -19,47 +19,111 @@ const ORIGINS = {
 };
 
 // Easing functions based on osu! storyboard spec
-const EASINGS = {
-  0: t => t,                                              // Linear
-  1: t => t * t,                                          // EasingOut (Quad)
-  2: t => t * (2 - t),                                    // EasingIn (Quad)
-  3: t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,    // QuadInOut
-  4: t => t * t * t,                                      // CubicIn
-  5: t => 1 - Math.pow(1 - t, 3),                         // CubicOut
-  6: t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, // CubicInOut
-  7: t => t * t * t * t,                                  // QuartIn
-  8: t => 1 - Math.pow(1 - t, 4),                         // QuartOut
-  9: t => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2, // QuartInOut
-  10: t => t * t * t * t * t,                             // QuintIn
-  11: t => 1 - Math.pow(1 - t, 5),                        // QuintOut
-  12: t => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2, // QuintInOut
-  13: t => 1 - Math.cos(t * Math.PI / 2),                 // SineIn
-  14: t => Math.sin(t * Math.PI / 2),                     // SineOut
-  15: t => -(Math.cos(Math.PI * t) - 1) / 2,              // SineInOut
-  16: t => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),       // ExpoIn
-  17: t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),        // ExpoOut
-  18: t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2, // ExpoInOut
-  19: t => 1 - Math.sqrt(1 - t * t),                      // CircIn
-  20: t => Math.sqrt(1 - Math.pow(t - 1, 2)),             // CircOut
-  21: t => t < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2, // CircInOut
-};
-
-function getEasing(easingType) {
-  return EASINGS[easingType] || EASINGS[0];
-}
+const EASINGS = [
+  t => t,                                              // 0: Linear
+  t => t * t,                                          // 1: EasingOut (Quad)
+  t => t * (2 - t),                                    // 2: EasingIn (Quad)
+  t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t,    // 3: QuadInOut
+  t => t * t * t,                                      // 4: CubicIn
+  t => 1 - Math.pow(1 - t, 3),                         // 5: CubicOut
+  t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, // 6: CubicInOut
+  t => t * t * t * t,                                  // 7: QuartIn
+  t => 1 - Math.pow(1 - t, 4),                         // 8: QuartOut
+  t => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2, // 9: QuartInOut
+  t => t * t * t * t * t,                             // 10: QuintIn
+  t => 1 - Math.pow(1 - t, 5),                        // 11: QuintOut
+  t => t < 0.5 ? 16 * t * t * t * t * t : 1 - Math.pow(-2 * t + 2, 5) / 2, // 12: QuintInOut
+  t => 1 - Math.cos(t * Math.PI / 2),                 // 13: SineIn
+  t => Math.sin(t * Math.PI / 2),                     // 14: SineOut
+  t => -(Math.cos(Math.PI * t) - 1) / 2,              // 15: SineInOut
+  t => t === 0 ? 0 : Math.pow(2, 10 * (t - 1)),       // 16: ExpoIn
+  t => t === 1 ? 1 : 1 - Math.pow(2, -10 * t),        // 17: ExpoOut
+  t => t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2, // 18: ExpoInOut
+  t => 1 - Math.sqrt(1 - t * t),                      // 19: CircIn
+  t => Math.sqrt(1 - Math.pow(t - 1, 2)),             // 20: CircOut
+  t => t < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2, // 21: CircInOut
+];
 
 function interpolate(start, end, progress, easing = 0) {
-  const t = getEasing(easing)(Math.max(0, Math.min(1, progress)));
+  const easingFn = EASINGS[easing] || EASINGS[0];
+  const t = easingFn(progress < 0 ? 0 : progress > 1 ? 1 : progress);
   return start + (end - start) * t;
 }
 
-/**
- * Calculate the current state of a sprite based on commands at a given time.
- */
-function calculateSpriteState(sprite, commands, currentTime) {
-  // Default state
+function applyCommand(state, cmd, currentTime) {
+  const { type, easing, start_time, end_time, params } = cmd;
+
+  if (currentTime < start_time) return;
+
+  const duration = end_time - start_time;
+  const progress = duration > 0 ? (currentTime - start_time) / duration : 1;
+  const clampedProgress = progress > 1 ? 1 : progress;
+
+  switch (type) {
+    case 'F': { // Fade
+      const startAlpha = params[0];
+      const endAlpha = params[1] ?? startAlpha;
+      state.alpha = interpolate(startAlpha, endAlpha, clampedProgress, easing);
+      break;
+    }
+    case 'M': { // Move
+      const startX = params[0], startY = params[1];
+      const endX = params[2] ?? startX, endY = params[3] ?? startY;
+      state.x = interpolate(startX, endX, clampedProgress, easing);
+      state.y = interpolate(startY, endY, clampedProgress, easing);
+      break;
+    }
+    case 'MX': { // Move X
+      const startX = params[0], endX = params[1] ?? startX;
+      state.x = interpolate(startX, endX, clampedProgress, easing);
+      break;
+    }
+    case 'MY': { // Move Y
+      const startY = params[0], endY = params[1] ?? startY;
+      state.y = interpolate(startY, endY, clampedProgress, easing);
+      break;
+    }
+    case 'S': { // Scale
+      const startScale = params[0], endScale = params[1] ?? startScale;
+      const scale = interpolate(startScale, endScale, clampedProgress, easing);
+      state.scaleX = scale;
+      state.scaleY = scale;
+      break;
+    }
+    case 'V': { // Vector scale
+      const startScaleX = params[0], startScaleY = params[1];
+      const endScaleX = params[2] ?? startScaleX, endScaleY = params[3] ?? startScaleY;
+      state.scaleX = interpolate(startScaleX, endScaleX, clampedProgress, easing);
+      state.scaleY = interpolate(startScaleY, endScaleY, clampedProgress, easing);
+      break;
+    }
+    case 'R': { // Rotate
+      const startRotation = params[0], endRotation = params[1] ?? startRotation;
+      state.rotation = interpolate(startRotation, endRotation, clampedProgress, easing);
+      break;
+    }
+    case 'C': { // Color
+      const startR = params[0], startG = params[1], startB = params[2];
+      const endR = params[3] ?? startR, endG = params[4] ?? startG, endB = params[5] ?? startB;
+      state.r = interpolate(startR, endR, clampedProgress, easing);
+      state.g = interpolate(startG, endG, clampedProgress, easing);
+      state.b = interpolate(startB, endB, clampedProgress, easing);
+      break;
+    }
+    case 'P': { // Parameter
+      if (currentTime <= end_time) {
+        const param = params[0];
+        if (param === 'H') state.flipH = true;
+        else if (param === 'V') state.flipV = true;
+        else if (param === 'A') state.additive = true;
+      }
+      break;
+    }
+  }
+}
+
+function calculateSpriteState(sprite, spriteCommands, currentTime) {
   const state = {
-    visible: false,
     x: sprite.x,
     y: sprite.y,
     scaleX: 1,
@@ -72,34 +136,29 @@ function calculateSpriteState(sprite, commands, currentTime) {
     flipH: false,
     flipV: false,
     additive: false,
-    // Animation frame
     frameIndex: 0,
   };
 
-  // Filter commands for this sprite
-  const spriteCommands = commands.filter(cmd => cmd.sprite_id === sprite.id);
+  // Process commands (already filtered for this sprite)
+  for (let i = 0; i < spriteCommands.length; i++) {
+    const cmd = spriteCommands[i];
 
-  // Process each command
-  for (const cmd of spriteCommands) {
-    // Handle loops
     if (cmd.type === 'L' && cmd.sub_commands && cmd.loop_count) {
-      const loopDuration = calculateLoopDuration(cmd.sub_commands);
-      const loopCount = cmd.loop_count;
-
-      // Calculate which iteration we're in
+      // Handle loops
+      let maxEnd = 0;
+      for (let j = 0; j < cmd.sub_commands.length; j++) {
+        if (cmd.sub_commands[j].end_time > maxEnd) maxEnd = cmd.sub_commands[j].end_time;
+      }
+      const loopDuration = maxEnd;
       const timeSinceStart = currentTime - cmd.start_time;
-      if (timeSinceStart >= 0) {
-        const totalLoopTime = loopDuration * loopCount;
-        const loopIteration = Math.floor(timeSinceStart / loopDuration);
 
-        if (loopIteration < loopCount || timeSinceStart <= totalLoopTime) {
-          // Apply sub-commands with adjusted time
-          for (const subCmd of cmd.sub_commands) {
-            applyCommand(state, {
-              ...subCmd,
-              start_time: cmd.start_time + subCmd.start_time + (loopIteration * loopDuration),
-              end_time: cmd.start_time + subCmd.end_time + (loopIteration * loopDuration),
-            }, currentTime + (loopIteration * loopDuration));
+      if (timeSinceStart >= 0 && loopDuration > 0) {
+        const loopIteration = Math.floor(timeSinceStart / loopDuration);
+        if (loopIteration < cmd.loop_count) {
+          const timeInLoop = timeSinceStart % loopDuration;
+          for (let j = 0; j < cmd.sub_commands.length; j++) {
+            const subCmd = cmd.sub_commands[j];
+            applyCommand(state, subCmd, timeInLoop);
           }
         }
       }
@@ -108,7 +167,7 @@ function calculateSpriteState(sprite, commands, currentTime) {
     }
   }
 
-  // Calculate animation frame for animated sprites
+  // Animation frame
   if (sprite.type === 'animation' && sprite.frame_count && sprite.frame_delay) {
     const frameIndex = Math.floor(currentTime / sprite.frame_delay) % sprite.frame_count;
     state.frameIndex = sprite.loop_type === 'LoopOnce'
@@ -116,148 +175,9 @@ function calculateSpriteState(sprite, commands, currentTime) {
       : frameIndex;
   }
 
-  // Sprite is visible if it has any opacity
-  state.visible = state.alpha > 0;
-
   return state;
 }
 
-function calculateLoopDuration(subCommands) {
-  let maxEnd = 0;
-  for (const cmd of subCommands) {
-    maxEnd = Math.max(maxEnd, cmd.end_time);
-  }
-  return maxEnd;
-}
-
-function applyCommand(state, cmd, currentTime) {
-  const { type, easing, start_time, end_time, params } = cmd;
-
-  // Before command starts, use start value
-  // During command, interpolate
-  // After command ends, use end value
-
-  let progress;
-  if (currentTime < start_time) {
-    progress = 0;
-  } else if (currentTime >= end_time) {
-    progress = 1;
-  } else {
-    progress = (currentTime - start_time) / (end_time - start_time);
-  }
-
-  switch (type) {
-    case 'F': // Fade
-      if (params.length >= 1) {
-        const startAlpha = params[0];
-        const endAlpha = params.length >= 2 ? params[1] : startAlpha;
-        if (currentTime >= start_time) {
-          state.alpha = interpolate(startAlpha, endAlpha, progress, easing);
-        }
-      }
-      break;
-
-    case 'M': // Move
-      if (params.length >= 2) {
-        const startX = params[0];
-        const startY = params[1];
-        const endX = params.length >= 4 ? params[2] : startX;
-        const endY = params.length >= 4 ? params[3] : startY;
-        if (currentTime >= start_time) {
-          state.x = interpolate(startX, endX, progress, easing);
-          state.y = interpolate(startY, endY, progress, easing);
-        }
-      }
-      break;
-
-    case 'MX': // Move X
-      if (params.length >= 1) {
-        const startX = params[0];
-        const endX = params.length >= 2 ? params[1] : startX;
-        if (currentTime >= start_time) {
-          state.x = interpolate(startX, endX, progress, easing);
-        }
-      }
-      break;
-
-    case 'MY': // Move Y
-      if (params.length >= 1) {
-        const startY = params[0];
-        const endY = params.length >= 2 ? params[1] : startY;
-        if (currentTime >= start_time) {
-          state.y = interpolate(startY, endY, progress, easing);
-        }
-      }
-      break;
-
-    case 'S': // Scale
-      if (params.length >= 1) {
-        const startScale = params[0];
-        const endScale = params.length >= 2 ? params[1] : startScale;
-        if (currentTime >= start_time) {
-          const scale = interpolate(startScale, endScale, progress, easing);
-          state.scaleX = scale;
-          state.scaleY = scale;
-        }
-      }
-      break;
-
-    case 'V': // Vector scale
-      if (params.length >= 2) {
-        const startScaleX = params[0];
-        const startScaleY = params[1];
-        const endScaleX = params.length >= 4 ? params[2] : startScaleX;
-        const endScaleY = params.length >= 4 ? params[3] : startScaleY;
-        if (currentTime >= start_time) {
-          state.scaleX = interpolate(startScaleX, endScaleX, progress, easing);
-          state.scaleY = interpolate(startScaleY, endScaleY, progress, easing);
-        }
-      }
-      break;
-
-    case 'R': // Rotate
-      if (params.length >= 1) {
-        const startRotation = params[0];
-        const endRotation = params.length >= 2 ? params[1] : startRotation;
-        if (currentTime >= start_time) {
-          state.rotation = interpolate(startRotation, endRotation, progress, easing);
-        }
-      }
-      break;
-
-    case 'C': // Color
-      if (params.length >= 3) {
-        const startR = params[0];
-        const startG = params[1];
-        const startB = params[2];
-        const endR = params.length >= 6 ? params[3] : startR;
-        const endG = params.length >= 6 ? params[4] : startG;
-        const endB = params.length >= 6 ? params[5] : startB;
-        if (currentTime >= start_time) {
-          state.r = interpolate(startR, endR, progress, easing);
-          state.g = interpolate(startG, endG, progress, easing);
-          state.b = interpolate(startB, endB, progress, easing);
-        }
-      }
-      break;
-
-    case 'P': // Parameter
-      if (params.length >= 1) {
-        const param = params[0];
-        if (currentTime >= start_time && currentTime <= end_time) {
-          if (param === 'H') state.flipH = true;
-          if (param === 'V') state.flipV = true;
-          if (param === 'A') state.additive = true;
-        }
-      }
-      break;
-  }
-}
-
-/**
- * StoryboardRenderer component
- * Renders osu! storyboard elements on a canvas
- */
 export default function StoryboardRenderer({
   storyboard,
   storyboardBaseUrl,
@@ -269,136 +189,109 @@ export default function StoryboardRenderer({
   const [images, setImages] = useState({});
   const [imagesLoaded, setImagesLoaded] = useState(false);
 
-  // Preload all storyboard images
+  // Pre-process: group commands by sprite ID (only once when storyboard changes)
+  const { sortedSprites, commandsBySprite } = useMemo(() => {
+    if (!storyboard?.sprites || !storyboard?.commands) {
+      return { sortedSprites: [], commandsBySprite: new Map() };
+    }
+
+    // Group commands by sprite_id
+    const cmdMap = new Map();
+    for (let i = 0; i < storyboard.commands.length; i++) {
+      const cmd = storyboard.commands[i];
+      if (!cmdMap.has(cmd.sprite_id)) {
+        cmdMap.set(cmd.sprite_id, []);
+      }
+      cmdMap.get(cmd.sprite_id).push(cmd);
+    }
+
+    // Sort and filter sprites once
+    const sorted = storyboard.sprites
+      .filter(s => s.layer === 0 || s.layer === 3)
+      .sort((a, b) => a.layer - b.layer || a.id - b.id);
+
+    return { sortedSprites: sorted, commandsBySprite: cmdMap };
+  }, [storyboard]);
+
+  // Preload images
   useEffect(() => {
-    if (!storyboard || !storyboard.images || storyboard.images.length === 0) {
+    if (!storyboard?.images || storyboard.images.length === 0) {
       setImagesLoaded(true);
       return;
     }
 
     const loadedImages = {};
     let loadedCount = 0;
-    const totalImages = storyboard.images.length;
+    const total = storyboard.images.length;
 
-    storyboard.images.forEach(imagePath => {
+    storyboard.images.forEach(path => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        loadedImages[imagePath] = img;
-        loadedCount++;
-        if (loadedCount === totalImages) {
+      img.onload = img.onerror = () => {
+        if (img.complete && img.naturalWidth) loadedImages[path] = img;
+        if (++loadedCount === total) {
           setImages(loadedImages);
           setImagesLoaded(true);
         }
       };
-      img.onerror = () => {
-        console.warn('Failed to load storyboard image:', imagePath);
-        loadedCount++;
-        if (loadedCount === totalImages) {
-          setImages(loadedImages);
-          setImagesLoaded(true);
-        }
-      };
-      img.src = `${storyboardBaseUrl}${imagePath}`;
+      img.src = `${storyboardBaseUrl}${path}`;
     });
 
     return () => {
-      // Cleanup
       setImages({});
       setImagesLoaded(false);
     };
   }, [storyboard, storyboardBaseUrl]);
 
-  // Render function
-  const render = useCallback(() => {
+  // Render
+  useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !storyboard || !imagesLoaded) return;
+    if (!canvas || !imagesLoaded || sortedSprites.length === 0) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Scale factor from osu! coordinates to canvas
     const scaleX = canvas.width / OSU_WIDTH;
     const scaleY = canvas.height / OSU_HEIGHT;
 
-    // Sort sprites by layer (Background=0, Fail=1, Pass=2, Foreground=3)
-    // We only render Background and Foreground layers (skip Fail/Pass for now)
-    const sortedSprites = [...storyboard.sprites]
-      .filter(sprite => sprite.layer === 0 || sprite.layer === 3)
-      .sort((a, b) => a.layer - b.layer || a.id - b.id);
+    for (let i = 0; i < sortedSprites.length; i++) {
+      const sprite = sortedSprites[i];
+      const cmds = commandsBySprite.get(sprite.id) || [];
+      const state = calculateSpriteState(sprite, cmds, currentTime);
 
-    // Render each sprite
-    for (const sprite of sortedSprites) {
-      const state = calculateSpriteState(sprite, storyboard.commands, currentTime);
+      if (state.alpha <= 0) continue;
 
-      if (!state.visible) continue;
-
-      // Get image
       let img;
       if (sprite.type === 'animation' && sprite.frame_count) {
-        // For animations, construct frame filename
         const basePath = sprite.filepath.replace(/\d*\.\w+$/, '');
         const ext = sprite.filepath.split('.').pop();
-        const framePath = `${basePath}${state.frameIndex}.${ext}`;
-        img = images[framePath] || images[sprite.filepath];
+        img = images[`${basePath}${state.frameIndex}.${ext}`] || images[sprite.filepath];
       } else {
         img = images[sprite.filepath];
       }
 
       if (!img) continue;
 
-      // Calculate origin offset
       const origin = ORIGINS[sprite.origin] || ORIGINS[1];
       const originX = img.width * origin.x;
       const originY = img.height * origin.y;
 
-      // Apply transformations
       ctx.save();
-
-      // Move to sprite position (in osu! coordinates, scaled to canvas)
       ctx.translate(state.x * scaleX, state.y * scaleY);
-
-      // Apply rotation
-      if (state.rotation !== 0) {
-        ctx.rotate(state.rotation);
-      }
-
-      // Apply scale
+      if (state.rotation !== 0) ctx.rotate(state.rotation);
       ctx.scale(state.scaleX * scaleX, state.scaleY * scaleY);
-
-      // Apply flip
       if (state.flipH) ctx.scale(-1, 1);
       if (state.flipV) ctx.scale(1, -1);
-
-      // Set alpha
       ctx.globalAlpha = state.alpha;
-
-      // Set blend mode for additive
-      if (state.additive) {
-        ctx.globalCompositeOperation = 'lighter';
-      }
-
-      // Apply color tint if not white
-      // (This is a simplified approach - full color tinting would need a temporary canvas)
-
-      // Draw image centered on origin
+      if (state.additive) ctx.globalCompositeOperation = 'lighter';
       ctx.drawImage(img, -originX, -originY);
-
       ctx.restore();
     }
-  }, [storyboard, currentTime, images, imagesLoaded]);
+  }, [currentTime, images, imagesLoaded, sortedSprites, commandsBySprite]);
 
-  // Render on currentTime change
-  useEffect(() => {
-    render();
-  }, [render]);
-
-  if (!storyboard || !storyboard.sprites || storyboard.sprites.length === 0) {
-    return null;
-  }
+  if (!storyboard?.sprites?.length) return null;
 
   return (
     <canvas
