@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { Eye, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, X } from 'lucide-react';
 import { api } from '../api';
 import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
@@ -363,6 +364,7 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
 }
 
 export default function Mappool({ user }) {
+  const navigate = useNavigate();
   const [data, setData] = useState({ total_maps: 0, pools: [] });
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -614,8 +616,7 @@ export default function Mappool({ user }) {
   };
 
   const handlePreviewClick = (map) => {
-    setSelectedMap(map);
-    setPreviewOpen(true);
+    navigate(`/preview?id=${map.beatmap_id}`);
   };
 
   const handlePreviewClose = () => {

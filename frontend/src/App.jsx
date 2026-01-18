@@ -204,7 +204,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
         />
         <Route
           path="/preview"
-          element={<Preview />}
+          element={<Preview user={user} />}
         />
       </Routes>
 

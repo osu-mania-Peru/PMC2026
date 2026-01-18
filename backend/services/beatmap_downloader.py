@@ -11,6 +11,7 @@ from pathlib import Path
 import httpx
 
 from config import Config
+from services.osb_parser import merge_storyboards, parse_osb_file
 from services.osu_parser import parse_osu_file
 
 
@@ -195,6 +196,12 @@ class BeatmapDownloader:
                     bg_file = f.name
                     break
 
+        # Find and parse .osb storyboard file (applies to all difficulties)
+        osb_storyboard = None
+        osb_files = list(path.glob("*.osb"))
+        if osb_files:
+            osb_storyboard = parse_osb_file(str(osb_files[0]))
+
         for osu_file in path.glob("*.osu"):
             try:
                 parsed = parse_osu_file(str(osu_file))
@@ -202,13 +209,18 @@ class BeatmapDownloader:
                 # Use audio file from the .osu file's [General] section
                 audio_file = parsed["metadata"].get("audio_filename", "")
 
-                # Add audio, background, and timing info
+                # Merge .osb storyboard with difficulty-specific storyboard
+                osu_storyboard = parsed.get("storyboard")
+                merged_storyboard = merge_storyboards(osb_storyboard, osu_storyboard)
+
+                # Add audio, background, timing, and storyboard info
                 output = {
                     "metadata": parsed["metadata"],
                     "audio_file": audio_file,
                     "background_file": bg_file,
                     "notes": parsed["notes"],
                     "timing_points": parsed.get("timing_points", []),
+                    "storyboard": merged_storyboard,
                 }
 
                 # Use a sanitized filename based on difficulty name

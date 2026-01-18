@@ -486,4 +486,8 @@ async def get_beatmap_preview_data(
     notes_data["audio_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('audio_file', '')}"
     notes_data["background_url"] = f"/beatmaps/{beatmapset_id}/{notes_data.get('background_file', '')}"
 
+    # Add base URL for storyboard images
+    if notes_data.get("storyboard"):
+        notes_data["storyboard_base_url"] = f"/beatmaps/{beatmapset_id}/"
+
     return notes_data

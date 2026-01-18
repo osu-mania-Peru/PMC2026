@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import './ManiaPreview.css';
+import StoryboardRenderer from './StoryboardRenderer';
 
 /**
  * Calculate scroll position at a given time considering SV changes.
@@ -103,6 +104,13 @@ export default function ManiaPreview({
   onGameEnd,
   customKeyBindings = null,
   resetRef = null,
+  onBackToMappools = null,
+  username = null,
+  hitPosition = 100,
+  onHitPositionChange = null,
+  hitPositionEditMode = false,
+  storyboard = null,
+  storyboardBaseUrl = null,
 }) {
   // Refs
   const canvasRef = useRef(null);
@@ -142,13 +150,17 @@ export default function ManiaPreview({
   const hitCountsRef = useRef({ MAX: 0, 300: 0, 200: 0, 100: 0, 50: 0, MISS: 0 });
   const hitErrorsRef = useRef([]);
 
+  // Dragging state for hit position
+  const [isDraggingHitLine, setIsDraggingHitLine] = useState(false);
+
   // Get key count from beatmap metadata (default to 4K)
   const keyCount = notesData?.metadata?.keys || 4;
 
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
   const CANVAS_HEIGHT = 800;
-  const RECEPTOR_Y = CANVAS_HEIGHT - 100;
+  const RECEPTOR_Y = CANVAS_HEIGHT - 100; // Fixed position for note calculations
+  const RECEPTOR_VISUAL_Y = CANVAS_HEIGHT - hitPosition; // Visual receptor position (adjustable)
 
   // For 4K, use fixed 100px columns; for other key counts, divide canvas evenly
   const COLUMN_WIDTH = keyCount === 4 ? 100 : CANVAS_WIDTH / keyCount;
@@ -402,6 +414,52 @@ export default function ManiaPreview({
     return () => clearInterval(interval);
   }, [playMode, isPlaying, notesData, recordHit]);
 
+  // Handle hit line dragging
+  useEffect(() => {
+    if (!hitPositionEditMode) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const handleMouseDown = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleY = CANVAS_HEIGHT / rect.height;
+      const mouseY = (e.clientY - rect.top) * scaleY;
+
+      // Check if mouse is near the hit line (within 20px)
+      if (Math.abs(mouseY - RECEPTOR_VISUAL_Y) < 20) {
+        setIsDraggingHitLine(true);
+        e.preventDefault();
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      if (!isDraggingHitLine) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleY = CANVAS_HEIGHT / rect.height;
+      const mouseY = (e.clientY - rect.top) * scaleY;
+
+      // Calculate new hit position (distance from bottom)
+      const newHitPosition = Math.max(50, Math.min(CANVAS_HEIGHT - 50, CANVAS_HEIGHT - mouseY));
+      onHitPositionChange?.(Math.round(newHitPosition));
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingHitLine(false);
+    };
+
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [hitPositionEditMode, isDraggingHitLine, RECEPTOR_VISUAL_Y, CANVAS_HEIGHT, onHitPositionChange]);
+
   // Expose seek function via ref
   useEffect(() => {
     if (seekToRef) {
@@ -474,7 +532,8 @@ export default function ManiaPreview({
           // Reset interpolation refs on play/pause
           lastAudioTimeRef.current = audioRef.current.currentTime * 1000;
           lastPerfTimeRef.current = performance.now();
-          if (isPlaying) {
+          // Use audio element's actual paused state to avoid stale closure
+          if (!audioRef.current.paused) {
             audioRef.current.pause();
             setIsPlaying(false);
           } else {
@@ -706,24 +765,6 @@ export default function ManiaPreview({
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // Draw column separators
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    for (let i = 1; i < keyCount; i++) {
-      ctx.beginPath();
-      ctx.moveTo(i * COLUMN_WIDTH, 0);
-      ctx.lineTo(i * COLUMN_WIDTH, CANVAS_HEIGHT);
-      ctx.stroke();
-    }
-
-    // Draw receptor line
-    ctx.strokeStyle = '#555';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, RECEPTOR_Y);
-    ctx.lineTo(CANVAS_WIDTH, RECEPTOR_Y);
-    ctx.stroke();
-
     // Determine skin type for rendering
     const isCustomSkin = customSkinData && skin !== 'arrow' && skin !== 'circle' && skin !== 'pmc';
     const skinPrefix = isCustomSkin ? 'custom' : skin;
@@ -764,11 +805,11 @@ export default function ManiaPreview({
         const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
 
         if (skin === 'arrow' && keyCount === 4) {
-          ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
+          ctx.drawImage(receptorImg, x, RECEPTOR_VISUAL_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
         } else {
           const aspectRatio = receptorImg.height / receptorImg.width;
           const receptorHeight = NOTE_SIZE * Math.min(aspectRatio, 8);
-          ctx.drawImage(receptorImg, x, RECEPTOR_Y - receptorHeight, NOTE_SIZE, receptorHeight);
+          ctx.drawImage(receptorImg, x, RECEPTOR_VISUAL_Y - receptorHeight, NOTE_SIZE, receptorHeight);
         }
       }
     }
@@ -926,15 +967,7 @@ export default function ManiaPreview({
       }
       ctx.globalAlpha = 1;
 
-      // Draw combo
-      if (comboRef.current > 0) {
-        ctx.font = 'bold 48px Poppins, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = comboRef.current >= 100 ? '#ffff00' : comboRef.current >= 50 ? '#00ffff' : '#fff';
-        ctx.fillText(`${comboRef.current}x`, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
-      }
-
-      // Draw latest judgement below combo (centered)
+      // Draw latest judgement (centered)
       const latestJudgement = judgements.filter(j => j.displayUntil > now).pop();
       if (latestJudgement) {
         const opacity = Math.min(1, (latestJudgement.displayUntil - now) / 300);
@@ -946,21 +979,36 @@ export default function ManiaPreview({
         ctx.globalAlpha = 1;
       }
 
-      // Draw key hints at bottom
-      const keyBindingsForHints = customKeyBindings?.[keyCount] || KEY_BINDINGS[keyCount] || KEY_BINDINGS[4];
-      ctx.font = '12px Poppins, sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      for (let col = 0; col < keyCount; col++) {
-        const keyCode = keyBindingsForHints[col];
-        const keyName = KEY_DISPLAY[keyCode] || keyCode?.replace('Key', '') || '?';
-        const kx = col * COLUMN_WIDTH + COLUMN_WIDTH / 2;
-        ctx.fillText(keyName, kx, CANVAS_HEIGHT - 10);
-      }
+    }
+
+    // Draw draggable hit position line when in edit mode
+    if (hitPositionEditMode) {
+      // Draw the hit line
+      ctx.strokeStyle = isDraggingHitLine ? '#ff0844' : '#00ff00';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([10, 5]);
+      ctx.beginPath();
+      ctx.moveTo(0, RECEPTOR_VISUAL_Y);
+      ctx.lineTo(CANVAS_WIDTH, RECEPTOR_VISUAL_Y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw handle indicator
+      ctx.fillStyle = isDraggingHitLine ? '#ff0844' : '#00ff00';
+      ctx.beginPath();
+      ctx.arc(CANVAS_WIDTH / 2, RECEPTOR_VISUAL_Y, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw label
+      ctx.fillStyle = '#fff';
+      ctx.font = '14px Poppins, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Hit Position: ${hitPosition}px`, CANVAS_WIDTH / 2, RECEPTOR_VISUAL_Y - 20);
     }
 
     // Continue animation loop using ref to avoid stale closure
     animationRef.current = requestAnimationFrame(() => renderRef.current?.());
-  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, keyCount, playMode, judgements, customKeyBindings, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH]);
+  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, keyCount, playMode, judgements, customKeyBindings, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, RECEPTOR_VISUAL_Y, NOTE_HEIGHT, NOTE_WIDTH, hitPositionEditMode, isDraggingHitLine, hitPosition]);
 
   // Store render function in ref and start/stop animation loop
   useEffect(() => {
@@ -986,56 +1034,159 @@ export default function ManiaPreview({
 
   return (
     <div className="mania-preview">
-      <div className="mania-preview-canvas-container">
-        <canvas
-          ref={canvasRef}
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
-          className="mania-preview-canvas"
+      {/* Background image at 10% opacity */}
+      {notesData?.background_url_full && (
+        <div
+          className="mania-preview-background"
+          style={{
+            backgroundImage: `url(${notesData.background_url_full})`,
+          }}
         />
+      )}
+      <div className="mania-preview-canvas-container">
+        {/* Storyboard layer - behind playfield */}
+        {storyboard && storyboardBaseUrl && (
+          <StoryboardRenderer
+            storyboard={storyboard}
+            storyboardBaseUrl={storyboardBaseUrl}
+            currentTime={currentTime}
+            width={window.innerWidth}
+            height={window.innerHeight}
+            playing={isPlaying}
+          />
+        )}
+        <div className="mania-playfield-wrapper">
+          {/* Real-time stats panel - left side of playfield */}
+          {playMode && (
+            <div className="mania-stats-panel">
+              <div className="stats-combo">
+                <span className="stats-combo-value">{combo}x</span>
+              </div>
+              <div className="stats-judgements">
+                <div className="stats-row stats-300g">
+                  <span className="stats-label">300</span>
+                  <span className="stats-value">{hitCounts.MAX}</span>
+                </div>
+                <div className="stats-row stats-300">
+                  <span className="stats-label">300</span>
+                  <span className="stats-value">{hitCounts[300]}</span>
+                </div>
+                <div className="stats-row stats-200">
+                  <span className="stats-label">200</span>
+                  <span className="stats-value">{hitCounts[200]}</span>
+                </div>
+                <div className="stats-row stats-100">
+                  <span className="stats-label">100</span>
+                  <span className="stats-value">{hitCounts[100]}</span>
+                </div>
+                <div className="stats-row stats-50">
+                  <span className="stats-label">50</span>
+                  <span className="stats-value">{hitCounts[50]}</span>
+                </div>
+                <div className="stats-row stats-miss">
+                  <span className="stats-label">MISS</span>
+                  <span className="stats-value">{hitCounts.MISS}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <canvas
+            ref={canvasRef}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+            className={`mania-preview-canvas ${isDraggingHitLine ? 'dragging-hit-line' : ''}`}
+            style={{ cursor: hitPositionEditMode ? 'ns-resize' : 'default' }}
+          />
+        </div>
         {!imagesLoaded && (
           <div className="mania-preview-loading">
             Loading assets...
           </div>
         )}
 
-        {/* Results Screen Overlay */}
+        {/* Results Screen Overlay - osu! style ranking */}
         {showResults && (
-          <div className="mania-results-overlay">
-            <div className="mania-results-content">
-              <h2>Results</h2>
-              <div className="mania-results-score">{scoreRef.current.toLocaleString()}</div>
-              <div className="mania-results-accuracy">{calculateAccuracy()}%</div>
-              <div className="mania-results-combo">Max Combo: {maxComboRef.current}x</div>
-              <div className="mania-results-judgements">
-                <div className="judgement-row max">
-                  <span>MAX</span>
-                  <span>{hitCountsRef.current.MAX}</span>
+          <div
+            className="mania-results-overlay"
+            style={notesData?.background_url_full ? {
+              backgroundImage: `url(${notesData.background_url_full})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            } : {}}
+          >
+            <div className="mania-results-header">
+              <div className="results-header-left">
+                <span className="results-map-title">
+                  {notesData?.metadata?.artist} - {notesData?.metadata?.title} [{notesData?.metadata?.version}]
+                </span>
+                <span className="results-mapper">
+                  Beatmap by {notesData?.metadata?.creator || 'Unknown'}
+                </span>
+                <span className="results-played-by">
+                  Played by {username || 'Guest'} on {new Date().toLocaleString()}
+                </span>
+              </div>
+              <span className="results-title">Ranking</span>
+            </div>
+            <div className="mania-results-main">
+              <div className="mania-results-left">
+                <div className="results-score-box">
+                  <span className="results-score-label">Score</span>
+                  <span className="results-score-value">{scoreRef.current.toString().padStart(8, '0')}</span>
                 </div>
-                <div className="judgement-row perfect">
-                  <span>300</span>
-                  <span>{hitCountsRef.current[300]}</span>
-                </div>
-                <div className="judgement-row great">
-                  <span>200</span>
-                  <span>{hitCountsRef.current[200]}</span>
-                </div>
-                <div className="judgement-row good">
-                  <span>100</span>
-                  <span>{hitCountsRef.current[100]}</span>
-                </div>
-                <div className="judgement-row ok">
-                  <span>50</span>
-                  <span>{hitCountsRef.current[50]}</span>
-                </div>
-                <div className="judgement-row miss">
-                  <span>MISS</span>
-                  <span>{hitCountsRef.current.MISS}</span>
+                <div className="results-judgements-box">
+                  <div className="judgement-row">
+                    <span className="judgement-label j-300">300</span>
+                    <span className="judgement-count">{hitCountsRef.current.MAX + hitCountsRef.current[300]}x</span>
+                    <span className="judgement-label j-300g">300</span>
+                    <span className="judgement-count">{hitCountsRef.current.MAX}x</span>
+                  </div>
+                  <div className="judgement-row">
+                    <span className="judgement-label j-200">200</span>
+                    <span className="judgement-count">{hitCountsRef.current[200]}x</span>
+                    <span className="judgement-label j-100">100</span>
+                    <span className="judgement-count">{hitCountsRef.current[100]}x</span>
+                  </div>
+                  <div className="judgement-row">
+                    <span className="judgement-label j-50">50</span>
+                    <span className="judgement-count">{hitCountsRef.current[50]}x</span>
+                    <span className="judgement-label j-miss">miss!</span>
+                    <span className="judgement-count">{hitCountsRef.current.MISS}x</span>
+                  </div>
+                  <div className="results-stats-row">
+                    <div className="results-stat">
+                      <span className="stat-label">Combo</span>
+                      <span className="stat-value">{maxComboRef.current}x</span>
+                    </div>
+                    <div className="results-stat">
+                      <span className="stat-label">Accuracy</span>
+                      <span className="stat-value">{calculateAccuracy()}%</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <button className="mania-results-close" onClick={closeResults}>
-                Close
-              </button>
+              <div className="mania-results-right">
+                <div className="results-grade">{(() => {
+                  const acc = parseFloat(calculateAccuracy());
+                  if (acc >= 100) return 'SS';
+                  if (acc >= 95) return 'S';
+                  if (acc >= 90) return 'A';
+                  if (acc >= 80) return 'B';
+                  if (acc >= 70) return 'C';
+                  return 'D';
+                })()}</div>
+                <div className="results-buttons">
+                  <button className="results-btn retry-btn" onClick={closeResults}>
+                    Retry
+                  </button>
+                  {onBackToMappools && (
+                    <button className="results-btn back-btn" onClick={onBackToMappools}>
+                      Volver a Mappools
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1051,18 +1202,6 @@ export default function ManiaPreview({
         preload="auto"
       />
 
-      {notesData?.metadata && (
-        <div className="mania-preview-metadata">
-          <span className="mania-preview-title">
-            {notesData.metadata.artist} - {notesData.metadata.title}
-          </span>
-          {notesData.metadata.version && (
-            <span className="mania-preview-diff">
-              [{notesData.metadata.version}]
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }
