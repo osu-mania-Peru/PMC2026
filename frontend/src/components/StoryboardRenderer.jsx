@@ -404,7 +404,7 @@ function StoryboardRenderer({
       antialias: false,
       preserveDrawingBuffer: false,
       powerPreference: 'high-performance',
-      desynchronized: true, // Reduces input latency, helps Firefox
+      desynchronized: isFirefox, // Only on Firefox - causes artifacts on Chrome
     });
 
     if (!gl) {
