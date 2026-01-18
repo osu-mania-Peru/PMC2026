@@ -159,7 +159,7 @@
 .slot-table-header,
 .slot-table-row {
   display: grid;
-  grid-template-columns: auto 36px minmax(0, 1fr) 60px 100px auto;
+  grid-template-columns: auto 72px minmax(0, 1fr) 60px 100px auto;
   gap: 8px;
   align-items: center;
   padding: 10px 0;
@@ -319,18 +319,19 @@
 /* Order buttons - override global button styles */
 .slot-order-btns {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  gap: 4px;
 }
 
 .slot-order-btn {
   background: #252525 !important;
   border: 1px solid #3a3a3a !important;
   border-radius: 4px !important;
-  padding: 2px !important;
-  width: 28px !important;
-  height: 16px !important;
-  min-width: 28px !important;
+  padding: 4px !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
   cursor: pointer;
   display: flex !important;
   align-items: center;
