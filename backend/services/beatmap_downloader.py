@@ -59,33 +59,78 @@ class BeatmapDownloader:
         Returns:
             Dict with status and path info.
         """
+        # Use the streaming version but ignore progress events
+        result = None
+        async for event in self.download_with_progress(beatmapset_id, force):
+            if event.get("type") == "complete":
+                result = event.get("result")
+            elif event.get("type") == "error":
+                result = event.get("result")
+        return result or {"status": "error", "error": "Unknown error"}
+
+    async def download_with_progress(self, beatmapset_id: str, force: bool = False):
+        """
+        Download and extract a beatmapset with progress events.
+
+        Yields progress events during download:
+        - {"type": "progress", "loaded": bytes, "total": bytes}
+        - {"type": "extracting"}
+        - {"type": "complete", "result": {...}}
+        - {"type": "error", "result": {...}}
+
+        Args:
+            beatmapset_id: The osu! beatmapset ID.
+            force: Re-download even if already exists.
+        """
         if not force and self.exists(beatmapset_id):
-            return {
-                "status": "exists",
-                "beatmapset_id": beatmapset_id,
-                "path": str(self.get_beatmapset_path(beatmapset_id)),
+            yield {
+                "type": "complete",
+                "result": {
+                    "status": "exists",
+                    "beatmapset_id": beatmapset_id,
+                    "path": str(self.get_beatmapset_path(beatmapset_id)),
+                },
             }
+            return
 
         url = self.MIRROR_URL.format(beatmapset_id=beatmapset_id)
 
         try:
-            async with httpx.AsyncClient(follow_redirects=True, timeout=60.0) as client:
-                response = await client.get(url)
+            async with httpx.AsyncClient(follow_redirects=True, timeout=120.0) as client:
+                async with client.stream("GET", url) as response:
+                    if response.status_code == 404:
+                        yield {
+                            "type": "error",
+                            "result": {
+                                "status": "not_found",
+                                "beatmapset_id": beatmapset_id,
+                                "error": "Beatmapset not found on mirror",
+                            },
+                        }
+                        return
 
-                if response.status_code == 404:
-                    return {
-                        "status": "not_found",
-                        "beatmapset_id": beatmapset_id,
-                        "error": "Beatmapset not found on mirror",
-                    }
+                    response.raise_for_status()
 
-                response.raise_for_status()
+                    # Get total size from Content-Length header
+                    total = int(response.headers.get("content-length", 0))
+                    loaded = 0
 
-                # Save the .osz file temporarily
-                osz_path = self.storage_path / f"{beatmapset_id}.osz"
-                osz_path.write_bytes(response.content)
+                    # Stream download to file
+                    osz_path = self.storage_path / f"{beatmapset_id}.osz"
+                    chunks = []
 
-                # Extract the .osz (it's a ZIP file)
+                    async for chunk in response.aiter_bytes(chunk_size=65536):
+                        chunks.append(chunk)
+                        loaded += len(chunk)
+                        if total > 0:
+                            yield {"type": "progress", "loaded": loaded, "total": total}
+
+                    # Write all chunks to file
+                    osz_path.write_bytes(b"".join(chunks))
+
+                # Extraction phase
+                yield {"type": "extracting"}
+
                 extract_path = self.get_beatmapset_path(beatmapset_id)
                 extract_path.mkdir(parents=True, exist_ok=True)
 
@@ -101,31 +146,43 @@ class BeatmapDownloader:
                 # Auto-generate notes.json files
                 notes_result = self.generate_notes_json(beatmapset_id)
 
-                return {
-                    "status": "downloaded",
-                    "beatmapset_id": beatmapset_id,
-                    "path": str(extract_path),
-                    "files_count": len(files),
-                    "notes_generated": notes_result.get("generated", []),
+                yield {
+                    "type": "complete",
+                    "result": {
+                        "status": "downloaded",
+                        "beatmapset_id": beatmapset_id,
+                        "path": str(extract_path),
+                        "files_count": len(files),
+                        "notes_generated": notes_result.get("generated", []),
+                    },
                 }
 
         except httpx.HTTPStatusError as e:
-            return {
-                "status": "error",
-                "beatmapset_id": beatmapset_id,
-                "error": f"HTTP error: {e.response.status_code}",
+            yield {
+                "type": "error",
+                "result": {
+                    "status": "error",
+                    "beatmapset_id": beatmapset_id,
+                    "error": f"HTTP error: {e.response.status_code}",
+                },
             }
         except zipfile.BadZipFile:
-            return {
-                "status": "error",
-                "beatmapset_id": beatmapset_id,
-                "error": "Invalid .osz file (not a valid ZIP)",
+            yield {
+                "type": "error",
+                "result": {
+                    "status": "error",
+                    "beatmapset_id": beatmapset_id,
+                    "error": "Invalid .osz file (not a valid ZIP)",
+                },
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "beatmapset_id": beatmapset_id,
-                "error": str(e),
+            yield {
+                "type": "error",
+                "result": {
+                    "status": "error",
+                    "beatmapset_id": beatmapset_id,
+                    "error": str(e),
+                },
             }
 
     def get_beatmap_files(self, beatmapset_id: str) -> dict:

@@ -158,11 +158,11 @@ export default function Preview({ user }) {
 
     eventSource.addEventListener('progress', (event) => {
       const data = JSON.parse(event.data);
-      const { step, message, done } = data;
+      const { step, message, done, progress } = data;
 
       setLoadingStatus(prev => ({
         ...prev,
-        [step]: { loading: !done, text: message },
+        [step]: { loading: !done, text: message, progress: progress || 0 },
       }));
     });
 
@@ -557,6 +557,14 @@ export default function Preview({ user }) {
                 <div className={`loading-step ${!loadingStatus.download.loading ? 'done' : 'active'}`}>
                   <span className="loading-step-indicator">{loadingStatus.download.loading ? '>' : '+'}</span>
                   <span>{loadingStatus.download.text}</span>
+                  {loadingStatus.download.loading && loadingStatus.download.progress > 0 && (
+                    <div className="loading-progress-bar">
+                      <div
+                        className="loading-progress-fill"
+                        style={{ width: `${loadingStatus.download.progress}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
               {loadingStatus.parsing.text && (

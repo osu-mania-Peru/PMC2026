@@ -545,19 +545,37 @@ async def get_beatmap_preview_stream(
                     db.commit()
                 yield send_event("progress", {"step": "osu_api", "message": "Datos obtenidos de osu!", "done": True})
 
-            # Step 3: Download if needed
+            # Step 3: Download if needed (with progress streaming)
             if not beatmap_downloader.exists(beatmapset_id):
-                yield send_event("progress", {"step": "download", "message": "Descargando beatmap..."})
-                download_result = await beatmap_downloader.download(beatmapset_id)
-                if download_result["status"] == "error":
-                    yield send_event("error", {"message": f"Error de descarga: {download_result.get('error')}"})
+                yield send_event("progress", {"step": "download", "message": "Conectando al mirror..."})
+                download_result = None
+
+                async for event in beatmap_downloader.download_with_progress(beatmapset_id):
+                    if event["type"] == "progress":
+                        loaded_mb = event["loaded"] / 1024 / 1024
+                        total_mb = event["total"] / 1024 / 1024
+                        percent = round((event["loaded"] / event["total"]) * 100) if event["total"] > 0 else 0
+                        yield send_event("progress", {
+                            "step": "download",
+                            "message": f"Descargando ({loaded_mb:.1f}/{total_mb:.1f} MB)...",
+                            "progress": percent,
+                        })
+                    elif event["type"] == "extracting":
+                        yield send_event("progress", {"step": "download", "message": "Extrayendo archivos..."})
+                    elif event["type"] == "complete":
+                        download_result = event["result"]
+                    elif event["type"] == "error":
+                        download_result = event["result"]
+
+                if not download_result or download_result["status"] == "error":
+                    yield send_event("error", {"message": f"Error de descarga: {download_result.get('error') if download_result else 'Unknown'}"})
                     return
                 if download_result["status"] == "not_found":
                     yield send_event("error", {"message": "Beatmap no encontrado en mirror"})
                     return
                 yield send_event("progress", {"step": "download", "message": "Beatmap descargado", "done": True})
             else:
-                yield send_event("progress", {"step": "download", "message": "Beatmap ya descargado", "done": True})
+                yield send_event("progress", {"step": "download", "message": "Beatmap en cache", "done": True})
 
             # Step 4: Parse notes
             yield send_event("progress", {"step": "parsing", "message": "Procesando notas..."})
