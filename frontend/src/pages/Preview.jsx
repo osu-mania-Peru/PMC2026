@@ -650,7 +650,7 @@ export default function Preview({ user }) {
                   const textColor = getContrastText(slotColor);
                   return (
                   <button
-                    key={map.beatmap_id}
+                    key={`${map.poolName}-${map.slot}-${map.beatmap_id}`}
                     className="preview-beatmap-card"
                     onClick={() => window.location.href = `/preview?id=${map.beatmap_id}`}
                   >
