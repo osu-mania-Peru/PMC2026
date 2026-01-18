@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo, memo } from 'react';
 
-const OSU_WIDTH = 640;
+const OSU_WIDTH_4_3 = 640;
+const OSU_WIDTH_16_9 = 854;
 const OSU_HEIGHT = 480;
 
 // Pre-computed origin values as flat arrays for faster access
@@ -170,6 +171,9 @@ function StoryboardRenderer({
   onProgress = null,
   hitTimes = [], // Note hit times for trigger activation
 }) {
+  // Determine storyboard width based on widescreen flag
+  const isWidescreen = storyboard?.widescreen ?? false;
+  const OSU_WIDTH = isWidescreen ? OSU_WIDTH_16_9 : OSU_WIDTH_4_3;
   const canvasRef = useRef(null);
   const glRef = useRef(null);
   const programRef = useRef(null);
@@ -720,9 +724,10 @@ function StoryboardRenderer({
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       }
 
-      // Draw black bars at the sides AFTER sprites (4:3 storyboard on widescreen)
+      // Draw black bars at the sides AFTER sprites (only for 4:3 storyboards on widescreen display)
+      // Widescreen storyboards (854x480) should fill the screen without black bars
       // Left bar: from 0 to offsetX, Right bar: from offsetX + OSU_WIDTH*scale to width
-      if (whitePixelRef.current && offsetX > 0) {
+      if (whitePixelRef.current && offsetX > 0 && !isWidescreen) {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, whitePixelRef.current);
 
@@ -768,7 +773,7 @@ function StoryboardRenderer({
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [ready, sortedSprites, commandsBySprite, width, height, isFirefox]);
+  }, [ready, sortedSprites, commandsBySprite, width, height, isFirefox, isWidescreen, OSU_WIDTH]);
 
   if (!storyboard?.sprites?.length) return null;
 

@@ -280,6 +280,7 @@ def parse_osb_file(file_path: str) -> StoryboardData | None:
         "sprites": sprites,
         "commands": commands,
         "images": images,
+        "widescreen": False,  # .osb files don't have widescreen flag, it's in .osu
     }
 
 
@@ -344,8 +345,12 @@ def merge_storyboards(
         if img not in merged_images:
             merged_images.append(img)
 
+    # Use widescreen from .osu storyboard (that's where the flag is defined)
+    widescreen = osu_storyboard.get("widescreen", False)
+
     return {
         "sprites": merged_sprites,
         "commands": merged_commands,
         "images": merged_images,
+        "widescreen": widescreen,
     }

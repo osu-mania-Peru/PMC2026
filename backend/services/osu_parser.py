@@ -71,6 +71,7 @@ class StoryboardData(TypedDict):
     sprites: list[StoryboardSprite]
     commands: list[StoryboardCommand]
     images: list[str]  # List of image paths for preloading
+    widescreen: bool  # True if WidescreenStoryboard is enabled (854x480 vs 640x480)
 
 
 class MetadataDict(TypedDict):
@@ -133,6 +134,8 @@ def parse_metadata(lines: list[str]) -> dict[str, str | int]:
         if current_section == "General":
             if key == "AudioFilename":
                 metadata["audio_filename"] = value
+            elif key == "WidescreenStoryboard":
+                metadata["widescreen_storyboard"] = value == "1"
 
         elif current_section == "Metadata":
             if key == "Title":
@@ -349,7 +352,7 @@ ORIGIN_MAP = {
 }
 
 
-def parse_storyboard(lines: list[str]) -> StoryboardData | None:
+def parse_storyboard(lines: list[str], widescreen: bool = False) -> StoryboardData | None:
     """
     Parse storyboard elements from the [Events] section.
 
@@ -362,6 +365,7 @@ def parse_storyboard(lines: list[str]) -> StoryboardData | None:
 
     Args:
         lines: All lines from the .osu file.
+        widescreen: Whether WidescreenStoryboard is enabled (854x480 vs 640x480).
 
     Returns:
         StoryboardData dictionary with sprites, commands, and image list.
@@ -597,6 +601,7 @@ def parse_storyboard(lines: list[str]) -> StoryboardData | None:
         "sprites": sprites,
         "commands": commands,
         "images": images,
+        "widescreen": widescreen,
     }
 
 
@@ -639,9 +644,10 @@ def parse_osu_file(file_path: str) -> ParsedBeatmap:
     # Parse metadata, timing points, hit objects, and storyboard
     metadata_dict = parse_metadata(lines)
     key_count = int(metadata_dict.get("keys", 4))
+    widescreen = bool(metadata_dict.get("widescreen_storyboard", False))
     timing_points = parse_timing_points(lines)
     notes = parse_hit_objects(lines, key_count)
-    storyboard = parse_storyboard(lines)
+    storyboard = parse_storyboard(lines, widescreen)
 
     result: ParsedBeatmap = {
         "metadata": {

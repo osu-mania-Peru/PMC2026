@@ -359,9 +359,11 @@ export default function Preview({ user }) {
     }
 
     const maxCount = Math.max(...counts, 1);
+    // Round helper to avoid floating-point rendering artifacts in SVG
+    const r = (n) => Math.round(n * 100) / 100;
     const points = counts.map((count, i) => ({
-      x: (i / (NUM_POINTS - 1)) * 100,
-      y: 100 - (count / maxCount) * 100,
+      x: r((i / (NUM_POINTS - 1)) * 100),
+      y: r(100 - (count / maxCount) * 100),
     }));
 
     let path = `M 0,100 L 0,${points[0].y}`;
@@ -371,10 +373,10 @@ export default function Preview({ user }) {
       const p2 = points[i + 1];
       const p3 = points[Math.min(points.length - 1, i + 2)];
 
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      const cp1x = r(p1.x + (p2.x - p0.x) / 6);
+      const cp1y = r(p1.y + (p2.y - p0.y) / 6);
+      const cp2x = r(p2.x - (p3.x - p1.x) / 6);
+      const cp2y = r(p2.y - (p3.y - p1.y) / 6);
 
       path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
     }
