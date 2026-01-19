@@ -30,6 +30,7 @@ export default function Matches() {
   }, [filter]);
 
   const handleFilterChange = (newFilter) => {
+    if (newFilter === filter) return; // Don't reload if already on this filter
     setLoading(true);
     setFilter(newFilter);
     setCurrentPage(1);
