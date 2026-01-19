@@ -166,7 +166,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/players"
           element={
             <main className="main has-container">
-              <Players />
+              <Players user={user} />
             </main>
           }
         />

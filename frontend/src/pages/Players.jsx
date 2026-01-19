@@ -15,7 +15,7 @@ const UsersIcon = () => (
 const REFRESH_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 const REFRESH_COOLDOWN_KEY = 'players_refresh_timestamp';
 
-export default function Players() {
+export default function Players({ user }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -133,29 +133,33 @@ export default function Players() {
         <div className="players-header-left">
           <h1 className="players-title">Jugadores</h1>
           <span className="players-count">{registeredPlayers.length} registrados</span>
-          <button
-            className={`refresh-stats-btn ${cooldownRemaining > 0 ? 'on-cooldown' : ''}`}
-            onClick={handleRefreshStats}
-            disabled={refreshing || cooldownRemaining > 0}
-            title="Refrescar estadísticas desde osu! (Admin)"
-          >
-            {refreshing ? (
-              <img src={catGif} alt="" className="btn-loading-cat" />
-            ) : (
-              <RefreshCw size={16} />
-            )}
-            {refreshing
-              ? 'Refrescando...'
-              : cooldownRemaining > 0
-                ? `${Math.floor(cooldownRemaining / 60000)}:${String(Math.floor((cooldownRemaining % 60000) / 1000)).padStart(2, '0')}`
-                : 'Refrescar Stats'}
-          </button>
-          {refreshResult && (
-            <span className={`refresh-result ${refreshResult.success ? 'success' : 'error'}`}>
-              {refreshResult.success
-                ? `✓ ${refreshResult.updated} actualizados`
-                : `✗ ${refreshResult.message}`}
-            </span>
+          {user?.is_staff && (
+            <>
+              <button
+                className={`refresh-stats-btn ${cooldownRemaining > 0 ? 'on-cooldown' : ''}`}
+                onClick={handleRefreshStats}
+                disabled={refreshing || cooldownRemaining > 0}
+                title="Refrescar estadísticas desde osu! (Admin)"
+              >
+                {refreshing ? (
+                  <img src={catGif} alt="" className="btn-loading-cat" />
+                ) : (
+                  <RefreshCw size={16} />
+                )}
+                {refreshing
+                  ? 'Refrescando...'
+                  : cooldownRemaining > 0
+                    ? `${Math.floor(cooldownRemaining / 60000)}:${String(Math.floor((cooldownRemaining % 60000) / 1000)).padStart(2, '0')}`
+                    : 'Refrescar Stats'}
+              </button>
+              {refreshResult && (
+                <span className={`refresh-result ${refreshResult.success ? 'success' : 'error'}`}>
+                  {refreshResult.success
+                    ? `✓ ${refreshResult.updated} actualizados`
+                    : `✗ ${refreshResult.message}`}
+                </span>
+              )}
+            </>
           )}
         </div>
         <div className="players-header-right">
