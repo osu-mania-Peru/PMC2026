@@ -258,6 +258,54 @@
   border-radius: 4px;
 }
 
+/* Refresh Stats Button */
+.refresh-stats-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #222;
+  border: 1px solid #333;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  clip-path: none !important;
+}
+
+.refresh-stats-btn:hover:not(:disabled) {
+  background: #333;
+  border-color: #444;
+}
+
+.refresh-stats-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-stats-btn .btn-loading-cat {
+  width: 16px;
+  height: 16px;
+}
+
+.refresh-result {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2px;
+}
+
+.refresh-result.success {
+  color: #0f8;
+  background: rgba(0, 255, 136, 0.1);
+}
+
+.refresh-result.error {
+  color: #f44;
+  background: rgba(255, 68, 68, 0.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .players-page {

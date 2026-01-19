@@ -1,7 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { api } from '../api';
 import Spinner from '../components/Spinner';
-import { Search } from 'lucide-react';
+import { Search, RefreshCw } from 'lucide-react';
+import catGif from '../assets/cat.gif';
 import './Players.css';
 
 // Icon components
@@ -17,13 +18,53 @@ export default function Players() {
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('pp');
   const [countryFilter, setCountryFilter] = useState('all');
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshResult, setRefreshResult] = useState(null);
 
-  useEffect(() => {
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  const fetchPlayers = () => {
     api.getAllUsers()
       .then(data => setPlayers(data.users))
       .catch(console.error)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchPlayers();
   }, []);
+
+  const handleRefreshStats = async () => {
+    const password = prompt('Contraseña de admin:');
+    if (!password) return;
+
+    setRefreshing(true);
+    setRefreshResult(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/internal/admin/sync-mania-ranks`, {
+        method: 'POST',
+        headers: {
+          'X-Admin-Password': password,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Error al refrescar');
+      }
+
+      setRefreshResult({ success: true, updated: data.updated, errors: data.errors });
+      // Reload players to show updated stats
+      fetchPlayers();
+    } catch (err) {
+      setRefreshResult({ success: false, message: err.message });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const registeredPlayers = useMemo(() => players.filter(p => p.is_registered), [players]);
 
@@ -61,6 +102,26 @@ export default function Players() {
         <div className="players-header-left">
           <h1 className="players-title">Jugadores</h1>
           <span className="players-count">{registeredPlayers.length} registrados</span>
+          <button
+            className="refresh-stats-btn"
+            onClick={handleRefreshStats}
+            disabled={refreshing}
+            title="Refrescar estadísticas desde osu! (Admin)"
+          >
+            {refreshing ? (
+              <img src={catGif} alt="" className="btn-loading-cat" />
+            ) : (
+              <RefreshCw size={16} />
+            )}
+            {refreshing ? 'Refrescando...' : 'Refrescar Stats'}
+          </button>
+          {refreshResult && (
+            <span className={`refresh-result ${refreshResult.success ? 'success' : 'error'}`}>
+              {refreshResult.success
+                ? `✓ ${refreshResult.updated} actualizados`
+                : `✗ ${refreshResult.message}`}
+            </span>
+          )}
         </div>
         <div className="players-header-right">
           <UsersIcon />
