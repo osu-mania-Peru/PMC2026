@@ -129,3 +129,47 @@ async def admin_delete_user(
     db.delete(user)
     db.commit()
     return {"message": f"User {username} deleted successfully"}
+
+
+@router.post("/sync-stats")
+async def sync_user_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Sync mania ranks/PP for all users from osu! API (staff only)."""
+    import asyncio
+    from services.osu_api import osu_api
+
+    users = db.query(User).all()
+    updated = []
+    errors = []
+
+    for user in users:
+        try:
+            data = await osu_api.get_user(user.osu_id, mode="mania")
+            if data:
+                user.username = data.get("username") or user.username
+                user.mania_rank = data.get("global_rank")
+                user.mania_country_rank = data.get("country_rank")
+                user.mania_pp = data.get("pp")
+                updated.append({
+                    "username": user.username,
+                    "mania_rank": user.mania_rank,
+                    "mania_country_rank": user.mania_country_rank,
+                    "mania_pp": user.mania_pp
+                })
+            else:
+                errors.append({"username": user.username, "error": "User not found on osu!"})
+            # Rate limit: small delay between requests
+            await asyncio.sleep(0.1)
+        except Exception as e:
+            errors.append({"username": user.username, "error": str(e)})
+
+    db.commit()
+
+    return {
+        "updated": len(updated),
+        "errors": len(errors),
+        "users": updated,
+        "error_details": errors
+    }

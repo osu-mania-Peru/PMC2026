@@ -62,17 +62,15 @@ export default function Players({ user }) {
       return;
     }
 
-    const password = prompt('Contraseña de admin:');
-    if (!password) return;
-
     setRefreshing(true);
     setRefreshResult(null);
 
     try {
-      const response = await fetch(`${API_BASE}/internal/admin/sync-mania-ranks`, {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE}/users/sync-stats`, {
         method: 'POST',
         headers: {
-          'X-Admin-Password': password,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
