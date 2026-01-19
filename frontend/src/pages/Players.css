@@ -284,6 +284,12 @@
   cursor: not-allowed;
 }
 
+.refresh-stats-btn.on-cooldown {
+  background: #1a1a1a;
+  border-color: #222;
+  color: #666;
+}
+
 .refresh-stats-btn .btn-loading-cat {
   width: 16px;
   height: 16px;

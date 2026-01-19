@@ -12,6 +12,9 @@ const UsersIcon = () => (
   </svg>
 );
 
+const REFRESH_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+const REFRESH_COOLDOWN_KEY = 'players_refresh_timestamp';
+
 export default function Players() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +23,25 @@ export default function Players() {
   const [countryFilter, setCountryFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshResult, setRefreshResult] = useState(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+  // Check cooldown on mount and update every second
+  useEffect(() => {
+    const checkCooldown = () => {
+      const lastRefresh = localStorage.getItem(REFRESH_COOLDOWN_KEY);
+      if (lastRefresh) {
+        const elapsed = Date.now() - parseInt(lastRefresh, 10);
+        const remaining = REFRESH_COOLDOWN_MS - elapsed;
+        setCooldownRemaining(remaining > 0 ? remaining : 0);
+      }
+    };
+
+    checkCooldown();
+    const interval = setInterval(checkCooldown, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchPlayers = () => {
     api.getAllUsers()
@@ -35,6 +55,13 @@ export default function Players() {
   }, []);
 
   const handleRefreshStats = async () => {
+    // Check cooldown
+    if (cooldownRemaining > 0) {
+      const minutes = Math.ceil(cooldownRemaining / 60000);
+      alert(`Debes esperar ${minutes} minuto(s) antes de refrescar de nuevo.`);
+      return;
+    }
+
     const password = prompt('Contraseña de admin:');
     if (!password) return;
 
@@ -55,6 +82,10 @@ export default function Players() {
       if (!response.ok) {
         throw new Error(data.detail || 'Error al refrescar');
       }
+
+      // Save timestamp to localStorage for cooldown
+      localStorage.setItem(REFRESH_COOLDOWN_KEY, Date.now().toString());
+      setCooldownRemaining(REFRESH_COOLDOWN_MS);
 
       setRefreshResult({ success: true, updated: data.updated, errors: data.errors });
       // Reload players to show updated stats
@@ -103,9 +134,9 @@ export default function Players() {
           <h1 className="players-title">Jugadores</h1>
           <span className="players-count">{registeredPlayers.length} registrados</span>
           <button
-            className="refresh-stats-btn"
+            className={`refresh-stats-btn ${cooldownRemaining > 0 ? 'on-cooldown' : ''}`}
             onClick={handleRefreshStats}
-            disabled={refreshing}
+            disabled={refreshing || cooldownRemaining > 0}
             title="Refrescar estadísticas desde osu! (Admin)"
           >
             {refreshing ? (
@@ -113,7 +144,11 @@ export default function Players() {
             ) : (
               <RefreshCw size={16} />
             )}
-            {refreshing ? 'Refrescando...' : 'Refrescar Stats'}
+            {refreshing
+              ? 'Refrescando...'
+              : cooldownRemaining > 0
+                ? `${Math.floor(cooldownRemaining / 60000)}:${String(Math.floor((cooldownRemaining % 60000) / 1000)).padStart(2, '0')}`
+                : 'Refrescar Stats'}
           </button>
           {refreshResult && (
             <span className={`refresh-result ${refreshResult.success ? 'success' : 'error'}`}>
