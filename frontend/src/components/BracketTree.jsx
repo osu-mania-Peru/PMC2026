@@ -4,26 +4,29 @@ import { Pencil, Plus } from 'lucide-react';
 import Spinner from './Spinner';
 import './BracketTree.css';
 
-// Custom game component matching the design
-function CustomGame({ game, x, y, homeOnTop, onEditMatch, onCreateMatch, isStaff, bracketId }) {
+function CustomGame({ game, x, y, onEditMatch, onCreateMatch, isStaff, bracketId }) {
   const home = game.sides?.home;
   const visitor = game.sides?.visitor;
   const homeTeam = home?.team;
   const visitorTeam = visitor?.team;
   const homeScore = home?.score?.score;
   const visitorScore = visitor?.score?.score;
+  const matchData = game._matchData;
 
-  // Determine winner
-  const homeWon = homeScore !== undefined && visitorScore !== undefined && homeScore > visitorScore;
-  const visitorWon = homeScore !== undefined && visitorScore !== undefined && visitorScore > homeScore;
+  const isCompleted = matchData?.is_completed;
+  const winnerId = matchData?.winner_id;
+  const homeIsWinner = winnerId && winnerId === matchData?.player1_id;
+  const visitorIsWinner = winnerId && winnerId === matchData?.player2_id;
+  const homeTBD = !matchData?.player1_id;
+  const visitorTBD = !matchData?.player2_id;
 
   const width = 310;
   const height = 160;
 
   const handleEditClick = (e) => {
     e.stopPropagation();
-    if (onEditMatch && game._matchData) {
-      onEditMatch(game._matchData);
+    if (onEditMatch && matchData) {
+      onEditMatch(matchData);
     }
   };
 
@@ -38,33 +41,40 @@ function CustomGame({ game, x, y, homeOnTop, onEditMatch, onCreateMatch, isStaff
     }
   };
 
+  const statusClass = matchData?.match_status === 'in_progress' ? 'live' :
+                      isCompleted ? 'completed' : '';
+
   return (
     <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: 'visible' }}>
-      <div xmlns="http://www.w3.org/1999/xhtml" className="custom-match">
+      <div xmlns="http://www.w3.org/1999/xhtml" className={`custom-match ${statusClass}`}>
         <div className="bracket-date">
-          {game.scheduled ? new Date(game.scheduled).toLocaleDateString('es-PE') : 'TBD'}
-          {isStaff && game._matchData && (
+          <span className="bracket-round-label">{game.name}</span>
+          {matchData?.match_status === 'in_progress' && (
+            <span className="match-live-badge">EN VIVO</span>
+          )}
+          {isStaff && matchData && (
             <button className="bracket-edit-btn" onClick={handleEditClick} title="Editar partida">
               <Pencil size={12} />
             </button>
           )}
-          {isStaff && !game._matchData && bracketId && (
+          {isStaff && !matchData && bracketId && (
             <button className="bracket-edit-btn bracket-add-btn" onClick={handleCreateClick} title="Crear partida">
               <Plus size={14} />
             </button>
           )}
         </div>
-        <div className="bracket-player-row">
-          <span className="bracket-seed">TBD</span>
+        <div className={`bracket-player-row ${homeIsWinner ? 'winner' : ''} ${homeTBD ? 'tbd' : ''}`}>
           <span className="bracket-player-name">{homeTeam?.name || 'TBD'}</span>
-          <span className="bracket-indicator"></span>
+          <span className={`bracket-indicator ${homeIsWinner ? 'winner' : ''}`}>
+            {homeScore != null ? homeScore.toLocaleString() : ''}
+          </span>
         </div>
-        <div className="bracket-player-row">
-          <span className="bracket-seed">TBD</span>
+        <div className={`bracket-player-row ${visitorIsWinner ? 'winner' : ''} ${visitorTBD ? 'tbd' : ''}`}>
           <span className="bracket-player-name">{visitorTeam?.name || 'TBD'}</span>
-          <span className="bracket-indicator"></span>
+          <span className={`bracket-indicator ${visitorIsWinner ? 'winner' : ''}`}>
+            {visitorScore != null ? visitorScore.toLocaleString() : ''}
+          </span>
         </div>
-        <div className="bracket-round-label">{game.name}</div>
       </div>
     </foreignObject>
   );
@@ -87,7 +97,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       return;
     }
 
-    // Initial fetch
     const fetchData = () => {
       api.getBracketMatches(bracketId)
         .then(setData)
@@ -100,7 +109,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       .catch(console.error)
       .finally(() => setLoading(false));
 
-    // Poll for updates every 3 seconds
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, [bracketId, api, defaultBracket]);
@@ -113,7 +121,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
   const bracketSize = data.bracket?.size || data.bracket?.bracket_size || 32;
   const bracketType = data.bracket?.type || data.bracket?.bracket_type || 'winner';
 
-  // Guard against invalid bracket sizes
   if (bracketSize < 2 || !Number.isFinite(bracketSize)) {
     return (
       <div className="bracket-tree" ref={containerRef}>
@@ -125,12 +132,85 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     );
   }
 
-  // Transform API data to react-tournament-bracket format
-  const transformToGameFormat = (matches, bracketSize) => {
-    const numRounds = Math.log2(bracketSize);
-    const totalMatchCount = bracketSize - 1;
+  // Build the bracket tree using next_match_id links
+  const buildTreeFromLinks = (matches) => {
+    if (!matches || matches.length === 0) return null;
 
-    // Helper to get round name
+    const matchMap = {};
+    matches.forEach(m => { matchMap[m.id] = m; });
+
+    // Find the final match: the one no other match's next_match_id points to
+    const nextMatchIds = new Set(matches.map(m => m.next_match_id).filter(Boolean));
+    let finalMatch = matches.find(m => !nextMatchIds.has(m.id) && !m.next_match_id);
+    // If not found (all have next_match_id), find the one whose next_match_id points outside this bracket
+    if (!finalMatch) {
+      finalMatch = matches.find(m => m.next_match_id && !matchMap[m.next_match_id]);
+    }
+    // Fallback: last match in array
+    if (!finalMatch) {
+      finalMatch = matches[matches.length - 1];
+    }
+
+    // Build game tree recursively
+    const buildGame = (match, round = 0) => {
+      // Find matches that feed into this one
+      const feeders = matches.filter(m => m.next_match_id === match.id);
+
+      const game = {
+        id: match.id.toString(),
+        name: match.round_name || `Round ${round + 1}`,
+        scheduled: match.scheduled_time ? new Date(match.scheduled_time).getTime() : Date.now(),
+        sides: {
+          home: {
+            team: {
+              id: match.player1_id?.toString() || `tbd-home-${match.id}`,
+              name: match.player1_username || 'TBD'
+            },
+            score: match.player1_score != null ? { score: match.player1_score } : undefined
+          },
+          visitor: {
+            team: {
+              id: match.player2_id?.toString() || `tbd-visitor-${match.id}`,
+              name: match.player2_username || 'TBD'
+            },
+            score: match.player2_score != null ? { score: match.player2_score } : undefined
+          }
+        },
+        _round: round,
+        _position: 0,
+        _matchData: match
+      };
+
+      // Link feeder games
+      if (feeders.length >= 1) {
+        const homeFeeder = buildGame(feeders[0], round + 1);
+        game.sides.home.seed = {
+          displayName: game.sides.home.team.name,
+          rank: 1,
+          sourceGame: homeFeeder,
+          sourcePool: {}
+        };
+      }
+      if (feeders.length >= 2) {
+        const visitorFeeder = buildGame(feeders[1], round + 1);
+        game.sides.visitor.seed = {
+          displayName: game.sides.visitor.team.name,
+          rank: 1,
+          sourceGame: visitorFeeder,
+          sourcePool: {}
+        };
+      }
+
+      return game;
+    };
+
+    return buildGame(finalMatch);
+  };
+
+  // Fallback: build tree by index/position (for brackets without next_match_id links)
+  const buildTreeByPosition = (matches, bracketSize) => {
+    const numRounds = Math.log2(bracketSize);
+
     const getRoundName = (roundIndex, numRounds, bracketType) => {
       if (bracketType === 'loser') {
         if (roundIndex === numRounds - 1) return 'Loser Finals';
@@ -145,16 +225,12 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       return `Round ${roundIndex + 1}`;
     };
 
-    // Build games array - we need to create them in order and link them
     const games = [];
-
-    // Calculate matches per round
     const matchesPerRound = [];
     for (let r = 0; r < numRounds; r++) {
       matchesPerRound.push(bracketSize / Math.pow(2, r + 1));
     }
 
-    // Create all game objects first
     let matchIndex = 0;
     for (let round = 0; round < numRounds; round++) {
       const matchesInRound = matchesPerRound[round];
@@ -162,8 +238,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
         const apiMatch = matches?.[matchIndex];
         games.push({
           id: apiMatch?.id?.toString() || `game-${matchIndex}`,
-          name: getRoundName(round, numRounds, bracketType),
-          bracketLabel: getRoundName(round, numRounds, bracketType),
+          name: apiMatch?.round_name || getRoundName(round, numRounds, bracketType),
           scheduled: Date.now(),
           sides: {
             home: {
@@ -171,30 +246,25 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                 id: apiMatch?.player1_id?.toString() || `p1-${matchIndex}`,
                 name: apiMatch?.player1_username || 'TBD'
               },
-              score: apiMatch?.player1_score !== null && apiMatch?.player1_score !== undefined
-                ? { score: apiMatch.player1_score }
-                : undefined
+              score: apiMatch?.player1_score != null ? { score: apiMatch.player1_score } : undefined
             },
             visitor: {
               team: {
                 id: apiMatch?.player2_id?.toString() || `p2-${matchIndex}`,
                 name: apiMatch?.player2_username || 'TBD'
               },
-              score: apiMatch?.player2_score !== null && apiMatch?.player2_score !== undefined
-                ? { score: apiMatch.player2_score }
-                : undefined
+              score: apiMatch?.player2_score != null ? { score: apiMatch.player2_score } : undefined
             }
           },
           _round: round,
           _position: m,
-          _winnerId: apiMatch?.winner_id,
           _matchData: apiMatch || null
         });
         matchIndex++;
       }
     }
 
-    // Now link the games: each game in round N feeds into a game in round N+1
+    // Link games
     matchIndex = 0;
     for (let round = 0; round < numRounds - 1; round++) {
       const matchesInRound = matchesPerRound[round];
@@ -206,12 +276,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
         const nextGame = games[nextGameIndex];
 
         if (nextGame) {
-          // Determine if this game feeds into home or visitor of next game
-          const isHomeFeeder = m % 2 === 0;
-          const side = isHomeFeeder ? 'home' : 'visitor';
-
-          // Set up the seed reference - link to source game for bracket lines
-          // The team name comes from the API data, we just need to link for the bracket visualization
+          const side = m % 2 === 0 ? 'home' : 'visitor';
           nextGame.sides[side].seed = {
             displayName: nextGame.sides[side].team?.name || 'TBD',
             rank: 1,
@@ -223,11 +288,14 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       }
     }
 
-    // Return the final game (last one in the array)
     return games.length > 0 ? games[games.length - 1] : null;
   };
 
-  const finalGame = transformToGameFormat(data.matches, bracketSize);
+  // Determine which tree-building method to use
+  const hasLinks = data.matches?.some(m => m.next_match_id);
+  const finalGame = hasLinks
+    ? buildTreeFromLinks(data.matches)
+    : buildTreeByPosition(data.matches, bracketSize);
 
   if (!finalGame) {
     return (
@@ -239,11 +307,14 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     );
   }
 
-  // For single match (like Grand Finals), render a simple view
+  // For single match (Grand Finals), render a simple view
   if (bracketSize <= 2) {
+    const matchData = finalGame._matchData;
+    const winnerId = matchData?.winner_id;
+
     const handleSingleMatchEdit = () => {
-      if (onEditMatch && finalGame._matchData) {
-        onEditMatch(finalGame._matchData);
+      if (onEditMatch && matchData) {
+        onEditMatch(matchData);
       }
     };
 
@@ -261,27 +332,34 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
       <div className="bracket-tree" ref={containerRef}>
         <div className="bracket-section">
           <div className="single-match-view">
-            <div className="styled-match single">
+            <div className={`styled-match single ${matchData?.is_completed ? 'completed' : ''} ${matchData?.match_status === 'in_progress' ? 'live' : ''}`}>
               <div className="match-round-text">
                 {finalGame.name}
-                {user?.is_staff && finalGame._matchData && (
+                {matchData?.match_status === 'in_progress' && (
+                  <span className="match-live-badge">EN VIVO</span>
+                )}
+                {user?.is_staff && matchData && (
                   <button className="bracket-edit-btn" onClick={handleSingleMatchEdit} title="Editar partida">
                     <Pencil size={12} />
                   </button>
                 )}
-                {user?.is_staff && !finalGame._matchData && bracketId && (
+                {user?.is_staff && !matchData && bracketId && (
                   <button className="bracket-edit-btn bracket-add-btn" onClick={handleSingleMatchCreate} title="Crear partida">
                     <Plus size={14} />
                   </button>
                 )}
               </div>
-              <div className={`match-team ${finalGame._winnerId === finalGame.sides.home.team?.id ? 'winner' : ''}`}>
+              <div className={`match-team ${winnerId === matchData?.player1_id ? 'winner' : ''} ${!matchData?.player1_id ? 'tbd' : ''}`}>
                 <span className="team-name">{finalGame.sides.home.team?.name || 'TBD'}</span>
-                <span className="team-score">{finalGame.sides.home.score?.score ?? ''}</span>
+                <span className="team-score">
+                  {matchData?.player1_score != null ? matchData.player1_score.toLocaleString() : ''}
+                </span>
               </div>
-              <div className={`match-team ${finalGame._winnerId === finalGame.sides.visitor.team?.id ? 'winner' : ''}`}>
+              <div className={`match-team ${winnerId === matchData?.player2_id ? 'winner' : ''} ${!matchData?.player2_id ? 'tbd' : ''}`}>
                 <span className="team-name">{finalGame.sides.visitor.team?.name || 'TBD'}</span>
-                <span className="team-score">{finalGame.sides.visitor.score?.score ?? ''}</span>
+                <span className="team-score">
+                  {matchData?.player2_score != null ? matchData.player2_score.toLocaleString() : ''}
+                </span>
               </div>
             </div>
           </div>
@@ -290,7 +368,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     );
   }
 
-  // Wrapper component to pass additional props to CustomGame
   const GameWithProps = (props) => (
     <CustomGame {...props} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} isStaff={user?.is_staff} bracketId={bracketId} />
   );

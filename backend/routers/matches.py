@@ -132,6 +132,17 @@ async def update_match(
 
     db.commit()
     db.refresh(match)
+
+    # Trigger progression if match is completed with a winner
+    if match.is_completed and match.winner_id:
+        try:
+            progression_service = BracketProgressionService(db)
+            progression_result = progression_service.progress_match(match)
+            return {"match": match, "progression": progression_result}
+        except Exception as e:
+            print(f"Match progression error: {str(e)}")
+            return {"match": match, "progression": {"error": str(e)}}
+
     return match
 
 
