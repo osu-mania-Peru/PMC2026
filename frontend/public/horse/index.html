@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMC 2026 - Horse Race</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
+
+        @font-face {
+            font-family: 'Noto Sans SC';
+            src: url('umamusume-ui/packages/assets/NotoSansSC-Bold.otf') format('opentype');
+            font-weight: bold;
+        }
+
+        :root {
+            /* Umamusume Authentic Color Palette */
+            --uma-green: #57cd24;
+            --uma-green-light: #aaff00;
+            --uma-green-dark: #5fcb00;
+            --uma-lime: #aaff00;
+            --uma-lime-glow: #b5ff18;
+            --uma-brown: #593b00;
+            --uma-brown-light: #6a5732;
+            --uma-brown-dark: #4f3700;
+            --uma-cream: #f5f5f5;
+            --uma-gold: #ffcd68;
+            --uma-gold-light: #fff5b4;
+            --uma-gold-dark: #ffb300;
+            --uma-pink: #ff0095;
+            --uma-gray: #686868;
+            --uma-gray-light: #bcbcbc;
+            --uma-shadow: rgba(56, 56, 56, 0.54);
+            --uma-shadow-dark: rgba(61, 61, 61, 0.71);
+            --uma-border-green: #005e00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100vh;
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: hidden;
+        }
+
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: #4a7c4e;
+            image-rendering: auto;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        #gameCanvas.show {
+            opacity: 1;
+        }
+
+        #ui {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ===== UMAMUSUME TIMER ===== */
+        .timer {
+            position: absolute;
+            top: 2vh;
+            left: 2vw;
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            border: 0.3vh solid var(--uma-gray);
+            border-radius: 1.5vh;
+            padding: 1.2vh 2vw;
+            color: var(--uma-brown);
+            font-size: 4vh;
+            font-weight: 700;
+            font-family: 'Noto Sans JP', sans-serif;
+            -webkit-text-stroke: 0.5px var(--uma-brown);
+            box-shadow:
+                0 0.4vh 0 var(--uma-shadow),
+                0 0 0.5vh rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.1vw;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .timer.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .timer::before {
+            content: 'TIEMPO';
+            position: absolute;
+            top: -1.5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            font-size: 1.4vh;
+            font-weight: 700;
+            padding: 0.4vh 1.2vw;
+            border-radius: 1vh;
+            border: 0.2vh solid var(--uma-border-green);
+            letter-spacing: 0.2vw;
+            box-shadow: 0 0.3vh 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== RACE INFO BANNER (Tabs Style) ===== */
+        .race-banner {
+            position: fixed;
+            top: 1.5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0;
+            z-index: 20;
+            box-shadow: 0 0.4vh 0.1vh var(--uma-shadow);
+            border-radius: 2vh;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .race-banner.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .race-banner-segment {
+            padding: 1.4vh 2vw;
+            font-weight: 700;
+            font-size: 1.8vh;
+            text-transform: uppercase;
+            letter-spacing: 0.1vw;
+            position: relative;
+            border: 0.1vh solid #dcdee2;
+        }
+
+        .race-banner-left {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fffd;
+            border-radius: 2vh 0 0 2vh;
+            padding-left: 2.5vw;
+            border: 0.1vh solid var(--uma-green-dark);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        .race-banner-center {
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            color: var(--uma-brown);
+            min-width: 15vw;
+            text-align: center;
+            font-size: 1.6vh;
+            line-height: 1.2;
+            padding: 1vh 2vw;
+            -webkit-text-stroke: 0.5px var(--uma-brown);
+        }
+
+        .race-banner-center span:first-child {
+            font-size: 1.4vh;
+            opacity: 0.8;
+        }
+
+        .race-banner-right {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fffd;
+            border-radius: 0 2vh 2vh 0;
+            padding-right: 2.5vw;
+            border: 0.1vh solid var(--uma-green-dark);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== LEADERBOARD (Card Style) ===== */
+        .leaderboard {
+            position: absolute;
+            top: 2vh;
+            right: 2vw;
+            width: 18vw;
+            min-width: 200px;
+            background: #fff;
+            border-radius: 1vh;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 0 0.5vh #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .leaderboard.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .leaderboard-header {
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            padding: 1.2vh 1.5vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1vh;
+            border-radius: 1vh 1vh 0 0;
+        }
+
+        .leaderboard-title {
+            color: #f1f1f1;
+            text-align: center;
+            font-size: 2vh;
+            font-weight: 700;
+            letter-spacing: 0.1vw;
+            -webkit-text-stroke: 0.5px #f1f1f1;
+        }
+
+        .leaderboard-icon {
+            font-size: 2vh;
+        }
+
+        .leaderboard-entries {
+            padding: 1vh;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5vh;
+            max-height: 60vh;
+            overflow-y: auto;
+            background: #eee;
+        }
+
+        .leaderboard-entry {
+            background: #fff;
+            color: var(--uma-brown);
+            font-size: 1.5vh;
+            padding: 1vh 1vw;
+            border-radius: 0.8vh;
+            display: flex;
+            align-items: center;
+            gap: 0.8vw;
+            font-weight: 700;
+            transition: all 0.15s ease;
+            border: 0.1vh solid #dcdee2;
+            -webkit-text-stroke: 0.3px var(--uma-brown-dark);
+        }
+
+        .leaderboard-entry:hover {
+            transform: scale(0.98);
+            background: #f8f8f8;
+        }
+
+        .leaderboard-entry.top-1 {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, #fff 40%);
+            border-color: var(--uma-gold-dark);
+        }
+
+        .leaderboard-entry.top-2 {
+            background: linear-gradient(90deg, #e8e8e8 0%, #fff 40%);
+            border-color: #999;
+        }
+
+        .leaderboard-entry.top-3 {
+            background: linear-gradient(90deg, #ffe8d0 0%, #fff 40%);
+            border-color: #cd7f32;
+        }
+
+        .leaderboard-entry .pos {
+            min-width: 2.5vh;
+            height: 2.5vh;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3vh;
+            font-weight: 700;
+            background: linear-gradient(180deg, #e5e5e5 0%, #cbcbcb 100%);
+            color: #a8a8a8;
+            border: 0.1vh solid rgba(91, 91, 91, 0.58);
+            box-shadow: 0 0.2vh 0.2vh var(--uma-shadow-dark);
+        }
+
+        .leaderboard-entry.top-1 .pos {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 60%, var(--uma-gold-dark) 100%);
+            color: var(--uma-brown);
+            border-color: #ff8800;
+        }
+
+        .leaderboard-entry.top-2 .pos {
+            background: linear-gradient(90deg, #f5f5f5 0%, #d0d0d0 60%, #aaa 100%);
+            color: #555;
+            border-color: #888;
+        }
+
+        .leaderboard-entry.top-3 .pos {
+            background: linear-gradient(90deg, #ffe0c0 0%, #dda060 60%, #b87333 100%);
+            color: #fff;
+            border-color: #8b4513;
+        }
+
+        .leaderboard-entry .badge {
+            min-width: 3vh;
+            height: 2.5vh;
+            border-radius: 1.2vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2vh;
+            border: 0.2vh solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0.2vh 0.2vh rgba(0,0,0,0.2);
+            color: #fff;
+            -webkit-text-stroke: 0;
+        }
+
+        .leaderboard-entry .name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 1.4vh;
+        }
+
+        /* ===== SPEED CONTROL (Button Style) ===== */
+        .speed-control {
+            position: fixed;
+            bottom: 2vh;
+            right: 2vw;
+            display: flex;
+            gap: 0.8vw;
+            padding: 1.4vh 1.5vw;
+            background: #fff;
+            border-radius: 1.2vh;
+            box-shadow: 0 0 0.5vh #000, 0 0.4vh 0 var(--uma-shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .speed-control.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .speed-control::before {
+            content: 'VELOCIDAD';
+            position: absolute;
+            top: -1.5vh;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            font-size: 1.2vh;
+            font-weight: 700;
+            padding: 0.3vh 1vw;
+            border-radius: 1vh;
+            border: 0.2vh solid var(--uma-border-green);
+            letter-spacing: 0.1vw;
+            box-shadow: 0 0.3vh 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.3px #fff;
+        }
+
+        .speed-btn {
+            width: 4vh;
+            height: 4vh;
+            border-radius: 1vh;
+            border: 0.25vh solid var(--uma-gray);
+            background: linear-gradient(180deg, #fff 0%, var(--uma-gray-light) 100%);
+            color: var(--uma-brown);
+            font-weight: 700;
+            font-size: 1.4vh;
+            cursor: pointer;
+            transition: all 0.05s linear;
+            pointer-events: auto;
+            box-shadow: 0 0.4vh 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px var(--uma-brown);
+            position: relative;
+        }
+
+        .speed-btn:hover {
+            transform: scale(0.9);
+        }
+
+        .speed-btn.active {
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            border-color: var(--uma-border-green);
+            color: #fff;
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== INSTRUCTIONS (Dialog Style) ===== */
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--uma-cream);
+            border-radius: 20px;
+            padding: 15px 30px;
+            padding-top: 20px;
+            color: var(--uma-brown);
+            font-size: 15px;
+            text-align: center;
+            font-weight: 700;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            -webkit-text-stroke: 0.4px var(--uma-brown-light);
+            overflow: hidden;
+        }
+
+        .instructions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+        }
+
+        .instructions .key {
+            display: inline-block;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            margin: 0 4px;
+            font-size: 13px;
+            border: 1.9px solid var(--uma-border-green);
+            box-shadow: 0 3px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
+        }
+
+        /* ===== LOADING SCREEN (Dialog Style) ===== */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #4a7c4e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--uma-brown);
+            font-size: 20px;
+            z-index: 1000;
+        }
+
+        #loading.hidden {
+            display: none;
+            pointer-events: none;
+        }
+
+        .loading-card {
+            background: var(--uma-cream);
+            border-radius: 20px;
+            padding: 40px 60px;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            text-align: center;
+        }
+
+        .pmc-title {
+            font-size: 56px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 50%, var(--uma-gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+            filter: drop-shadow(2px 2px 0 #ff8800);
+        }
+
+        .pmc-subtitle {
+            font-size: 16px;
+            color: var(--uma-brown);
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            -webkit-text-stroke: 0.4px var(--uma-brown);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #eee;
+            border-top-color: var(--uma-green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-weight: 700;
+            color: var(--uma-brown-light);
+            font-size: 16px;
+            animation: loading-pulse 1.5s ease-in-out infinite;
+            -webkit-text-stroke: 0.3px var(--uma-brown-light);
+        }
+
+        @keyframes loading-pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== RACE START OVERLAY ===== */
+        .race-countdown {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 140px;
+            font-weight: 700;
+            color: var(--uma-brown);
+            background: var(--uma-cream);
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            border: 8px solid var(--uma-green);
+            z-index: 100;
+            animation: countdown-pop 0.5s ease-out;
+            -webkit-text-stroke: 2px var(--uma-brown);
+        }
+
+        .race-countdown.show {
+            display: flex;
+        }
+
+        @keyframes countdown-pop {
+            0% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .race-start-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            font-weight: 700;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(3px 3px 0 var(--uma-border-green));
+            z-index: 100;
+            display: none;
+            letter-spacing: 6px;
+        }
+
+        .race-start-text.show {
+            display: block;
+            animation: start-pop 0.8s ease-out;
+        }
+
+        @keyframes start-pop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* ===== FINISH OVERLAY (Dialog Style) ===== */
+        .finish-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(85, 85, 85, 0.3);
+            backdrop-filter: blur(8px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .finish-overlay.show {
+            display: flex;
+        }
+
+        .finish-dialog {
+            background: var(--uma-cream);
+            border-radius: 20px;
+            box-shadow: 0 0 13px 10px rgba(60, 60, 60, 0.3);
+            overflow: hidden;
+            min-width: 450px;
+        }
+
+        .finish-header {
+            background: var(--uma-green);
+            background-image: url('umamusume-ui/packages/assets/images/um_title_bg.png');
+            background-size: cover;
+            padding: 15px 30px;
+            text-align: center;
+        }
+
+        .finish-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f1f1f1;
+            -webkit-text-stroke: 0.5px #f1f1f1;
+            letter-spacing: 3px;
+        }
+
+        .finish-results {
+            background: #eee;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 10px;
+        }
+
+        .finish-result-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 12px;
+            background: #fff;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #dcdee2;
+        }
+
+        .finish-result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .finish-place {
+            font-size: 22px;
+            font-weight: 700;
+            min-width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--uma-brown);
+            background: linear-gradient(180deg, #e5e5e5 0%, #cbcbcb 100%);
+            border: 1px solid rgba(91, 91, 91, 0.58);
+            box-shadow: 0 2px 2px var(--uma-shadow-dark);
+        }
+
+        .finish-place.gold {
+            background: linear-gradient(90deg, var(--uma-gold-light) 0%, var(--uma-gold) 60%, var(--uma-gold-dark) 100%);
+            border-color: #ff8800;
+        }
+
+        .finish-place.silver {
+            background: linear-gradient(90deg, #f5f5f5 0%, #d0d0d0 60%, #aaa 100%);
+            border-color: #888;
+        }
+
+        .finish-place.bronze {
+            background: linear-gradient(90deg, #ffe0c0 0%, #dda060 60%, #b87333 100%);
+            border-color: #8b4513;
+            color: #fff;
+        }
+
+        .finish-name {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--uma-brown);
+            -webkit-text-stroke: 0.3px var(--uma-brown);
+        }
+
+        .finish-time {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--uma-green-dark);
+            font-family: 'Noto Sans JP', monospace;
+        }
+
+        .finish-footer {
+            padding: 15px;
+            text-align: center;
+        }
+
+        .finish-btn {
+            padding: 12px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(180deg, var(--uma-lime) 0%, var(--uma-green-dark) 100%);
+            color: #fff;
+            border: 1.9px solid var(--uma-border-green);
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 3px 0 var(--uma-shadow);
+            -webkit-text-stroke: 0.5px #fff;
+            transition: all 0.05s linear;
+            pointer-events: auto;
+        }
+
+        .finish-btn:hover {
+            transform: scale(0.95);
+        }
+
+        /* Hide old keiba display */
+        .keiba-display {
+            display: none;
+        }
+
+        /* ===== PRE-RACE PARTICIPANT SCREEN ===== */
+        .prerace-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            overflow: hidden;
+            animation: prerace-bg-fade 1.5s ease-out forwards;
+            pointer-events: auto;
+        }
+
+        .prerace-bg-slideshow {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            z-index: -1;
+        }
+
+        .prerace-bg-slideshow img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            animation: none;
+        }
+
+        .prerace-bg-slideshow img.active {
+            opacity: 0.8;
+        }
+
+        @keyframes prerace-bg-pan-1 {
+            0% { transform: translate(0, 0) scale(1.1); }
+            100% { transform: translate(-5%, -5%) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-2 {
+            0% { transform: translate(-5%, 0) scale(1.1); }
+            100% { transform: translate(0, -5%) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-3 {
+            0% { transform: translate(-5%, -5%) scale(1.1); }
+            100% { transform: translate(0, 0) scale(1.1); }
+        }
+        @keyframes prerace-bg-pan-4 {
+            0% { transform: translate(0, -5%) scale(1.1); }
+            100% { transform: translate(-5%, 0) scale(1.1); }
+        }
+
+        .prerace-bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 0;
+        }
+
+        @keyframes prerace-bg-fade {
+            0% { background: rgba(0, 0, 0, 1); }
+            100% { background: rgba(0, 0, 0, 0.3); }
+        }
+
+        .prerace-screen.hidden {
+            display: none;
+        }
+
+        .prerace-title {
+            opacity: 0;
+            animation: prerace-fade-in 0.8s ease-out 0.3s forwards;
+        }
+
+        .prerace-button {
+            opacity: 0;
+            animation: prerace-fade-in 0.8s ease-out 0.5s forwards;
+            margin-top: 6vh;
+        }
+
+        @keyframes prerace-fade-in {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Card staggered fade-in animation */
+        .prerace-card.animate-in {
+            animation: prerace-card-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes prerace-card-in {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prerace-title {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 2.5vh;
+            font-weight: 700;
+            color: #593b00;
+            background: #fff;
+            padding: 1.2vh 4vw;
+            padding-left: 6vw;
+            border-radius: 2vh;
+            box-shadow: 0 0 4px #000;
+            -webkit-text-stroke: 0.5px #593b00;
+            text-align: center;
+            position: absolute;
+            top: 2vh;
+            left: 2vw;
+            right: 2vw;
+        }
+
+        .prerace-title-badge {
+            position: absolute;
+            left: 1vw;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+            color: #fff;
+            font-size: 1.5vh;
+            font-weight: 700;
+            padding: 0.5vh 1.2vw;
+            border-radius: 1.2vh;
+            border: 2px solid #16a34a;
+            -webkit-text-stroke: 0.5px #fff;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+
+        .prerace-participants-wrapper {
+            position: relative;
+            max-width: 95vw;
+        }
+
+        .prerace-participants {
+            display: flex;
+            gap: 1vw;
+            padding: 10px;
+            padding-left: 4vw;
+            padding-right: 4vw;
+            max-width: 95vw;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-mask-image: linear-gradient(
+                to right,
+                transparent 0%,
+                black 2%,
+                black 98%,
+                transparent 100%
+            );
+            mask-image: linear-gradient(
+                to right,
+                transparent 0%,
+                black 2%,
+                black 98%,
+                transparent 100%
+            );
+        }
+
+        .prerace-card {
+            flex-shrink: 0;
+            width: 8vw;
+            min-width: 80px;
+            height: 68vh;
+            background: #fff;
+            border-radius: 1.3vw;
+            box-shadow: 0 0 4px #000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            isolation: isolate;
+            z-index: 1;
+            /* Initial state for animation */
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .prerace-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6%;
+            background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 30%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            border-radius: 0 0 1.5vw 1.5vw;
+        }
+
+        .prerace-card-color {
+            width: 100%;
+            height: 18px;
+            flex-shrink: 0;
+            background-image: url('umamusume-ui/packages/assets/images/umbtn_bg.png');
+            background-size: cover;
+            background-blend-mode: overlay;
+        }
+
+        .prerace-card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+        }
+
+        .prerace-card-number {
+            width: 6vh;
+            height: 6vh;
+            border-radius: 1vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 3.5vh;
+            font-weight: 700;
+            color: #000;
+            margin-bottom: 1.5vh;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+
+        .prerace-card-name {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 2.5vh;
+            font-weight: 700;
+            color: #593b00;
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            -webkit-text-stroke: 0.3px #593b00;
+            max-height: 40vh;
+            overflow: hidden;
+        }
+
+        .prerace-card-info {
+            width: 100%;
+            margin-top: auto;
+            padding: 1vh 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .prerace-card-info-symbols {
+            display: flex;
+            justify-content: space-between;
+            width: 6.6vw;
+            min-width: 66px;
+            padding: 0 0.5vw;
+            box-sizing: border-box;
+            margin-bottom: 0.8vh;
+        }
+
+        .prerace-card-info-symbols .symbol-triangle {
+            width: 0;
+            height: 0;
+            border-left: 1.5vh solid transparent;
+            border-right: 1.5vh solid transparent;
+            border-bottom: 2.5vh solid #8b7355;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .prerace-card-info-symbols .symbol-triangle::after {
+            content: '';
+            position: absolute;
+            top: 0.85vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 0.8vh solid transparent;
+            border-right: 0.8vh solid transparent;
+            border-bottom: 1.3vh solid #fff;
+            border-radius: 2px;
+        }
+
+        .prerace-card-info-symbols .symbol-circle {
+            width: 2.7vh;
+            height: 2.7vh;
+            border: 0.55vh solid #8b7355;
+            border-radius: 50%;
+        }
+
+        .prerace-card-info-symbols .symbol-x {
+            width: 2.2vh;
+            height: 2.2vh;
+            position: relative;
+        }
+
+        .prerace-card-info-symbols .symbol-x::before,
+        .prerace-card-info-symbols .symbol-x::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: #8b7355;
+            top: 50%;
+            left: 0;
+            border-radius: 2px;
+        }
+
+        .prerace-card-info-symbols .symbol-x::before {
+            transform: translateY(-50%) rotate(45deg);
+        }
+
+        .prerace-card-info-symbols .symbol-x::after {
+            transform: translateY(-50%) rotate(-45deg);
+        }
+
+        .prerace-card-info-fav {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 1.6vh;
+            font-weight: 700;
+            color: #593b00;
+            background: #f5efe6;
+            width: 6.6vw;
+            min-width: 66px;
+            padding: 0.5vh 0;
+            border-radius: 0.8vh;
+            margin-bottom: 0.5vh;
+            text-align: center;
+        }
+
+        .prerace-card-info-style {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 1.6vh;
+            font-weight: 700;
+            color: #593b00;
+            background: #f5efe6;
+            width: 6.6vw;
+            min-width: 66px;
+            padding: 0.5vh 0;
+            border-radius: 0.8vh;
+            text-align: center;
+        }
+
+        .prerace-card-avatar {
+            width: 6vw;
+            min-width: 60px;
+            height: 6vw;
+            min-height: 60px;
+            border-radius: 1.3vw;
+            overflow: hidden;
+            margin-top: 1vh;
+            background: #eee;
+            position: relative;
+            z-index: 0;
+        }
+
+        .prerace-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .prerace-card-avatar .fallback {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #999;
+        }
+
+        .prerace-button {
+            margin-top: 6vh;
+            padding: 1.5vh 8vw;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 3vh;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-image: url('umamusume-ui/packages/assets/images/umbtn_bg.png'), linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 2px solid #005e00;
+            border-radius: 1.5vh;
+            box-shadow: 0 4px 0 rgba(56, 56, 56, 0.54);
+            cursor: pointer;
+            transition: all 0.05s linear;
+            -webkit-text-stroke: 1px #fff;
+            pointer-events: auto;
+        }
+
+        .prerace-button:hover {
+            transform: scale(0.95);
+        }
+
+        .prerace-button:active {
+            transform: scale(0.9);
+            box-shadow: 0 2px 0 rgba(56, 56, 56, 0.54);
+        }
+
+        /* ===== RACE PROGRESS BAR ===== */
+        .race-progress {
+            position: fixed;
+            bottom: 2vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 0;
+        }
+
+        .race-progress.show {
+            display: flex;
+        }
+
+        .race-progress-label {
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 2vh;
+            font-weight: 700;
+            letter-spacing: 0.1vw;
+            padding: 0 1vw;
+            -webkit-text-stroke: 0.25vh #fff;
+            paint-order: stroke fill;
+            text-shadow:
+                0.25vh 0.25vh 0 #fff,
+                -0.25vh -0.25vh 0 #fff,
+                0.25vh -0.25vh 0 #fff,
+                -0.25vh 0.25vh 0 #fff,
+                0 0.25vh 0 #fff,
+                0.25vh 0 0 #fff,
+                0 -0.25vh 0 #fff,
+                -0.25vh 0 0 #fff;
+        }
+
+        .race-progress-label.finish {
+            color: #3498db;
+        }
+
+        .race-progress-label.start {
+            color: #e91e8c;
+        }
+
+        .race-progress-track {
+            position: relative;
+            width: 35vw;
+            height: 0.8vh;
+            background: linear-gradient(180deg, #e0e0e0 0%, #fff 50%, #d0d0d0 100%);
+            border-radius: 0.4vh;
+            margin: 0 0.8vw;
+            box-shadow: 0 0.3vh 0.5vh rgba(0,0,0,0.2);
+        }
+
+        .race-progress-track-inner {
+            display: none;
+        }
+
+        .race-progress-markers {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            height: 7vh;
+        }
+
+        .race-progress-horse {
+            position: absolute;
+            bottom: 0;
+            transform: translateX(-50%);
+            transition: left 0.1s ease-out;
+        }
+
+        .race-progress-horse .bubble {
+            width: 4vh;
+            height: 5vh;
+            border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+            border: 0.3vh solid rgba(255, 255, 255, 0.95);
+            box-shadow:
+                0 0.4vh 0.8vh rgba(0, 0, 0, 0.25),
+                inset 0 0.25vh 0.5vh rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .race-progress-horse .bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -1vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 0.7vh solid transparent;
+            border-right: 0.7vh solid transparent;
+            border-top: 1.2vh solid currentColor;
+        }
+
+        .race-progress-horse .bubble img {
+            width: 3.2vh;
+            height: 3.2vh;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .race-progress-horse .bubble .fallback {
+            font-size: 1.8vh;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0.1vh 0.25vh rgba(0,0,0,0.5);
+        }
+
+        .race-progress-horse .number {
+            position: absolute;
+            right: -0.5vh;
+            bottom: -0.3vh;
+            min-width: 2vh;
+            height: 2vh;
+            padding: 0 0.5vh;
+            border-radius: 1vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2vh;
+            font-weight: 700;
+            color: #fff;
+            background: #222;
+            border: 0.25vh solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0.25vh 0.4vh rgba(0, 0, 0, 0.4);
+            z-index: 2;
+        }
+
+        /* Finish line marker on progress bar */
+        .race-progress-finish-line {
+            display: none;
+        }
+
+        /* ===== SCROLLBAR STYLING ===== */
+        /* Firefox - hide scrollbar but keep scroll functionality */
+        .prerace-participants {
+            scrollbar-width: none;
+        }
+
+        /* Chrome/Safari/Edge - hide scrollbar but keep scroll functionality */
+        .prerace-participants::-webkit-scrollbar {
+            display: none;
+        }
+
+        .leaderboard-entries::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .leaderboard-entries::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 3px;
+        }
+
+        .leaderboard-entries::-webkit-scrollbar-thumb {
+            background: var(--uma-gold);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen (pitch black) -->
+    <div id="loading" style="background: #000; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: opacity 0.5s ease-out; pointer-events: auto;">
+        <span id="loadingText" style="font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif; font-size: 3vh; color: #fff; opacity: 0.8;">Cargando...</span>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Pre-Race Participant Screen -->
+    <div class="prerace-screen" id="preraceScreen">
+        <div class="prerace-bg-slideshow" id="preraceBgSlideshow">
+            <img src="assets/bg1.jpg" class="active" alt="">
+            <img src="assets/bg2.jpg" alt="">
+            <img src="assets/bg3.jpg" alt="">
+        </div>
+        <div class="prerace-bg-overlay"></div>
+        <div class="prerace-title"><span class="prerace-title-badge">PE</span>Peru Mania Cup 2026</div>
+        <div class="prerace-participants-wrapper">
+            <div class="prerace-participants" id="preraceParticipants"></div>
+        </div>
+        <button class="prerace-button" id="preraceButton">Empezar!</button>
+    </div>
+
+    <!-- Race Countdown -->
+    <div class="race-countdown" id="raceCountdown"></div>
+    <div class="race-start-text" id="raceStartText">START!</div>
+
+    <!-- Main UI Overlay -->
+    <div id="ui">
+        <!-- Timer -->
+        <div class="timer" id="timer">00:00.00</div>
+
+        <!-- Race Banner (top center) -->
+        <div class="race-banner">
+            <div class="race-banner-segment race-banner-left">Turf</div>
+            <div class="race-banner-segment race-banner-center" id="raceName"><span>2026</span><br><span>PERU MANIA CUP</span></div>
+            <div class="race-banner-segment race-banner-right">2600M</div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <div class="leaderboard-title">Posiciones</div>
+            </div>
+            <div class="leaderboard-entries" id="leaderboardEntries"></div>
+        </div>
+
+        <!-- Race Progress Bar -->
+        <div class="race-progress" id="raceProgress">
+            <div class="race-progress-label finish">Finish</div>
+            <div class="race-progress-track">
+                <div class="race-progress-markers" id="raceProgressMarkers"></div>
+            </div>
+            <div class="race-progress-label start">Start</div>
+        </div>
+
+        <!-- Speed Control -->
+        <div class="speed-control" id="speedControl">
+            <button class="speed-btn" data-speed="0.25">¼×</button>
+            <button class="speed-btn" data-speed="0.5">½×</button>
+            <button class="speed-btn active" data-speed="1">1×</button>
+            <button class="speed-btn" data-speed="2">2×</button>
+            <button class="speed-btn" data-speed="4">4×</button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions" id="instructions">
+            Presiona <span class="key">ESPACIO</span> para Iniciar
+        </div>
+
+        <!-- Old keiba display (hidden) -->
+        <div class="keiba-display" id="keibaDisplay"></div>
+    </div>
+
+    <!-- Finish Overlay -->
+    <div class="finish-overlay" id="finishOverlay">
+        <div class="finish-dialog">
+            <div class="finish-header">
+                <div class="finish-title">CARRERA TERMINADA</div>
+            </div>
+            <div class="finish-results" id="finishResults"></div>
+            <div class="finish-footer">
+                <button class="finish-btn" onclick="location.reload()">Correr de Nuevo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Always use production API for real player data
+        const API_BASE = 'https://api.perumaniacup.info';
+
+        async function loadPlayers() {
+            const loadingText = document.getElementById('loadingText');
+            try {
+                const response = await fetch(`${API_BASE}/users/all`);
+                const data = await response.json();
+
+                if (data.users && data.users.length > 0) {
+                    // Shuffle players for random lane assignment
+                    const shuffled = data.users.sort(() => Math.random() - 0.5);
+
+                    // Take up to 12 players
+                    const players = shuffled.slice(0, 40);
+
+                    window.HORSE_DATA = players.map((player, index) => ({
+                        id: player.id,
+                        name: player.username,
+                        seed: player.seed_number || (index + 1),
+                        colorIndex: index % 8,
+                        avatarUrl: player.osu_id ? `https://a.ppy.sh/${player.osu_id}` : null
+                    }));
+                    loadingText.textContent = 'Haz click';
+                } else {
+                    loadingText.textContent = '(Inicia sesion primero)';
+                }
+            } catch (error) {
+                console.error('Failed to load players:', error);
+                loadingText.textContent = '(Inicia sesion primero)';
+            }
+        }
+
+        // Load scripts sequentially (they have dependencies)
+        async function loadScriptsInOrder(scripts) {
+            for (const src of scripts) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = reject;
+                    document.body.appendChild(script);
+                });
+            }
+        }
+
+        // Load players then start game
+        // Using CLEAN architecture: geometry first, then gizmos, then horses, then game
+        loadPlayers().then(() => {
+            const scripts = [
+                'vector2.js',           // Math utilities
+                'track-geometry.js',    // Pure track math - defines all boundaries
+                'track-gizmos.js',      // Debug rendering of track
+                'horse-clean.js',       // Clean horse implementation
+                'race-clean.js',        // Clean race management
+                'game-loop.js'          // Main game loop
+            ];
+            loadScriptsInOrder(scripts);
+        });
+    </script>
+</body>
+</html>

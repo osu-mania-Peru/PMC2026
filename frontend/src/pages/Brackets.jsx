@@ -18,6 +18,7 @@ export default function Brackets({ user }) {
   const [maps, setMaps] = useState([]);
   const [generating, setGenerating] = useState(false);
   const [bracketSize, setBracketSize] = useState(8);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     api.getBrackets()
@@ -47,9 +48,10 @@ export default function Brackets({ user }) {
 
   const handleSaveMatch = async (matchId, data) => {
     await api.updateMatch(matchId, data);
-    // Refresh brackets data
+    // Refresh brackets and trigger BracketTree refetch
     const bracketsData = await api.getBrackets();
     setBrackets(bracketsData.brackets);
+    setRefreshKey(k => k + 1);
   };
 
   const handleCreateNewMatch = async (data) => {
@@ -185,6 +187,7 @@ export default function Brackets({ user }) {
             user={user}
             onEditMatch={handleEditMatch}
             onCreateMatch={handleCreateMatch}
+            refreshKey={refreshKey}
           />
         </div>
       )}

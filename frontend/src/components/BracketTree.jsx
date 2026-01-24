@@ -80,7 +80,7 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, isStaff, bracketId
   );
 }
 
-export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false, user, onEditMatch, onCreateMatch }) {
+export default function BracketTree({ bracketId, api, defaultBracket, hideTitle = false, user, onEditMatch, onCreateMatch, refreshKey }) {
   const [data, setData] = useState(() => {
     if (!bracketId) {
       return { bracket: defaultBracket, matches: [] };
@@ -111,7 +111,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
-  }, [bracketId, api, defaultBracket]);
+  }, [bracketId, api, defaultBracket, refreshKey]);
 
   if (loading) return <div className="bracket-tree" ref={containerRef}><Spinner size="large" text="Cargando brackets..." /></div>;
   if (!data) {
@@ -376,6 +376,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     <div className="bracket-tree" ref={containerRef}>
       <div className="bracket-section">
         <Bracket
+          key={data.matches?.map(m => `${m.id}:${m.winner_id}:${m.player1_id}:${m.player2_id}`).join(',')}
           game={finalGame}
           GameComponent={GameWithProps}
           gameDimensions={{ width: 310, height: 160 }}
