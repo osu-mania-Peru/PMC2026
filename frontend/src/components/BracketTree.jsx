@@ -166,7 +166,8 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   // Color connector lines based on match completion (winner bracket only, loser uses inline classes)
   useEffect(() => {
-    if (!containerRef.current || !data?.matches || bracketType === 'loser') return;
+    const bType = data?.bracket?.type || data?.bracket?.bracket_type || 'winner';
+    if (!containerRef.current || !data?.matches || bType === 'loser') return;
 
     const colorConnectors = () => {
       const svg = containerRef.current?.querySelector('svg');
