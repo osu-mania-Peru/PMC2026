@@ -131,18 +131,67 @@
 /* Override library styles */
 .bracket-section foreignObject {
   overflow: visible;
+  pointer-events: all;
 }
 
-/* Bracket connector lines */
+/* Bracket connector lines - gray by default, colored by JS for completed matches */
 .bracket-section svg path,
 .bracket-section svg line {
-  stroke: #FF0844;
+  stroke: #333;
   stroke-width: 2;
   fill: none;
+  pointer-events: none;
+}
+
+.bracket-section svg path.decided,
+.bracket-section svg line.decided {
+  stroke: #FF0844;
+}
+
+/* Hover info tooltip */
+.match-hover-info {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 10px;
+  white-space: nowrap;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  font-size: 11px;
+  color: #ccc;
+  gap: 6px;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.custom-match:hover .match-hover-info {
+  display: flex;
+}
+
+.hover-status {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+
+.hover-status.completed { color: #4ade80; }
+.hover-status.in_progress { color: #ff0844; }
+.hover-status.scheduled { color: #888; }
+
+.hover-winner {
+  color: #ff0844;
+  font-weight: 500;
 }
 
 /* Custom Match Design */
 .custom-match {
+  position: relative;
   background: transparent;
   border-radius: 4px;
   overflow: visible;
@@ -201,6 +250,7 @@
   background: #222222;
   border: 1px solid transparent;
   transition: background 0.2s, border-color 0.2s;
+  pointer-events: all;
 }
 
 .custom-match .bracket-player-row + .bracket-player-row {
@@ -249,16 +299,22 @@
   min-width: 55px;
   padding: 0 6px;
   align-self: stretch;
-  background: #FF0844;
-  color: #fff;
+  background: #333;
+  color: #888;
   font-family: 'Poppins', sans-serif;
   font-size: 10px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
+.custom-match.completed .bracket-indicator {
+  background: #FF0844;
+  color: #fff;
+}
+
 .custom-match .bracket-indicator.winner {
   background: #cc0636;
+  color: #fff;
 }
 
 .custom-match .bracket-player-row.tbd .bracket-indicator {
@@ -295,6 +351,92 @@
 
 .styled-match.single .match-round-text .bracket-edit-btn {
   margin-left: 8px;
+}
+
+/* Winner Popup */
+.bracket-ctx-menu {
+  position: fixed;
+  z-index: 9999;
+  background: #1a1a1a;
+  border: 1px solid #ff0844;
+  border-radius: 8px;
+  padding: 12px 14px;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(255, 8, 68, 0.15);
+  animation: ctx-fade-in 0.12s ease;
+}
+
+@keyframes ctx-fade-in {
+  from { opacity: 0; transform: scale(0.9) translateY(4px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.bracket-ctx-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #ccc;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.bracket-ctx-header strong {
+  color: #fff;
+}
+
+.bracket-ctx-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bracket-ctx-confirm,
+.bracket-ctx-cancel {
+  flex: 1;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  clip-path: none !important;
+  transition: background 0.15s;
+}
+
+.bracket-ctx-confirm {
+  background: #ff0844;
+  color: #fff;
+}
+
+.bracket-ctx-confirm:hover {
+  background: #cc0636;
+}
+
+.bracket-ctx-cancel {
+  background: #2a2a2a;
+  color: #888;
+}
+
+.bracket-ctx-cancel:hover {
+  background: #333;
+  color: #ccc;
+}
+
+/* Clickable player rows for staff */
+.bracket-player-row.clickable {
+  cursor: pointer;
+}
+
+.bracket-player-row.clickable:hover {
+  background: #2a2a2a;
+}
+
+.match-team.clickable {
+  cursor: pointer;
+}
+
+.match-team.clickable:hover {
+  background: rgba(255, 8, 68, 0.05);
 }
 
 /* Responsive design */

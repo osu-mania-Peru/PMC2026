@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { Bracket } from 'react-tournament-bracket';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Trophy } from 'lucide-react';
 import Spinner from './Spinner';
 import './BracketTree.css';
 
-function CustomGame({ game, x, y, onEditMatch, onCreateMatch, isStaff, bracketId }) {
+function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isStaff, bracketId }) {
   const home = game.sides?.home;
   const visitor = game.sides?.visitor;
   const homeTeam = home?.team;
@@ -47,6 +47,19 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, isStaff, bracketId
   return (
     <foreignObject x={x} y={y} width={width} height={height} style={{ overflow: 'visible' }}>
       <div xmlns="http://www.w3.org/1999/xhtml" className={`custom-match ${statusClass}`}>
+        {matchData && (
+          <div className="match-hover-info">
+            <span className={`hover-status ${matchData.match_status}`}>
+              {matchData.match_status === 'completed' ? 'Completado' :
+               matchData.match_status === 'in_progress' ? 'En Progreso' : 'Programado'}
+            </span>
+            {matchData.winner_id && (
+              <span className="hover-winner">
+                Ganador: {matchData.winner_id === matchData.player1_id ? homeTeam?.name : visitorTeam?.name}
+              </span>
+            )}
+          </div>
+        )}
         <div className="bracket-date">
           <span className="bracket-round-label">{game.name}</span>
           {matchData?.match_status === 'in_progress' && (
@@ -63,13 +76,29 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, isStaff, bracketId
             </button>
           )}
         </div>
-        <div className={`bracket-player-row ${homeIsWinner ? 'winner' : ''} ${homeTBD ? 'tbd' : ''}`}>
+        <div
+          className={`bracket-player-row ${homeIsWinner ? 'winner' : ''} ${homeTBD ? 'tbd' : ''} ${isStaff && matchData?.player1_id && !isCompleted ? 'clickable' : ''}`}
+          onClick={(e) => {
+            if (isStaff && matchData && matchData.player1_id && !isCompleted) {
+              e.stopPropagation();
+              onContextMenu?.(e, matchData, matchData.player1_id, homeTeam?.name);
+            }
+          }}
+        >
           <span className="bracket-player-name">{homeTeam?.name || 'TBD'}</span>
           <span className={`bracket-indicator ${homeIsWinner ? 'winner' : ''}`}>
             {homeScore != null ? homeScore.toLocaleString() : ''}
           </span>
         </div>
-        <div className={`bracket-player-row ${visitorIsWinner ? 'winner' : ''} ${visitorTBD ? 'tbd' : ''}`}>
+        <div
+          className={`bracket-player-row ${visitorIsWinner ? 'winner' : ''} ${visitorTBD ? 'tbd' : ''} ${isStaff && matchData?.player2_id && !isCompleted ? 'clickable' : ''}`}
+          onClick={(e) => {
+            if (isStaff && matchData && matchData.player2_id && !isCompleted) {
+              e.stopPropagation();
+              onContextMenu?.(e, matchData, matchData.player2_id, visitorTeam?.name);
+            }
+          }}
+        >
           <span className="bracket-player-name">{visitorTeam?.name || 'TBD'}</span>
           <span className={`bracket-indicator ${visitorIsWinner ? 'winner' : ''}`}>
             {visitorScore != null ? visitorScore.toLocaleString() : ''}
@@ -88,6 +117,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     return null;
   });
   const [loading, setLoading] = useState(() => !!bracketId);
+  const [ctxMenu, setCtxMenu] = useState(null); // { x, y, matchData, playerId, playerName }
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -112,6 +142,100 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
     const interval = setInterval(fetchData, 3000);
     return () => clearInterval(interval);
   }, [bracketId, api, defaultBracket, refreshKey]);
+
+  // Context menu handlers
+  const handleContextMenu = (e, matchData, playerId, playerName) => {
+    setCtxMenu({ x: e.clientX, y: e.clientY, matchData, playerId, playerName });
+  };
+
+  const closeCtxMenu = () => setCtxMenu(null);
+
+  const handleMarkWinner = async () => {
+    if (!ctxMenu) return;
+    const { matchData, playerId } = ctxMenu;
+    closeCtxMenu();
+    try {
+      await api.updateMatch(matchData.id, { winner_id: playerId, match_status: 'completed' });
+      // Immediate refetch
+      const fresh = await api.getBracketMatches(bracketId);
+      setData(fresh);
+    } catch (err) {
+      console.error('Error marking winner:', err);
+    }
+  };
+
+  // Color connector lines based on match completion (winner bracket only, loser uses inline classes)
+  useEffect(() => {
+    if (!containerRef.current || !data?.matches || bracketType === 'loser') return;
+
+    const colorConnectors = () => {
+      const svg = containerRef.current?.querySelector('svg');
+      if (!svg) return;
+
+      const paths = svg.querySelectorAll('path');
+      const foreignObjects = svg.querySelectorAll('foreignObject');
+      if (paths.length === 0 || foreignObjects.length === 0) return;
+
+      // Build a list of completed game right-edge positions
+      // The library draws paths FROM parent's left TO child's right edge
+      // Path format: M x1 y1 H x2 V y3 H x4
+      // x4,y3 = endpoint near the child (source) game's right edge
+      const completedEdges = [];
+      foreignObjects.forEach((fo) => {
+        const x = parseFloat(fo.getAttribute('x') || 0);
+        const y = parseFloat(fo.getAttribute('y') || 0);
+        const w = parseFloat(fo.getAttribute('width') || 310);
+        const h = parseFloat(fo.getAttribute('height') || 160);
+        const matchDiv = fo.querySelector('.custom-match.completed');
+        if (matchDiv) {
+          completedEdges.push({ x: x + w, yMin: y, yMax: y + h });
+        }
+      });
+
+      paths.forEach((path) => {
+        path.classList.remove('decided');
+        const d = path.getAttribute('d');
+        if (!d) return;
+        // Library path format: "M x1 y1 H x2 V y3 H x4"
+        // The endpoint x4 is the child game's right edge
+        // y3 is the vertical position at the child side
+        const parts = d.split(/\s+/);
+        // Find last H value (endpoint x) and V value (endpoint y)
+        let endX = null, endY = null;
+        for (let i = parts.length - 1; i >= 0; i--) {
+          if (parts[i].startsWith('H') && endX === null) {
+            endX = parseFloat(parts[i].substring(1));
+          }
+          if (parts[i].startsWith('V') && endY === null) {
+            endY = parseFloat(parts[i].substring(1));
+          }
+        }
+        if (endX === null || endY === null) return;
+
+        const isDecided = completedEdges.some(edge =>
+          Math.abs(endX - edge.x) < 30 && endY >= edge.yMin - 10 && endY <= edge.yMax + 10
+        );
+        if (isDecided) path.classList.add('decided');
+      });
+    };
+
+    // Delay to ensure Bracket SVG has rendered after key change
+    const timer = setTimeout(colorConnectors, 150);
+    return () => clearTimeout(timer);
+  }, [data]);
+
+  // Close popup on click outside or Escape
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const handleClick = () => closeCtxMenu();
+    const handleKey = (e) => { if (e.key === 'Escape') closeCtxMenu(); };
+    window.addEventListener('click', handleClick);
+    window.addEventListener('keydown', handleKey);
+    return () => {
+      window.removeEventListener('click', handleClick);
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [ctxMenu]);
 
   if (loading) return <div className="bracket-tree" ref={containerRef}><Spinner size="large" text="Cargando brackets..." /></div>;
   if (!data) {
@@ -293,6 +417,187 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   // Determine which tree-building method to use
   const hasLinks = data.matches?.some(m => m.next_match_id);
+
+  // Custom renderer for loser bracket (library creates too much empty space for asymmetric trees)
+  if (bracketType === 'loser' && data.matches?.length > 0) {
+    const matches = data.matches;
+
+    // Group matches into structural rounds using topological sort
+    const matchMap = {};
+    matches.forEach(m => { matchMap[m.id] = m; });
+
+    // Find feeders for each match (within this bracket)
+    const feedersOf = {};
+    matches.forEach(m => { feedersOf[m.id] = []; });
+    matches.forEach(m => {
+      if (m.next_match_id && matchMap[m.next_match_id]) {
+        feedersOf[m.next_match_id].push(m.id);
+      }
+    });
+
+    // Assign round index: matches with no feeders = round 0, then increment
+    const roundOf = {};
+    const assignRound = (matchId, visited = new Set()) => {
+      if (roundOf[matchId] !== undefined) return roundOf[matchId];
+      if (visited.has(matchId)) return 0;
+      visited.add(matchId);
+      const feeders = feedersOf[matchId] || [];
+      if (feeders.length === 0) {
+        roundOf[matchId] = 0;
+      } else {
+        roundOf[matchId] = Math.max(...feeders.map(fid => assignRound(fid, visited))) + 1;
+      }
+      return roundOf[matchId];
+    };
+    matches.forEach(m => assignRound(m.id));
+
+    // Group by round
+    const numRounds = Math.max(...Object.values(roundOf)) + 1;
+    const rounds = Array.from({ length: numRounds }, () => []);
+    matches.forEach(m => {
+      rounds[roundOf[m.id]].push(m);
+    });
+    // Sort matches within each round by ID for consistent ordering
+    rounds.forEach(r => r.sort((a, b) => a.id - b.id));
+
+    // Layout constants
+    const matchWidth = 310;
+    const matchHeight = 105;
+    const hGap = 80;
+    const vGap = 20;
+    const padding = 30;
+
+    // Calculate max column height
+    const maxMatchesInRound = Math.max(...rounds.map(r => r.length));
+    const totalHeight = maxMatchesInRound * matchHeight + (maxMatchesInRound - 1) * vGap + padding * 2;
+    const totalWidth = numRounds * matchWidth + (numRounds - 1) * hGap + padding * 2;
+
+    // Calculate positions for each match
+    const positions = {};
+    rounds.forEach((round, colIdx) => {
+      const colHeight = round.length * matchHeight + (round.length - 1) * vGap;
+      const offsetY = (totalHeight - colHeight) / 2;
+      round.forEach((match, rowIdx) => {
+        positions[match.id] = {
+          x: padding + colIdx * (matchWidth + hGap),
+          y: offsetY + rowIdx * (matchHeight + vGap)
+        };
+      });
+    });
+
+    // Generate connector paths
+    const connectorPaths = [];
+    matches.forEach(m => {
+      if (m.next_match_id && positions[m.next_match_id]) {
+        const src = positions[m.id];
+        const tgt = positions[m.next_match_id];
+        const srcRight = src.x + matchWidth;
+        const srcMidY = src.y + matchHeight / 2;
+        const tgtLeft = tgt.x;
+        const tgtMidY = tgt.y + matchHeight / 2;
+        const midX = (srcRight + tgtLeft) / 2;
+        const isCompleted = m.is_completed;
+        connectorPaths.push({
+          d: `M${srcRight} ${srcMidY} H${midX} V${tgtMidY} H${tgtLeft}`,
+          decided: isCompleted
+        });
+      }
+    });
+
+    const contextMenuEl = ctxMenu && (
+      <div className="bracket-ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
+        <div className="bracket-ctx-header">
+          <Trophy size={12} /> ¿Marcar a <strong>{ctxMenu.playerName}</strong> como ganador?
+        </div>
+        <div className="bracket-ctx-actions">
+          <button className="bracket-ctx-confirm" onClick={handleMarkWinner}>Confirmar</button>
+          <button className="bracket-ctx-cancel" onClick={closeCtxMenu}>Cancelar</button>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="bracket-tree" ref={containerRef}>
+        <div className="bracket-section">
+          <svg width={totalWidth} height={totalHeight} key={data.matches?.map(m => `${m.id}:${m.winner_id}:${m.player1_id}:${m.player2_id}`).join(',')}>
+            {/* Connector paths */}
+            {connectorPaths.map((p, i) => (
+              <path key={i} d={p.d} className={p.decided ? 'decided' : ''} />
+            ))}
+            {/* Match cards */}
+            {matches.map(m => {
+              const pos = positions[m.id];
+              if (!pos) return null;
+              const isCompleted = m.is_completed;
+              const winnerId = m.winner_id;
+              const homeIsWinner = winnerId && winnerId === m.player1_id;
+              const visitorIsWinner = winnerId && winnerId === m.player2_id;
+              const homeTBD = !m.player1_id;
+              const visitorTBD = !m.player2_id;
+              const statusClass = m.match_status === 'in_progress' ? 'live' : isCompleted ? 'completed' : '';
+
+              return (
+                <foreignObject key={m.id} x={pos.x} y={pos.y} width={matchWidth} height={matchHeight} style={{ overflow: 'visible' }}>
+                  <div xmlns="http://www.w3.org/1999/xhtml" className={`custom-match ${statusClass}`}>
+                    <div className="match-hover-info">
+                      <span className={`hover-status ${m.match_status}`}>
+                        {m.match_status === 'completed' ? 'Completado' :
+                         m.match_status === 'in_progress' ? 'En Progreso' : 'Programado'}
+                      </span>
+                      {m.winner_id && (
+                        <span className="hover-winner">
+                          Ganador: {m.winner_id === m.player1_id ? m.player1_username : m.player2_username}
+                        </span>
+                      )}
+                    </div>
+                    <div className="bracket-date">
+                      <span className="bracket-round-label">{m.round_name}</span>
+                      {m.match_status === 'in_progress' && <span className="match-live-badge">EN VIVO</span>}
+                      {user?.is_staff && (
+                        <button className="bracket-edit-btn" onClick={() => onEditMatch?.(m)} title="Editar partida">
+                          <Pencil size={12} />
+                        </button>
+                      )}
+                    </div>
+                    <div
+                      className={`bracket-player-row ${homeIsWinner ? 'winner' : ''} ${homeTBD ? 'tbd' : ''} ${user?.is_staff && m.player1_id && !isCompleted ? 'clickable' : ''}`}
+                      onClick={(e) => {
+                        if (user?.is_staff && m.player1_id && !isCompleted) {
+                          e.stopPropagation();
+                          handleContextMenu(e, m, m.player1_id, m.player1_username);
+                        }
+                      }}
+                    >
+                      <span className="bracket-player-name">{m.player1_username || 'TBD'}</span>
+                      <span className={`bracket-indicator ${homeIsWinner ? 'winner' : ''}`}>
+                        {m.player1_score != null ? m.player1_score.toLocaleString() : ''}
+                      </span>
+                    </div>
+                    <div
+                      className={`bracket-player-row ${visitorIsWinner ? 'winner' : ''} ${visitorTBD ? 'tbd' : ''} ${user?.is_staff && m.player2_id && !isCompleted ? 'clickable' : ''}`}
+                      onClick={(e) => {
+                        if (user?.is_staff && m.player2_id && !isCompleted) {
+                          e.stopPropagation();
+                          handleContextMenu(e, m, m.player2_id, m.player2_username);
+                        }
+                      }}
+                    >
+                      <span className="bracket-player-name">{m.player2_username || 'TBD'}</span>
+                      <span className={`bracket-indicator ${visitorIsWinner ? 'winner' : ''}`}>
+                        {m.player2_score != null ? m.player2_score.toLocaleString() : ''}
+                      </span>
+                    </div>
+                  </div>
+                </foreignObject>
+              );
+            })}
+          </svg>
+        </div>
+        {contextMenuEl}
+      </div>
+    );
+  }
+
   const finalGame = hasLinks
     ? buildTreeFromLinks(data.matches)
     : buildTreeByPosition(data.matches, bracketSize);
@@ -349,13 +654,29 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                   </button>
                 )}
               </div>
-              <div className={`match-team ${winnerId === matchData?.player1_id ? 'winner' : ''} ${!matchData?.player1_id ? 'tbd' : ''}`}>
+              <div
+                className={`match-team ${winnerId === matchData?.player1_id ? 'winner' : ''} ${!matchData?.player1_id ? 'tbd' : ''} ${user?.is_staff && matchData?.player1_id && !matchData?.is_completed ? 'clickable' : ''}`}
+                onClick={(e) => {
+                  if (user?.is_staff && matchData?.player1_id && !matchData?.is_completed) {
+                    e.stopPropagation();
+                    handleContextMenu(e, matchData, matchData.player1_id, finalGame.sides.home.team?.name);
+                  }
+                }}
+              >
                 <span className="team-name">{finalGame.sides.home.team?.name || 'TBD'}</span>
                 <span className="team-score">
                   {matchData?.player1_score != null ? matchData.player1_score.toLocaleString() : ''}
                 </span>
               </div>
-              <div className={`match-team ${winnerId === matchData?.player2_id ? 'winner' : ''} ${!matchData?.player2_id ? 'tbd' : ''}`}>
+              <div
+                className={`match-team ${winnerId === matchData?.player2_id ? 'winner' : ''} ${!matchData?.player2_id ? 'tbd' : ''} ${user?.is_staff && matchData?.player2_id && !matchData?.is_completed ? 'clickable' : ''}`}
+                onClick={(e) => {
+                  if (user?.is_staff && matchData?.player2_id && !matchData?.is_completed) {
+                    e.stopPropagation();
+                    handleContextMenu(e, matchData, matchData.player2_id, finalGame.sides.visitor.team?.name);
+                  }
+                }}
+              >
                 <span className="team-name">{finalGame.sides.visitor.team?.name || 'TBD'}</span>
                 <span className="team-score">
                   {matchData?.player2_score != null ? matchData.player2_score.toLocaleString() : ''}
@@ -364,12 +685,25 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
             </div>
           </div>
         </div>
+        {contextMenuEl}
       </div>
     );
   }
 
   const GameWithProps = (props) => (
-    <CustomGame {...props} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} isStaff={user?.is_staff} bracketId={bracketId} />
+    <CustomGame {...props} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} onContextMenu={handleContextMenu} isStaff={user?.is_staff} bracketId={bracketId} />
+  );
+
+  const contextMenuEl = ctxMenu && (
+    <div className="bracket-ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
+      <div className="bracket-ctx-header">
+        <Trophy size={12} /> ¿Marcar a <strong>{ctxMenu.playerName}</strong> como ganador?
+      </div>
+      <div className="bracket-ctx-actions">
+        <button className="bracket-ctx-confirm" onClick={handleMarkWinner}>Confirmar</button>
+        <button className="bracket-ctx-cancel" onClick={closeCtxMenu}>Cancelar</button>
+      </div>
+    </div>
   );
 
   return (
@@ -385,6 +719,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
           homeOnTop={true}
         />
       </div>
+      {contextMenuEl}
     </div>
   );
 }

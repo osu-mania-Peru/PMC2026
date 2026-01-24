@@ -194,6 +194,78 @@ async def generate_brackets(
         db.commit()
         winner_rounds.append(curr_round)
 
+    # Generate Loser Bracket matches
+    # Structure: 2*(numWR-1) rounds alternating internal/drop-down
+    # Odd rounds: internal (previous LR winners pair up or feed 1:1)
+    # Even rounds: drop-down (LR survivors + WR losers from next winner round)
+    num_loser_rounds = 2 * (num_winner_rounds - 1)
+    loser_rounds = []
+
+    for lr_idx in range(num_loser_rounds):
+        # Matches per round: pairs alternate at same count
+        # LR1,LR2: N/4 each; LR3,LR4: N/8 each; etc.
+        pair_idx = lr_idx // 2  # 0,0,1,1,2,2,...
+        matches_in_round = bracket_size // (2 ** (pair_idx + 2))
+        matches_in_round = max(matches_in_round, 1)
+
+        # Round naming
+        if lr_idx == num_loser_rounds - 1:
+            round_name = "Loser Finals"
+        elif lr_idx == num_loser_rounds - 2:
+            round_name = "Loser Semifinals"
+        else:
+            round_name = f"Loser Round {lr_idx + 1}"
+
+        curr_round = []
+        for _ in range(matches_in_round):
+            match = Match(
+                bracket_id=loser_bracket.id,
+                player1_id=None,
+                player2_id=None,
+                map_id=default_map.id,
+                round_name=round_name,
+                match_status="scheduled"
+            )
+            db.add(match)
+            curr_round.append(match)
+        db.commit()
+        loser_rounds.append(curr_round)
+
+    # Link loser bracket matches internally (next_match_id)
+    for lr_idx in range(num_loser_rounds - 1):
+        curr = loser_rounds[lr_idx]
+        next_round = loser_rounds[lr_idx + 1]
+
+        if len(curr) == len(next_round):
+            # 1:1 mapping (odd→even transition: internal feeds drop-down)
+            for j, m in enumerate(curr):
+                m.next_match_id = next_round[j].id
+        else:
+            # 2:1 mapping (even→odd transition: pairs merge)
+            for j, m in enumerate(curr):
+                m.next_match_id = next_round[j // 2].id
+    db.commit()
+
+    # Set loser_next_match_id on winner bracket matches
+    # WR1 losers → LR1 (2:1 mapping, pairs of WR1 losers into each LR1 match)
+    if loser_rounds:
+        wr1_matches = winner_rounds[0]
+        lr1_matches = loser_rounds[0]
+        for j, wr_match in enumerate(wr1_matches):
+            wr_match.loser_next_match_id = lr1_matches[j // 2].id
+
+        # WR(k) losers → LR(2*(k-1)) for k >= 2
+        # WR2 → LR2, WR3 → LR4, WR4 → LR6, etc.
+        for wr_round_idx in range(1, num_winner_rounds):
+            lr_target_idx = 2 * wr_round_idx - 1  # LR index (0-based): 1, 3, 5, ...
+            if lr_target_idx < num_loser_rounds:
+                wr_matches = winner_rounds[wr_round_idx]
+                lr_targets = loser_rounds[lr_target_idx]
+                for j, wr_match in enumerate(wr_matches):
+                    if j < len(lr_targets):
+                        wr_match.loser_next_match_id = lr_targets[j].id
+    db.commit()
+
     # Grand Finals match
     gf_match = Match(
         bracket_id=gf_bracket.id,
@@ -206,11 +278,17 @@ async def generate_brackets(
     db.add(gf_match)
     db.commit()
 
-    # Link Winner Finals to Grand Finals
+    # Link Winner Finals → Grand Finals
     if winner_rounds:
         winner_finals = winner_rounds[-1][0]
         winner_finals.next_match_id = gf_match.id
-        db.commit()
+
+    # Link Loser Finals → Grand Finals
+    if loser_rounds:
+        loser_finals = loser_rounds[-1][0]
+        loser_finals.next_match_id = gf_match.id
+
+    db.commit()
 
     return {
         "message": "Brackets generados exitosamente",
@@ -219,7 +297,8 @@ async def generate_brackets(
             "loser": loser_bracket.id,
             "grandfinals": gf_bracket.id
         },
-        "players_seeded": len(players)
+        "players_seeded": len(players),
+        "loser_bracket_matches": sum(len(r) for r in loser_rounds)
     }
 
 
