@@ -1,148 +1,294 @@
 .admin-control {
-  padding: 16px;
-  font-family: -apple-system, sans-serif;
+  padding: 32px 40px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 13px;
-  background: #1e1e1e;
-  color: #e0e0e0;
+  background: #0f1117;
+  color: #c9d1d9;
   min-height: 100vh;
+  line-height: 1.5;
 }
 
+/* Header */
 .admin-control h1 {
-  font-size: 20px;
-  margin: 0 0 8px 0;
-  color: #fff;
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #f0f6fc;
+  letter-spacing: -0.3px;
 }
 
+.admin-control > p:first-of-type {
+  color: #7d8590;
+  margin: 0 0 24px 0;
+  font-size: 13px;
+}
+
+/* Status indicators */
+.admin-control .admin-error {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #f85149;
+  font-weight: 500;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-control .admin-warning {
+  color: #f85149;
+  font-weight: 500;
+}
+
+/* Sections */
 .admin-control fieldset {
-  border: 1px solid #3a3a3a;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: #252525;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  padding: 20px 24px;
+  background: #161b22;
 }
 
 .admin-control legend {
   font-weight: 600;
-  padding: 0 6px;
-  color: #ccc;
+  font-size: 14px;
+  padding: 0 10px;
+  color: #f0f6fc;
+  letter-spacing: -0.2px;
 }
 
-.admin-control table {
-  border-collapse: collapse;
-  margin-top: 6px;
-  font-size: 12px;
-  width: 100%;
-}
-
-.admin-control th,
-.admin-control td {
-  border: 1px solid #3a3a3a;
-  padding: 4px 6px;
-  text-align: left;
-}
-
-.admin-control th {
-  background: #2a2a2a;
-  font-weight: 600;
-  color: #aaa;
-}
-
-.admin-control tr:hover {
-  background: #2e2e2e;
-}
-
-/* Reset all button styles from App.css */
+/* Buttons */
 .admin-control button {
   all: revert;
-  font-family: -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 12px;
-  padding: 4px 10px;
+  font-weight: 500;
+  padding: 5px 12px;
   cursor: pointer;
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
+  background: #21262d;
+  color: #c9d1d9;
+  border: 1px solid #30363d;
+  border-radius: 6px;
   clip-path: none !important;
   text-transform: none;
   letter-spacing: normal;
-  font-weight: normal;
-  display: inline;
+  display: inline-flex;
+  align-items: center;
   position: static;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 20px;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
 .admin-control button:hover {
-  background: #444;
+  background: #30363d;
+  border-color: #484f58;
+}
+
+.admin-control button:active {
+  background: #282e33;
 }
 
 .admin-control button:disabled {
-  background: #2a2a2a;
-  color: #666;
+  background: #161b22;
+  color: #484f58;
+  border-color: #21262d;
   cursor: not-allowed;
 }
 
-/* Reset input styles */
+/* Primary action buttons (first button in a fieldset) */
+.admin-control fieldset > button:first-of-type {
+  background: #1f6feb;
+  border-color: #1f6feb;
+  color: #fff;
+}
+
+.admin-control fieldset > button:first-of-type:hover {
+  background: #388bfd;
+  border-color: #388bfd;
+}
+
+/* Inputs */
 .admin-control input,
 .admin-control select {
   all: revert;
-  font-family: -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 12px;
-  padding: 3px 6px;
-  border: 1px solid #555;
-  border-radius: 3px;
-  background: #2a2a2a;
-  color: #e0e0e0;
+  padding: 5px 10px;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #c9d1d9;
+  line-height: 20px;
+  transition: border-color 0.15s;
+  vertical-align: middle;
+}
+
+.admin-control input:focus,
+.admin-control select:focus {
+  border-color: #1f6feb;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.15);
 }
 
 .admin-control input[type="checkbox"] {
   width: auto;
+  accent-color: #1f6feb;
 }
 
 .admin-control input[type="color"] {
-  padding: 0;
-  width: 30px;
-  height: 22px;
+  padding: 2px;
+  width: 32px;
+  height: 28px;
+  border-radius: 6px;
 }
 
+.admin-control input::placeholder {
+  color: #484f58;
+}
+
+/* Labels */
 .admin-control label {
   font-size: 12px;
-  color: #999;
+  color: #7d8590;
+  margin-right: 2px;
 }
 
-.admin-control pre {
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
-  padding: 8px;
-  font-size: 11px;
-  max-height: 120px;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-all;
-  font-family: monospace;
-  color: #ccc;
+/* Tables */
+.admin-control table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 12px;
+  font-size: 12px;
+  width: 100%;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.admin-control ul {
-  list-style: none;
-  padding: 0;
-  margin: 5px 0;
+.admin-control th,
+.admin-control td {
+  border: none;
+  border-bottom: 1px solid #21262d;
+  padding: 8px 12px;
+  text-align: left;
 }
 
-.admin-control li {
-  padding: 2px 0;
-}
-
-.admin-control p {
-  margin: 4px 0;
-}
-
-.admin-control .admin-error {
-  color: #e55;
+.admin-control th {
+  background: #161b22;
   font-weight: 600;
+  font-size: 11px;
+  color: #7d8590;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.admin-control .admin-warning {
-  color: #e55;
+.admin-control tbody tr {
+  background: #0d1117;
+  transition: background 0.1s;
+}
+
+.admin-control tbody tr:hover {
+  background: #1c2128;
+}
+
+.admin-control tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .admin-control .completed-row {
-  background: #1e2e1e;
+  background: rgba(46, 160, 67, 0.08) !important;
+}
+
+/* Sub-tables inside expanded rows */
+.admin-control td > table {
+  margin-top: 0;
+  border: 1px solid #21262d;
+}
+
+/* Pre/code blocks */
+.admin-control pre {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 11px;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  color: #c9d1d9;
+  margin-top: 8px;
+}
+
+/* Lists */
+.admin-control ul {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.admin-control li {
+  padding: 6px 12px;
+  border-bottom: 1px solid #21262d;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-control li:last-child {
+  border-bottom: none;
+}
+
+/* Paragraphs */
+.admin-control p {
+  margin: 8px 0;
+}
+
+/* Form sections */
+.admin-control b {
+  color: #e6edf3;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Spacing between form rows */
+.admin-control br + br {
+  display: block;
+  content: '';
+  margin-top: 4px;
+}
+
+/* Loading state */
+.admin-control > p > b {
+  color: #1f6feb;
+}
+
+/* Button spacing in table cells */
+.admin-control td button {
+  margin-right: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.admin-control td button:last-child {
+  margin-right: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-control {
+    padding: 16px;
+  }
+
+  .admin-control fieldset {
+    padding: 14px 16px;
+  }
+
+  .admin-control table {
+    display: block;
+    overflow-x: auto;
+  }
 }

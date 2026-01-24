@@ -104,7 +104,7 @@ export default function AdminControl({ user }) {
 
   const unregisterUser = (id) => run(`Unregister ${id}`, () => api.fetch(`/users/${id}/registration`, { method: 'DELETE' }));
   const deleteUser = (id) => {
-    if (!confirm(`Delete user ${id}?`)) return;
+    if (!confirm(`¿Eliminar usuario ${id}?`)) return;
     run(`Delete user ${id}`, () => api.fetch(`/users/${id}`, { method: 'DELETE' }));
   };
 
@@ -170,7 +170,7 @@ export default function AdminControl({ user }) {
   );
 
   const deleteMatch = (id) => {
-    if (!confirm(`Delete match ${id}?`)) return;
+    if (!confirm(`¿Eliminar partida ${id}?`)) return;
     run(`Delete Match ${id}`, () => api.fetch(`/matches/${id}`, { method: 'DELETE' }));
   };
 
@@ -186,7 +186,7 @@ export default function AdminControl({ user }) {
   );
 
   const deleteMappool = (id) => {
-    if (!confirm(`Delete mappool ${id}?`)) return;
+    if (!confirm(`¿Eliminar mappool ${id}?`)) return;
     run(`Delete Mappool ${id}`, () => api.fetch(`/mappools/${id}`, { method: 'DELETE' }));
   };
 
@@ -392,33 +392,33 @@ export default function AdminControl({ user }) {
 
   // --- Render ---
   if (!user?.is_staff) {
-    return <p>Staff only. Login as staff to access.</p>;
+    return <p>Solo staff. Inicia sesión como staff para acceder.</p>;
   }
 
   return (
     <div className="admin-control">
-      <h1>Admin Control Panel</h1>
-      <p>Logged in as: <b>{user.username}</b> (staff)</p>
-      {loading && <p><b>Loading...</b></p>}
+      <h1>Panel de Control</h1>
+      <p>Sesión: <b>{user.username}</b> (staff)</p>
+      {loading && <p><b>Cargando...</b></p>}
       {lastError && <p className="admin-error">{lastError}</p>}
 
           {/* USERS */}
           <fieldset>
-            <legend><b>Users</b></legend>
-            <button onClick={fetchUsers}>Load Users</button>{' '}
-            <button onClick={syncStats}>Sync osu! Stats</button>
+            <legend>Usuarios</legend>
+            <button onClick={fetchUsers}>Cargar Usuarios</button>{' '}
+            <button onClick={syncStats}>Sincronizar Stats</button>
             <br /><br />
-            <label>Set Staff: User ID </label>
+            <label>Asignar Staff: User ID </label>
             <input type="number" value={staffUserId} onChange={e => setStaffUserId(e.target.value)} style={{ width: '60px' }} />
             <select value={staffValue} onChange={e => setStaffValue(e.target.value === 'true')}>
               <option value="true">Staff=true</option>
               <option value="false">Staff=false</option>
             </select>
-            <button onClick={setStaff}>Apply</button>
+            <button onClick={setStaff}>Aplicar</button>
             {users.length > 0 && (
               <table>
                 <thead>
-                  <tr><th>ID</th><th>Username</th><th>osu_id</th><th>Staff</th><th>Registered</th><th>Seed</th><th>Rank</th><th>Actions</th></tr>
+                  <tr><th>ID</th><th>Usuario</th><th>osu_id</th><th>Staff</th><th>Registrado</th><th>Seed</th><th>Rank</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                   {users.map(u => (
@@ -431,8 +431,8 @@ export default function AdminControl({ user }) {
                       <td>{u.seed_number ?? '-'}</td>
                       <td>{u.mania_rank ?? '-'}</td>
                       <td>
-                        <button onClick={() => unregisterUser(u.id)}>Unreg</button>
-                        <button onClick={() => deleteUser(u.id)}>Del</button>
+                        <button onClick={() => unregisterUser(u.id)}>Desreg</button>
+                        <button onClick={() => deleteUser(u.id)}>Elim</button>
                       </td>
                     </tr>
                   ))}
@@ -443,23 +443,23 @@ export default function AdminControl({ user }) {
 
           {/* TOURNAMENT */}
           <fieldset>
-            <legend><b>Tournament</b></legend>
-            <button onClick={fetchTournamentStatus}>Load Status</button>{' '}
-            <button onClick={fetchRegistrations}>Load Registrations</button>
+            <legend>Torneo</legend>
+            <button onClick={fetchTournamentStatus}>Cargar Estado</button>{' '}
+            <button onClick={fetchRegistrations}>Cargar Inscripciones</button>
             {tournamentStatus && (
               <table>
                 <tbody>
-                  <tr><td><b>Status</b></td><td>{tournamentStatus.status}</td></tr>
-                  <tr><td><b>Registration Open</b></td><td>{tournamentStatus.registration_open ? 'Yes' : 'No'}</td></tr>
-                  <tr><td><b>Total Registered</b></td><td>{tournamentStatus.total_registered_players}</td></tr>
-                  <tr><td><b>Started At</b></td><td>{tournamentStatus.started_at || '-'}</td></tr>
-                  <tr><td><b>Ended At</b></td><td>{tournamentStatus.ended_at || '-'}</td></tr>
+                  <tr><td><b>Estado</b></td><td>{tournamentStatus.status}</td></tr>
+                  <tr><td><b>Inscripción Abierta</b></td><td>{tournamentStatus.registration_open ? 'Sí' : 'No'}</td></tr>
+                  <tr><td><b>Total Inscritos</b></td><td>{tournamentStatus.total_registered_players}</td></tr>
+                  <tr><td><b>Inicio</b></td><td>{tournamentStatus.started_at || '-'}</td></tr>
+                  <tr><td><b>Fin</b></td><td>{tournamentStatus.ended_at || '-'}</td></tr>
                 </tbody>
               </table>
             )}
             {registrations && (
               <>
-                <p><b>Registered:</b> {registrations.total_registered} | <b>Open:</b> {registrations.registration_open ? 'Yes' : 'No'}</p>
+                <p><b>Inscritos:</b> {registrations.total_registered} | <b>Abierto:</b> {registrations.registration_open ? 'Sí' : 'No'}</p>
                 {registrations.registered_players?.length > 0 && (
                   <table>
                     <thead><tr><th>Username</th><th>osu_id</th><th>Seed</th><th>Rank</th></tr></thead>
@@ -481,19 +481,19 @@ export default function AdminControl({ user }) {
 
           {/* BRACKETS */}
           <fieldset>
-            <legend><b>Brackets</b></legend>
-            <button onClick={fetchBrackets}>Load Brackets</button>{' '}
+            <legend>Llaves</legend>
+            <button onClick={fetchBrackets}>Cargar Llaves</button>{' '}
             <select value={bracketSize} onChange={e => setBracketSize(Number(e.target.value))}>
               <option value={4}>4</option>
               <option value={8}>8</option>
               <option value={16}>16</option>
               <option value={32}>32</option>
             </select>
-            <button onClick={generateBrackets}>Generate Brackets</button>
+            <button onClick={generateBrackets}>Generar Llaves</button>
             {brackets.length > 0 && (
               <table >
                 <thead>
-                  <tr><th>ID</th><th>Name</th><th>Type</th><th>Size</th><th>Matches</th><th>Completed</th></tr>
+                  <tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Tamaño</th><th>Partidas</th><th>Completadas</th></tr>
                 </thead>
                 <tbody>
                   {brackets.map(b => (
@@ -510,13 +510,13 @@ export default function AdminControl({ user }) {
               </table>
             )}
             <br />
-            <label>Bracket ID: </label>
+            <label>ID Llave: </label>
             <input type="number" value={selectedBracketId} onChange={e => setSelectedBracketId(e.target.value)} style={{ width: '50px' }} />
-            <button onClick={fetchBracketMatches}>Load Matches</button>
+            <button onClick={fetchBracketMatches}>Cargar Partidas</button>
             {bracketMatches.length > 0 && (
               <table >
                 <thead>
-                  <tr><th>ID</th><th>Round</th><th>P1</th><th>P2</th><th>Score</th><th>Winner</th><th>Status</th><th>Next</th><th>Loser→</th></tr>
+                  <tr><th>ID</th><th>Ronda</th><th>J1</th><th>J2</th><th>Puntaje</th><th>Ganador</th><th>Estado</th><th>Sig.</th><th>Perdedor→</th></tr>
                 </thead>
                 <tbody>
                   {bracketMatches.map(m => (
@@ -539,43 +539,43 @@ export default function AdminControl({ user }) {
 
           {/* MATCHES */}
           <fieldset>
-            <legend><b>Matches</b></legend>
-            <button onClick={fetchMatches}>Load All Matches</button>
+            <legend>Partidas</legend>
+            <button onClick={fetchMatches}>Cargar Todas</button>
             <br /><br />
-            <b>Create Match:</b><br />
+            <b>Crear Partida:</b><br />
             <label>bracket_id:</label><input type="number" value={matchForm.bracket_id} onChange={e => setMatchForm({ ...matchForm, bracket_id: e.target.value })} style={{ width: '50px' }} />
-            <label> p1_id:</label><input type="number" value={matchForm.player1_id} onChange={e => setMatchForm({ ...matchForm, player1_id: e.target.value })} style={{ width: '50px' }} />
-            <label> p2_id:</label><input type="number" value={matchForm.player2_id} onChange={e => setMatchForm({ ...matchForm, player2_id: e.target.value })} style={{ width: '50px' }} />
+            <label> j1_id:</label><input type="number" value={matchForm.player1_id} onChange={e => setMatchForm({ ...matchForm, player1_id: e.target.value })} style={{ width: '50px' }} />
+            <label> j2_id:</label><input type="number" value={matchForm.player2_id} onChange={e => setMatchForm({ ...matchForm, player2_id: e.target.value })} style={{ width: '50px' }} />
             <label> map_id:</label><input type="number" value={matchForm.map_id} onChange={e => setMatchForm({ ...matchForm, map_id: e.target.value })} style={{ width: '50px' }} />
-            <label> round:</label><input value={matchForm.round_name} onChange={e => setMatchForm({ ...matchForm, round_name: e.target.value })} style={{ width: '100px' }} />
-            <button onClick={createMatch}>Create</button>
+            <label> ronda:</label><input value={matchForm.round_name} onChange={e => setMatchForm({ ...matchForm, round_name: e.target.value })} style={{ width: '100px' }} />
+            <button onClick={createMatch}>Crear</button>
             <br /><br />
-            <b>Submit Score:</b><br />
+            <b>Enviar Puntaje:</b><br />
             <label>match_id:</label><input type="number" value={scoreForm.match_id} onChange={e => setScoreForm({ ...scoreForm, match_id: e.target.value })} style={{ width: '50px' }} />
             <label> p1_score:</label><input type="number" value={scoreForm.player1_score} onChange={e => setScoreForm({ ...scoreForm, player1_score: e.target.value })} style={{ width: '70px' }} />
             <label> p2_score:</label><input type="number" value={scoreForm.player2_score} onChange={e => setScoreForm({ ...scoreForm, player2_score: e.target.value })} style={{ width: '70px' }} />
-            <label> winner_id:</label><input type="number" value={scoreForm.winner_id} onChange={e => setScoreForm({ ...scoreForm, winner_id: e.target.value })} style={{ width: '50px' }} />
-            <button onClick={submitScore}>Submit</button>
+            <label> ganador_id:</label><input type="number" value={scoreForm.winner_id} onChange={e => setScoreForm({ ...scoreForm, winner_id: e.target.value })} style={{ width: '50px' }} />
+            <button onClick={submitScore}>Enviar</button>
             <br /><br />
-            <b>Update Match:</b><br />
+            <b>Actualizar Partida:</b><br />
             <label>match_id:</label><input type="number" value={updateMatchForm.match_id} onChange={e => setUpdateMatchForm({ ...updateMatchForm, match_id: e.target.value })} style={{ width: '50px' }} />
             <label> p1_score:</label><input type="number" value={updateMatchForm.player1_score} onChange={e => setUpdateMatchForm({ ...updateMatchForm, player1_score: e.target.value })} style={{ width: '70px' }} />
             <label> p2_score:</label><input type="number" value={updateMatchForm.player2_score} onChange={e => setUpdateMatchForm({ ...updateMatchForm, player2_score: e.target.value })} style={{ width: '70px' }} />
-            <label> winner_id:</label><input type="number" value={updateMatchForm.winner_id} onChange={e => setUpdateMatchForm({ ...updateMatchForm, winner_id: e.target.value })} style={{ width: '50px' }} />
-            <label> status:</label>
+            <label> ganador_id:</label><input type="number" value={updateMatchForm.winner_id} onChange={e => setUpdateMatchForm({ ...updateMatchForm, winner_id: e.target.value })} style={{ width: '50px' }} />
+            <label> estado:</label>
             <select value={updateMatchForm.match_status} onChange={e => setUpdateMatchForm({ ...updateMatchForm, match_status: e.target.value })}>
               <option value="">--</option>
-              <option value="scheduled">scheduled</option>
-              <option value="in_progress">in_progress</option>
-              <option value="completed">completed</option>
-              <option value="cancelled">cancelled</option>
+              <option value="scheduled">programado</option>
+              <option value="in_progress">en_progreso</option>
+              <option value="completed">completado</option>
+              <option value="cancelled">cancelado</option>
               <option value="forfeit">forfeit</option>
             </select>
-            <button onClick={updateMatch}>Update</button>
+            <button onClick={updateMatch}>Actualizar</button>
             {matches.length > 0 && (
               <table >
                 <thead>
-                  <tr><th>ID</th><th>Bracket</th><th>P1</th><th>P2</th><th>Score</th><th>Status</th><th>Actions</th></tr>
+                  <tr><th>ID</th><th>Llave</th><th>J1</th><th>J2</th><th>Puntaje</th><th>Estado</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                   {matches.map(m => (
@@ -587,8 +587,8 @@ export default function AdminControl({ user }) {
                       <td>{m.player1_score ?? '-'}/{m.player2_score ?? '-'}</td>
                       <td>{m.match_status}</td>
                       <td>
-                        <button onClick={() => completeMatch(m.id)}>Complete</button>
-                        <button onClick={() => deleteMatch(m.id)}>Del</button>
+                        <button onClick={() => completeMatch(m.id)}>Completar</button>
+                        <button onClick={() => deleteMatch(m.id)}>Elim</button>
                       </td>
                     </tr>
                   ))}
@@ -599,11 +599,11 @@ export default function AdminControl({ user }) {
 
           {/* MAPS (standalone) */}
           <fieldset>
-            <legend><b>Maps</b></legend>
-            <button onClick={fetchMaps}>Load Maps</button>
+            <legend>Mapas</legend>
+            <button onClick={fetchMaps}>Cargar Mapas</button>
             {maps.length > 0 && (
               <table>
-                <thead><tr><th>ID</th><th>Map Name</th><th>Difficulty</th><th>Mapper</th><th>URL</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Dificultad</th><th>Mapper</th><th>URL</th><th>Acciones</th></tr></thead>
                 <tbody>
                   {maps.map(m => (
                     <tr key={m.id}>
@@ -615,8 +615,8 @@ export default function AdminControl({ user }) {
                           <td><input value={editMapForm.mapper_name || ''} onChange={e => setEditMapForm({ ...editMapForm, mapper_name: e.target.value })} style={{ width: '80px' }} /></td>
                           <td><input value={editMapForm.map_url || ''} onChange={e => setEditMapForm({ ...editMapForm, map_url: e.target.value })} style={{ width: '120px' }} /></td>
                           <td>
-                            <button onClick={() => updateMapFn(m.id)}>Save</button>
-                            <button onClick={() => setEditingMapId(null)}>Cancel</button>
+                            <button onClick={() => updateMapFn(m.id)}>Guardar</button>
+                            <button onClick={() => setEditingMapId(null)}>Cancelar</button>
                           </td>
                         </>
                       ) : (
@@ -627,7 +627,7 @@ export default function AdminControl({ user }) {
                           <td>{m.mapper_name}</td>
                           <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.map_url}</td>
                           <td>
-                            <button onClick={() => { setEditingMapId(m.id); setEditMapForm({ map_name: m.map_name || '', difficulty_name: m.difficulty_name || '', mapper_name: m.mapper_name || '', map_url: m.map_url || '' }); }}>Edit</button>
+                            <button onClick={() => { setEditingMapId(m.id); setEditMapForm({ map_name: m.map_name || '', difficulty_name: m.difficulty_name || '', mapper_name: m.mapper_name || '', map_url: m.map_url || '' }); }}>Editar</button>
                           </td>
                         </>
                       )}
@@ -640,24 +640,24 @@ export default function AdminControl({ user }) {
 
           {/* MAPPOOLS */}
           <fieldset>
-            <legend><b>Mappools</b></legend>
-            <button onClick={fetchMappools}>Load Mappools</button>{' '}
-            <button onClick={syncBeatmaps}>Sync Beatmaps</button>{' '}
-            <button onClick={syncStatus}>Sync Status</button>
+            <legend>Mappools</legend>
+            <button onClick={fetchMappools}>Cargar Mappools</button>{' '}
+            <button onClick={syncBeatmaps}>Sincronizar Beatmaps</button>{' '}
+            <button onClick={syncStatus}>Estado Sync</button>
             <br /><br />
-            <b>Create Mappool:</b><br />
+            <b>Crear Mappool:</b><br />
             <label>stage_name:</label><input value={mappoolForm.stage_name} onChange={e => setMappoolForm({ ...mappoolForm, stage_name: e.target.value })} style={{ width: '100px' }} />
             <label> order:</label><input type="number" value={mappoolForm.stage_order} onChange={e => setMappoolForm({ ...mappoolForm, stage_order: Number(e.target.value) })} style={{ width: '40px' }} />
             <label> download_url:</label><input value={mappoolForm.download_url} onChange={e => setMappoolForm({ ...mappoolForm, download_url: e.target.value })} style={{ width: '120px' }} />
             <label> visible:</label><input type="checkbox" checked={mappoolForm.is_visible} onChange={e => setMappoolForm({ ...mappoolForm, is_visible: e.target.checked })} />
-            <button onClick={createMappool}>Create</button>
+            <button onClick={createMappool}>Crear</button>
             <br /><br />
-            <b>Lookup Beatmap:</b>{' '}
+            <b>Buscar Beatmap:</b>{' '}
             <input type="number" value={beatmapLookup} onChange={e => setBeatmapLookup(e.target.value)} placeholder="beatmap_id" style={{ width: '90px' }} />
-            <button onClick={lookupBeatmapFn}>Lookup</button>
+            <button onClick={lookupBeatmapFn}>Buscar</button>
             {beatmapResult && <pre>{JSON.stringify(beatmapResult, null, 2)}</pre>}
             <br />
-            <b>Add Map to Pool:</b><br />
+            <b>Agregar Mapa al Pool:</b><br />
             <label>pool_id:</label><input type="number" value={mappoolMapForm.pool_id} onChange={e => setMappoolMapForm({ ...mappoolMapForm, pool_id: e.target.value })} style={{ width: '50px' }} />
             <label> slot:</label><input value={mappoolMapForm.slot} onChange={e => setMappoolMapForm({ ...mappoolMapForm, slot: e.target.value })} placeholder="RC" style={{ width: '40px' }} />
             <label> order:</label><input type="number" value={mappoolMapForm.slot_order} onChange={e => setMappoolMapForm({ ...mappoolMapForm, slot_order: e.target.value })} style={{ width: '35px' }} />
@@ -676,20 +676,20 @@ export default function AdminControl({ user }) {
             <label> LN%:</label><input value={mappoolMapForm.ln_percent} onChange={e => setMappoolMapForm({ ...mappoolMapForm, ln_percent: e.target.value })} style={{ width: '35px' }} />
             <label> custom_map:</label><input type="checkbox" checked={mappoolMapForm.is_custom_map} onChange={e => setMappoolMapForm({ ...mappoolMapForm, is_custom_map: e.target.checked })} />
             <label> custom_song:</label><input type="checkbox" checked={mappoolMapForm.is_custom_song} onChange={e => setMappoolMapForm({ ...mappoolMapForm, is_custom_song: e.target.checked })} />
-            <button onClick={addMapToPool}>Add</button>
+            <button onClick={addMapToPool}>Agregar</button>
             <br /><br />
-            <b>Edit Pool Map (by ID):</b><br />
+            <b>Editar Mapa del Pool (por ID):</b><br />
             <label>map_id:</label><input type="number" value={editingPoolMapId || ''} onChange={e => setEditingPoolMapId(e.target.value)} style={{ width: '50px' }} />
             <label> slot:</label><input value={editPoolMapForm.slot || ''} onChange={e => setEditPoolMapForm({ ...editPoolMapForm, slot: e.target.value })} style={{ width: '40px' }} />
             <label> order:</label><input type="number" value={editPoolMapForm.slot_order ?? ''} onChange={e => setEditPoolMapForm({ ...editPoolMapForm, slot_order: e.target.value })} style={{ width: '40px' }} />
             <label> beatmap_id:</label><input value={editPoolMapForm.beatmap_id || ''} onChange={e => setEditPoolMapForm({ ...editPoolMapForm, beatmap_id: e.target.value })} style={{ width: '80px' }} />
             <label> custom_map:</label><input type="checkbox" checked={editPoolMapForm.is_custom_map ?? false} onChange={e => setEditPoolMapForm({ ...editPoolMapForm, is_custom_map: e.target.checked })} />
             <label> custom_song:</label><input type="checkbox" checked={editPoolMapForm.is_custom_song ?? false} onChange={e => setEditPoolMapForm({ ...editPoolMapForm, is_custom_song: e.target.checked })} />
-            <button onClick={() => editingPoolMapId && updatePoolMapFn(editingPoolMapId)}>Update Map</button>
+            <button onClick={() => editingPoolMapId && updatePoolMapFn(editingPoolMapId)}>Actualizar Mapa</button>
             {mappools.length > 0 && (
               <table>
                 <thead>
-                  <tr><th>ID</th><th>Stage Name</th><th>Order</th><th>Visible</th><th>Download URL</th><th>Maps</th><th>Actions</th></tr>
+                  <tr><th>ID</th><th>Etapa</th><th>Orden</th><th>Visible</th><th>URL Descarga</th><th>Mapas</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                   {mappools.map(p => (
@@ -704,8 +704,8 @@ export default function AdminControl({ user }) {
                           <td><input value={editMappoolForm.download_url || ''} onChange={e => setEditMappoolForm({ ...editMappoolForm, download_url: e.target.value })} style={{ width: '120px' }} /></td>
                           <td>{p.maps?.length ?? '?'}</td>
                           <td>
-                            <button onClick={() => updateMappoolFn(p.id)}>Save</button>
-                            <button onClick={() => setEditingMappoolId(null)}>Cancel</button>
+                            <button onClick={() => updateMappoolFn(p.id)}>Guardar</button>
+                            <button onClick={() => setEditingMappoolId(null)}>Cancelar</button>
                           </td>
                         </>
                       ) : (
@@ -717,9 +717,9 @@ export default function AdminControl({ user }) {
                           <td style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.download_url || '-'}</td>
                           <td>{p.maps?.length ?? '?'}</td>
                           <td>
-                            <button onClick={() => setExpandedPoolId(expandedPoolId === p.id ? null : p.id)}>{expandedPoolId === p.id ? 'Hide' : 'Maps'}</button>
-                            <button onClick={() => { setEditingMappoolId(p.id); setEditMappoolForm({ stage_name: p.stage_name || p.name || '', stage_order: p.stage_order ?? '', download_url: p.download_url || '', is_visible: p.is_visible ?? true }); }}>Edit</button>
-                            <button onClick={() => deleteMappool(p.id)}>Del</button>
+                            <button onClick={() => setExpandedPoolId(expandedPoolId === p.id ? null : p.id)}>{expandedPoolId === p.id ? 'Ocultar' : 'Mapas'}</button>
+                            <button onClick={() => { setEditingMappoolId(p.id); setEditMappoolForm({ stage_name: p.stage_name || p.name || '', stage_order: p.stage_order ?? '', download_url: p.download_url || '', is_visible: p.is_visible ?? true }); }}>Editar</button>
+                            <button onClick={() => deleteMappool(p.id)}>Elim</button>
                           </td>
                         </>
                       )}
@@ -728,14 +728,14 @@ export default function AdminControl({ user }) {
                       <tr>
                         <td colSpan="7" style={{ padding: '4px 8px' }}>
                           <table style={{ width: '100%', fontSize: '11px' }}>
-                            <thead><tr><th>ID</th><th>Slot</th><th>#</th><th>Artist</th><th>Title</th><th>Diff</th><th>Mapper</th><th>SR</th><th>BPM</th><th>Len</th><th>Del</th></tr></thead>
+                            <thead><tr><th>ID</th><th>Slot</th><th>#</th><th>Artista</th><th>Título</th><th>Diff</th><th>Mapper</th><th>SR</th><th>BPM</th><th>Dur</th><th>Elim</th></tr></thead>
                             <tbody>
                               {p.maps.map(m => (
                                 <tr key={m.id}>
                                   <td>{m.id}</td><td>{m.slot}</td><td>{m.slot_order}</td>
                                   <td>{m.artist}</td><td>{m.title}</td><td>{m.difficulty_name}</td><td>{m.mapper}</td>
                                   <td>{m.star_rating}</td><td>{m.bpm}</td><td>{m.length}</td>
-                                  <td><button onClick={() => deletePoolMap(m.id)}>Del</button></td>
+                                  <td><button onClick={() => deletePoolMap(m.id)}>Elim</button></td>
                                 </tr>
                               ))}
                             </tbody>
@@ -752,17 +752,17 @@ export default function AdminControl({ user }) {
 
           {/* SLOTS */}
           <fieldset>
-            <legend><b>Slots</b></legend>
-            <button onClick={fetchSlots}>Load Slots</button>{' '}
-            <button onClick={seedSlots}>Seed Defaults</button>
+            <legend>Slots</legend>
+            <button onClick={fetchSlots}>Cargar Slots</button>{' '}
+            <button onClick={seedSlots}>Cargar Defaults</button>
             <br />
-            <label>name:</label><input value={slotForm.name} onChange={e => setSlotForm({ ...slotForm, name: e.target.value })} style={{ width: '80px' }} />
+            <label>nombre:</label><input value={slotForm.name} onChange={e => setSlotForm({ ...slotForm, name: e.target.value })} style={{ width: '80px' }} />
             <label> color:</label><input type="color" value={slotForm.color} onChange={e => setSlotForm({ ...slotForm, color: e.target.value })} />
-            <label> order:</label><input type="number" value={slotForm.slot_order} onChange={e => setSlotForm({ ...slotForm, slot_order: Number(e.target.value) })} style={{ width: '40px' }} />
-            <button onClick={createSlot}>Create</button>
+            <label> orden:</label><input type="number" value={slotForm.slot_order} onChange={e => setSlotForm({ ...slotForm, slot_order: Number(e.target.value) })} style={{ width: '40px' }} />
+            <button onClick={createSlot}>Crear</button>
             {slots.length > 0 && (
               <table>
-                <thead><tr><th>ID</th><th>Name</th><th>Color</th><th>Order</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Color</th><th>Orden</th><th>Acciones</th></tr></thead>
                 <tbody>
                   {slots.map(s => (
                     <tr key={s.id}>
@@ -773,8 +773,8 @@ export default function AdminControl({ user }) {
                           <td><input type="color" value={editSlotForm.color || '#ffffff'} onChange={e => setEditSlotForm({ ...editSlotForm, color: e.target.value })} /></td>
                           <td><input type="number" value={editSlotForm.slot_order ?? ''} onChange={e => setEditSlotForm({ ...editSlotForm, slot_order: e.target.value })} style={{ width: '40px' }} /></td>
                           <td>
-                            <button onClick={() => updateSlotFn(s.id)}>Save</button>
-                            <button onClick={() => setEditingSlotId(null)}>Cancel</button>
+                            <button onClick={() => updateSlotFn(s.id)}>Guardar</button>
+                            <button onClick={() => setEditingSlotId(null)}>Cancelar</button>
                           </td>
                         </>
                       ) : (
@@ -784,8 +784,8 @@ export default function AdminControl({ user }) {
                           <td style={{ background: s.color }}>{s.color}</td>
                           <td>{s.slot_order}</td>
                           <td>
-                            <button onClick={() => { setEditingSlotId(s.id); setEditSlotForm({ name: s.name || '', color: s.color || '#ffffff', slot_order: s.slot_order ?? '' }); }}>Edit</button>
-                            <button onClick={() => deleteSlot(s.id)}>Del</button>
+                            <button onClick={() => { setEditingSlotId(s.id); setEditSlotForm({ name: s.name || '', color: s.color || '#ffffff', slot_order: s.slot_order ?? '' }); }}>Editar</button>
+                            <button onClick={() => deleteSlot(s.id)}>Elim</button>
                           </td>
                         </>
                       )}
@@ -798,15 +798,15 @@ export default function AdminControl({ user }) {
 
           {/* TIMELINE */}
           <fieldset>
-            <legend><b>Timeline</b></legend>
-            <button onClick={fetchTimeline}>Load</button>
+            <legend>Cronograma</legend>
+            <button onClick={fetchTimeline}>Cargar</button>
             <br />
-            <label>title:</label><input value={timelineForm.title} onChange={e => setTimelineForm({ ...timelineForm, title: e.target.value })} style={{ width: '120px' }} />
-            <label> date_range:</label><input value={timelineForm.date_range} onChange={e => setTimelineForm({ ...timelineForm, date_range: e.target.value })} placeholder="e.g. Jan 1 - Jan 5" style={{ width: '120px' }} />
-            <button onClick={addTimelineEvent}>Add</button>
+            <label>título:</label><input value={timelineForm.title} onChange={e => setTimelineForm({ ...timelineForm, title: e.target.value })} style={{ width: '120px' }} />
+            <label> rango_fechas:</label><input value={timelineForm.date_range} onChange={e => setTimelineForm({ ...timelineForm, date_range: e.target.value })} placeholder="ej. Ene 1 - Ene 5" style={{ width: '120px' }} />
+            <button onClick={addTimelineEvent}>Agregar</button>
             {timeline.length > 0 && (
               <table>
-                <thead><tr><th>ID</th><th>Title</th><th>Date Range</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Título</th><th>Rango Fechas</th><th>Acciones</th></tr></thead>
                 <tbody>
                   {timeline.map(e => (
                     <tr key={e.id}>
@@ -816,8 +816,8 @@ export default function AdminControl({ user }) {
                           <td><input value={editEventForm.title || ''} onChange={ev => setEditEventForm({ ...editEventForm, title: ev.target.value })} style={{ width: '100px' }} /></td>
                           <td><input value={editEventForm.date_range || ''} onChange={ev => setEditEventForm({ ...editEventForm, date_range: ev.target.value })} style={{ width: '100px' }} /></td>
                           <td>
-                            <button onClick={() => updateTimelineEventFn(e.id)}>Save</button>
-                            <button onClick={() => setEditingEventId(null)}>Cancel</button>
+                            <button onClick={() => updateTimelineEventFn(e.id)}>Guardar</button>
+                            <button onClick={() => setEditingEventId(null)}>Cancelar</button>
                           </td>
                         </>
                       ) : (
@@ -826,8 +826,8 @@ export default function AdminControl({ user }) {
                           <td>{e.title}</td>
                           <td>{e.date || '-'}</td>
                           <td>
-                            <button onClick={() => { setEditingEventId(e.id); setEditEventForm({ title: e.title || '', date_range: e.date || '' }); }}>Edit</button>
-                            <button onClick={() => deleteTimelineEvent(e.id)}>Del</button>
+                            <button onClick={() => { setEditingEventId(e.id); setEditEventForm({ title: e.title || '', date_range: e.date || '' }); }}>Editar</button>
+                            <button onClick={() => deleteTimelineEvent(e.id)}>Elim</button>
                           </td>
                         </>
                       )}
@@ -840,15 +840,15 @@ export default function AdminControl({ user }) {
 
           {/* NEWS */}
           <fieldset>
-            <legend><b>News</b></legend>
-            <button onClick={fetchNews}>Load</button>
+            <legend>Noticias</legend>
+            <button onClick={fetchNews}>Cargar</button>
             <br />
-            <label>title:</label><input value={newsForm.title} onChange={e => setNewsForm({ ...newsForm, title: e.target.value })} style={{ width: '150px' }} />
-            <label> date:</label><input value={newsForm.date} onChange={e => setNewsForm({ ...newsForm, date: e.target.value })} placeholder="e.g. 2026-01-24" style={{ width: '100px' }} />
-            <button onClick={addNewsItem}>Add</button>
+            <label>título:</label><input value={newsForm.title} onChange={e => setNewsForm({ ...newsForm, title: e.target.value })} style={{ width: '150px' }} />
+            <label> fecha:</label><input value={newsForm.date} onChange={e => setNewsForm({ ...newsForm, date: e.target.value })} placeholder="ej. 2026-01-24" style={{ width: '100px' }} />
+            <button onClick={addNewsItem}>Agregar</button>
             {news.length > 0 && (
               <table>
-                <thead><tr><th>ID</th><th>Title</th><th>Date</th><th>Actions</th></tr></thead>
+                <thead><tr><th>ID</th><th>Título</th><th>Fecha</th><th>Acciones</th></tr></thead>
                 <tbody>
                   {news.map(n => (
                     <tr key={n.id}>
@@ -858,8 +858,8 @@ export default function AdminControl({ user }) {
                           <td><input value={editNewsForm.title || ''} onChange={e => setEditNewsForm({ ...editNewsForm, title: e.target.value })} style={{ width: '120px' }} /></td>
                           <td><input value={editNewsForm.date || ''} onChange={e => setEditNewsForm({ ...editNewsForm, date: e.target.value })} style={{ width: '100px' }} /></td>
                           <td>
-                            <button onClick={() => updateNewsItemFn(n.id)}>Save</button>
-                            <button onClick={() => setEditingNewsId(null)}>Cancel</button>
+                            <button onClick={() => updateNewsItemFn(n.id)}>Guardar</button>
+                            <button onClick={() => setEditingNewsId(null)}>Cancelar</button>
                           </td>
                         </>
                       ) : (
@@ -868,8 +868,8 @@ export default function AdminControl({ user }) {
                           <td>{n.title}</td>
                           <td>{n.date || '-'}</td>
                           <td>
-                            <button onClick={() => { setEditingNewsId(n.id); setEditNewsForm({ title: n.title || '', date: n.date || '' }); }}>Edit</button>
-                            <button onClick={() => deleteNewsItem(n.id)}>Del</button>
+                            <button onClick={() => { setEditingNewsId(n.id); setEditNewsForm({ title: n.title || '', date: n.date || '' }); }}>Editar</button>
+                            <button onClick={() => deleteNewsItem(n.id)}>Elim</button>
                           </td>
                         </>
                       )}
@@ -882,10 +882,10 @@ export default function AdminControl({ user }) {
 
           {/* WHITELIST */}
           <fieldset>
-            <legend><b>Whitelist</b></legend>
-            <button onClick={fetchWhitelist}>Load</button>{' '}
-            <input value={whitelistName} onChange={e => setWhitelistName(e.target.value)} placeholder="username" style={{ width: '100px' }} />
-            <button onClick={addWhitelist}>Add</button>
+            <legend>Whitelist</legend>
+            <button onClick={fetchWhitelist}>Cargar</button>{' '}
+            <input value={whitelistName} onChange={e => setWhitelistName(e.target.value)} placeholder="usuario" style={{ width: '100px' }} />
+            <button onClick={addWhitelist}>Agregar</button>
             {whitelist.length > 0 && (
               <ul>
                 {whitelist.map((w, i) => (
@@ -897,19 +897,19 @@ export default function AdminControl({ user }) {
 
           {/* API KEYS */}
           <fieldset>
-            <legend><b>API Keys</b></legend>
-            <button onClick={fetchApiKeys}>Load</button>{' '}
-            <input value={newKeyName} onChange={e => setNewKeyName(e.target.value)} placeholder="key name" style={{ width: '100px' }} />
-            <button onClick={generateApiKey}>Generate</button>
-            {generatedKey && <p className="admin-warning"><b>NEW KEY (copy now!):</b> {generatedKey}</p>}
+            <legend>Claves API</legend>
+            <button onClick={fetchApiKeys}>Cargar</button>{' '}
+            <input value={newKeyName} onChange={e => setNewKeyName(e.target.value)} placeholder="nombre clave" style={{ width: '100px' }} />
+            <button onClick={generateApiKey}>Generar</button>
+            {generatedKey && <p className="admin-warning"><b>NUEVA CLAVE (copiar ahora!):</b> {generatedKey}</p>}
             {apiKeys.length > 0 && (
               <table >
-                <thead><tr><th>ID</th><th>Name</th><th>Created</th><th>Last Used</th><th>Revoke</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nombre</th><th>Creado</th><th>Último Uso</th><th>Revocar</th></tr></thead>
                 <tbody>
                   {apiKeys.map(k => (
                     <tr key={k.id}>
                       <td>{k.id}</td><td>{k.name}</td><td>{k.created_at?.slice(0, 10)}</td><td>{k.last_used_at?.slice(0, 10) || '-'}</td>
-                      <td><button onClick={() => revokeApiKey(k.id)}>Revoke</button></td>
+                      <td><button onClick={() => revokeApiKey(k.id)}>Revocar</button></td>
                     </tr>
                   ))}
                 </tbody>
