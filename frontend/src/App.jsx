@@ -48,6 +48,7 @@ import Mappool from "./pages/Mappool";
 import Preview from "./pages/Preview";
 import StaffDiscord from "./pages/StaffDiscord";
 import StaffWhitelist from "./pages/StaffWhitelist";
+import AdminControl from "./pages/AdminControl";
 // Timba removed - tournament committee prohibits gambling
 
 // Components
@@ -96,6 +97,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
                 </NavLink>
                 <NavLink to="/staff/whitelist" className="nav-staff-link">
                   WHITELIST<span className="staff-badge">STAFF</span>
+                </NavLink>
+                <NavLink to="/admin" className="nav-staff-link">
+                  ADMIN<span className="staff-badge">STAFF</span>
                 </NavLink>
               </>
             )}
@@ -196,6 +200,18 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             user?.is_staff ? (
               <main className="main has-container">
                 <StaffWhitelist />
+              </main>
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            user?.is_staff ? (
+              <main className="main" style={{ padding: '0', maxWidth: 'none' }}>
+                <AdminControl user={user} />
               </main>
             ) : (
               <Navigate to="/" />
