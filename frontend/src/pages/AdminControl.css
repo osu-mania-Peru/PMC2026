@@ -1,0 +1,142 @@
+.admin-control {
+  padding: 16px;
+  font-family: -apple-system, sans-serif;
+  font-size: 13px;
+  background: #f5f5f5;
+  color: #222;
+  min-height: 100vh;
+}
+
+.admin-control h1 {
+  font-size: 20px;
+  margin: 0 0 8px 0;
+}
+
+.admin-control fieldset {
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+.admin-control legend {
+  font-weight: 600;
+  padding: 0 6px;
+}
+
+.admin-control table {
+  border-collapse: collapse;
+  margin-top: 6px;
+  font-size: 12px;
+  width: 100%;
+}
+
+.admin-control th,
+.admin-control td {
+  border: 1px solid #ddd;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.admin-control th {
+  background: #f0f0f0;
+  font-weight: 600;
+}
+
+.admin-control tr:hover {
+  background: #f8f8f8;
+}
+
+/* Reset all button styles from App.css */
+.admin-control button {
+  all: revert;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  background: #fff;
+  color: #333;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  clip-path: none !important;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: normal;
+  display: inline;
+  position: static;
+}
+
+.admin-control button:hover {
+  background: #e8e8e8;
+}
+
+.admin-control button:disabled {
+  background: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Reset input styles */
+.admin-control input,
+.admin-control select {
+  all: revert;
+  font-family: -apple-system, sans-serif;
+  font-size: 12px;
+  padding: 3px 6px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+}
+
+.admin-control input[type="checkbox"] {
+  width: auto;
+}
+
+.admin-control input[type="color"] {
+  padding: 0;
+  width: 30px;
+  height: 22px;
+}
+
+.admin-control label {
+  font-size: 12px;
+  color: #555;
+}
+
+.admin-control pre {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 8px;
+  font-size: 11px;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+}
+
+.admin-control ul {
+  list-style: none;
+  padding: 0;
+  margin: 5px 0;
+}
+
+.admin-control li {
+  padding: 2px 0;
+}
+
+.admin-control p {
+  margin: 4px 0;
+}
+
+.admin-control .admin-error {
+  color: #c00;
+  font-weight: 600;
+}
+
+.admin-control .admin-warning {
+  color: #c00;
+}
+
+.admin-control .completed-row {
+  background: #e8f5e9;
+}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api';
+import './AdminControl.css';
 
 export default function AdminControl({ user }) {
   // --- State ---
-  const [log, setLog] = useState('');
   const [loading, setLoading] = useState(false);
+  const [lastError, setLastError] = useState('');
 
   // Users
   const [users, setUsers] = useState([]);
@@ -52,19 +53,14 @@ export default function AdminControl({ user }) {
   const [generatedKey, setGeneratedKey] = useState('');
 
   // --- Helpers ---
-  const logResult = (label, data) => {
-    const text = `[${new Date().toLocaleTimeString()}] ${label}:\n${JSON.stringify(data, null, 2)}\n\n`;
-    setLog(prev => text + prev);
-  };
-
   const run = async (label, fn) => {
     setLoading(true);
+    setLastError('');
     try {
       const result = await fn();
-      logResult(label, result);
       return result;
     } catch (err) {
-      logResult(`ERROR ${label}`, { message: err.message, status: err.status, detail: err.responseBody });
+      setLastError(`${label}: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -280,13 +276,11 @@ export default function AdminControl({ user }) {
   }
 
   return (
-    <div style={{ padding: '10px', fontFamily: 'monospace', fontSize: '13px' }}>
+    <div className="admin-control">
       <h1>Admin Control Panel</h1>
       <p>Logged in as: <b>{user.username}</b> (staff)</p>
       {loading && <p><b>Loading...</b></p>}
-
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1', minWidth: '600px' }}>
+      {lastError && <p className="admin-error">{lastError}</p>}
 
           {/* USERS */}
           <fieldset>
@@ -302,7 +296,7 @@ export default function AdminControl({ user }) {
             </select>
             <button onClick={setStaff}>Apply</button>
             {users.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table>
                 <thead>
                   <tr><th>ID</th><th>Username</th><th>osu_id</th><th>Staff</th><th>Registered</th><th>Seed</th><th>Rank</th><th>Actions</th></tr>
                 </thead>
@@ -339,7 +333,7 @@ export default function AdminControl({ user }) {
             </select>
             <button onClick={generateBrackets}>Generate Brackets</button>
             {brackets.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead>
                   <tr><th>ID</th><th>Name</th><th>Type</th><th>Size</th><th>Matches</th><th>Completed</th></tr>
                 </thead>
@@ -362,13 +356,13 @@ export default function AdminControl({ user }) {
             <input type="number" value={selectedBracketId} onChange={e => setSelectedBracketId(e.target.value)} style={{ width: '50px' }} />
             <button onClick={fetchBracketMatches}>Load Matches</button>
             {bracketMatches.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead>
                   <tr><th>ID</th><th>Round</th><th>P1</th><th>P2</th><th>Score</th><th>Winner</th><th>Status</th><th>Next</th><th>Loser→</th></tr>
                 </thead>
                 <tbody>
                   {bracketMatches.map(m => (
-                    <tr key={m.id} style={{ background: m.is_completed ? '#dfd' : 'transparent' }}>
+                    <tr key={m.id} className={m.is_completed ? 'completed-row' : ''}>
                       <td>{m.id}</td>
                       <td>{m.round_name}</td>
                       <td>{m.player1_username}</td>
@@ -421,7 +415,7 @@ export default function AdminControl({ user }) {
             </select>
             <button onClick={updateMatch}>Update</button>
             {matches.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead>
                   <tr><th>ID</th><th>Bracket</th><th>P1</th><th>P2</th><th>Score</th><th>Status</th><th>Actions</th></tr>
                 </thead>
@@ -462,7 +456,7 @@ export default function AdminControl({ user }) {
             <b>Lookup Beatmap:</b>{' '}
             <input type="number" value={beatmapLookup} onChange={e => setBeatmapLookup(e.target.value)} placeholder="beatmap_id" style={{ width: '90px' }} />
             <button onClick={lookupBeatmapFn}>Lookup</button>
-            {beatmapResult && <pre style={{ fontSize: '10px', maxHeight: '80px', overflow: 'auto' }}>{JSON.stringify(beatmapResult, null, 2)}</pre>}
+            {beatmapResult && <pre>{JSON.stringify(beatmapResult, null, 2)}</pre>}
             <br />
             <b>Add Map to Pool:</b><br />
             <label>pool_id:</label><input type="number" value={mappoolMapForm.pool_id} onChange={e => setMappoolMapForm({ ...mappoolMapForm, pool_id: e.target.value })} style={{ width: '50px' }} />
@@ -471,7 +465,7 @@ export default function AdminControl({ user }) {
             <label> slot#:</label><input type="number" value={mappoolMapForm.slot_number} onChange={e => setMappoolMapForm({ ...mappoolMapForm, slot_number: e.target.value })} style={{ width: '40px' }} />
             <button onClick={addMapToPool}>Add</button>
             {mappools.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead>
                   <tr><th>ID</th><th>Name</th><th>Round</th><th>Visible</th><th>Maps</th><th>Actions</th></tr>
                 </thead>
@@ -503,7 +497,7 @@ export default function AdminControl({ user }) {
             <label> order:</label><input type="number" value={slotForm.slot_order} onChange={e => setSlotForm({ ...slotForm, slot_order: e.target.value })} style={{ width: '40px' }} />
             <button onClick={createSlot}>Create</button>
             {slots.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead><tr><th>ID</th><th>Name</th><th>Short</th><th>Color</th><th>Order</th><th>Del</th></tr></thead>
                 <tbody>
                   {slots.map(s => (
@@ -534,7 +528,7 @@ export default function AdminControl({ user }) {
             </select>
             <button onClick={addTimelineEvent}>Add</button>
             {timeline.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead><tr><th>ID</th><th>Title</th><th>Date</th><th>Status</th><th>Del</th></tr></thead>
                 <tbody>
                   {timeline.map(e => (
@@ -558,7 +552,7 @@ export default function AdminControl({ user }) {
             <label> author:</label><input value={newsForm.author} onChange={e => setNewsForm({ ...newsForm, author: e.target.value })} style={{ width: '80px' }} />
             <button onClick={addNewsItem}>Add</button>
             {news.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Del</th></tr></thead>
                 <tbody>
                   {news.map(n => (
@@ -579,7 +573,7 @@ export default function AdminControl({ user }) {
             <input value={whitelistName} onChange={e => setWhitelistName(e.target.value)} placeholder="username" style={{ width: '100px' }} />
             <button onClick={addWhitelist}>Add</button>
             {whitelist.length > 0 && (
-              <ul style={{ fontSize: '11px', margin: '5px 0' }}>
+              <ul>
                 {whitelist.map((w, i) => (
                   <li key={i}>{typeof w === 'string' ? w : w.username} <button onClick={() => removeWhitelist(typeof w === 'string' ? w : w.username)}>X</button></li>
                 ))}
@@ -593,9 +587,9 @@ export default function AdminControl({ user }) {
             <button onClick={fetchApiKeys}>Load</button>{' '}
             <input value={newKeyName} onChange={e => setNewKeyName(e.target.value)} placeholder="key name" style={{ width: '100px' }} />
             <button onClick={generateApiKey}>Generate</button>
-            {generatedKey && <p style={{ color: 'red' }}><b>NEW KEY (copy now!):</b> {generatedKey}</p>}
+            {generatedKey && <p className="admin-warning"><b>NEW KEY (copy now!):</b> {generatedKey}</p>}
             {apiKeys.length > 0 && (
-              <table border="1" cellPadding="3" style={{ marginTop: '5px', fontSize: '11px' }}>
+              <table >
                 <thead><tr><th>ID</th><th>Name</th><th>Created</th><th>Last Used</th><th>Revoke</th></tr></thead>
                 <tbody>
                   {apiKeys.map(k => (
@@ -609,19 +603,6 @@ export default function AdminControl({ user }) {
             )}
           </fieldset>
 
-        </div>
-
-        {/* LOG PANEL */}
-        <div style={{ flex: '0 0 400px' }}>
-          <fieldset>
-            <legend><b>Response Log</b></legend>
-            <button onClick={() => setLog('')}>Clear</button>
-            <pre style={{ maxHeight: '80vh', overflow: 'auto', fontSize: '10px', whiteSpace: 'pre-wrap', background: '#111', color: '#0f0', padding: '5px' }}>
-              {log || '(no responses yet)'}
-            </pre>
-          </fieldset>
-        </div>
-      </div>
     </div>
   );
 }
