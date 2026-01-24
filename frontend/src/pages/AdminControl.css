@@ -2,26 +2,28 @@
   padding: 16px;
   font-family: -apple-system, sans-serif;
   font-size: 13px;
-  background: #f5f5f5;
-  color: #222;
+  background: #1e1e1e;
+  color: #e0e0e0;
   min-height: 100vh;
 }
 
 .admin-control h1 {
   font-size: 20px;
   margin: 0 0 8px 0;
+  color: #fff;
 }
 
 .admin-control fieldset {
-  border: 1px solid #ccc;
+  border: 1px solid #3a3a3a;
   margin-bottom: 10px;
   padding: 10px;
-  background: #fff;
+  background: #252525;
 }
 
 .admin-control legend {
   font-weight: 600;
   padding: 0 6px;
+  color: #ccc;
 }
 
 .admin-control table {
@@ -33,18 +35,19 @@
 
 .admin-control th,
 .admin-control td {
-  border: 1px solid #ddd;
+  border: 1px solid #3a3a3a;
   padding: 4px 6px;
   text-align: left;
 }
 
 .admin-control th {
-  background: #f0f0f0;
+  background: #2a2a2a;
   font-weight: 600;
+  color: #aaa;
 }
 
 .admin-control tr:hover {
-  background: #f8f8f8;
+  background: #2e2e2e;
 }
 
 /* Reset all button styles from App.css */
@@ -54,9 +57,9 @@
   font-size: 12px;
   padding: 4px 10px;
   cursor: pointer;
-  background: #fff;
-  color: #333;
-  border: 1px solid #aaa;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
   border-radius: 3px;
   clip-path: none !important;
   text-transform: none;
@@ -67,12 +70,12 @@
 }
 
 .admin-control button:hover {
-  background: #e8e8e8;
+  background: #444;
 }
 
 .admin-control button:disabled {
-  background: #f0f0f0;
-  color: #999;
+  background: #2a2a2a;
+  color: #666;
   cursor: not-allowed;
 }
 
@@ -83,8 +86,10 @@
   font-family: -apple-system, sans-serif;
   font-size: 12px;
   padding: 3px 6px;
-  border: 1px solid #aaa;
+  border: 1px solid #555;
   border-radius: 3px;
+  background: #2a2a2a;
+  color: #e0e0e0;
 }
 
 .admin-control input[type="checkbox"] {
@@ -99,12 +104,12 @@
 
 .admin-control label {
   font-size: 12px;
-  color: #555;
+  color: #999;
 }
 
 .admin-control pre {
-  background: #f9f9f9;
-  border: 1px solid #ddd;
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
   padding: 8px;
   font-size: 11px;
   max-height: 120px;
@@ -112,6 +117,7 @@
   white-space: pre-wrap;
   word-break: break-all;
   font-family: monospace;
+  color: #ccc;
 }
 
 .admin-control ul {
@@ -129,14 +135,14 @@
 }
 
 .admin-control .admin-error {
-  color: #c00;
+  color: #e55;
   font-weight: 600;
 }
 
 .admin-control .admin-warning {
-  color: #c00;
+  color: #e55;
 }
 
 .admin-control .completed-row {
-  background: #e8f5e9;
+  background: #1e2e1e;
 }
