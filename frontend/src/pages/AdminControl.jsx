@@ -481,15 +481,15 @@ export default function AdminControl({ user }) {
 
           {/* BRACKETS */}
           <fieldset>
-            <legend>Llaves</legend>
-            <button onClick={fetchBrackets}>Cargar Llaves</button>{' '}
+            <legend>Brackets</legend>
+            <button onClick={fetchBrackets}>Cargar Brackets</button>{' '}
             <select value={bracketSize} onChange={e => setBracketSize(Number(e.target.value))}>
               <option value={4}>4</option>
               <option value={8}>8</option>
               <option value={16}>16</option>
               <option value={32}>32</option>
             </select>
-            <button onClick={generateBrackets}>Generar Llaves</button>
+            <button onClick={generateBrackets}>Generar Brackets</button>
             {brackets.length > 0 && (
               <table >
                 <thead>
@@ -510,7 +510,7 @@ export default function AdminControl({ user }) {
               </table>
             )}
             <br />
-            <label>ID Llave: </label>
+            <label>ID Bracket: </label>
             <input type="number" value={selectedBracketId} onChange={e => setSelectedBracketId(e.target.value)} style={{ width: '50px' }} />
             <button onClick={fetchBracketMatches}>Cargar Partidas</button>
             {bracketMatches.length > 0 && (
@@ -575,7 +575,7 @@ export default function AdminControl({ user }) {
             {matches.length > 0 && (
               <table >
                 <thead>
-                  <tr><th>ID</th><th>Llave</th><th>J1</th><th>J2</th><th>Puntaje</th><th>Estado</th><th>Acciones</th></tr>
+                  <tr><th>ID</th><th>Bracket</th><th>J1</th><th>J2</th><th>Puntaje</th><th>Estado</th><th>Acciones</th></tr>
                 </thead>
                 <tbody>
                   {matches.map(m => (
