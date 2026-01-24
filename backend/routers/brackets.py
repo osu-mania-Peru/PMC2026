@@ -48,6 +48,18 @@ async def get_all_brackets(db: Session = Depends(get_db)):
     return {"brackets": result}
 
 
+@router.delete("")
+async def delete_all_brackets(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Delete all brackets and their matches (staff only)."""
+    matches_deleted = db.query(Match).delete()
+    brackets_deleted = db.query(Bracket).delete()
+    db.commit()
+    return {"message": f"Eliminados {brackets_deleted} brackets y {matches_deleted} partidas"}
+
+
 @router.post("/generate")
 async def generate_brackets(
     request: GenerateBracketsRequest,

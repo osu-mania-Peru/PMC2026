@@ -119,6 +119,11 @@ export default function AdminControl({ user }) {
     api.fetch('/brackets/generate', { method: 'POST', body: JSON.stringify({ bracket_size: bracketSize }) })
   );
 
+  const deleteAllBrackets = () => {
+    if (!confirm('¿Eliminar TODOS los brackets y partidas?')) return;
+    run('Delete All Brackets', () => api.fetch('/brackets', { method: 'DELETE' })).then(() => { setBrackets([]); setBracketMatches([]); });
+  };
+
   const fetchBracketMatches = () => run(`GET Bracket ${selectedBracketId} Matches`, async () => {
     const data = await api.fetch(`/brackets/${selectedBracketId}/matches`);
     setBracketMatches(data.matches || []);
@@ -489,7 +494,8 @@ export default function AdminControl({ user }) {
               <option value={16}>16</option>
               <option value={32}>32</option>
             </select>
-            <button onClick={generateBrackets}>Generar Brackets</button>
+            <button onClick={generateBrackets}>Generar Brackets</button>{' '}
+            <button onClick={deleteAllBrackets}>Eliminar Todo</button>
             {brackets.length > 0 && (
               <table >
                 <thead>
