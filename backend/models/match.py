@@ -35,8 +35,8 @@ class Match(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     bracket_id: Mapped[int] = mapped_column(Integer, ForeignKey('brackets.id'), nullable=False)
-    player1_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
-    player2_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=False)
+    player1_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+    player2_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
     map_id: Mapped[int] = mapped_column(Integer, ForeignKey('maps.id'), nullable=False)
     player1_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='Player 1 final score')
     player2_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='Player 2 final score')

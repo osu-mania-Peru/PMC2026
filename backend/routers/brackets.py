@@ -143,20 +143,19 @@ async def generate_brackets(
         return matchups
 
     num_winner_rounds = int(math.log2(bracket_size))
-    placeholder = players[0]
     matchups = get_seeded_matchups(bracket_size)
     winner_rounds = []
 
     # WR1: First round with seeded players
     wr1 = []
     for seed1_idx, seed2_idx in matchups:
-        p1 = players[seed1_idx] if seed1_idx < len(players) else placeholder
-        p2 = players[seed2_idx] if seed2_idx < len(players) else placeholder
+        p1_id = players[seed1_idx].id if seed1_idx < len(players) else None
+        p2_id = players[seed2_idx].id if seed2_idx < len(players) else None
 
         match = Match(
             bracket_id=winner_bracket.id,
-            player1_id=p1.id,
-            player2_id=p2.id,
+            player1_id=p1_id,
+            player2_id=p2_id,
             map_id=default_map.id,
             round_name=f"Round of {bracket_size}",
             match_status="scheduled"
@@ -180,8 +179,8 @@ async def generate_brackets(
         for _ in range(matches_in_round):
             match = Match(
                 bracket_id=winner_bracket.id,
-                player1_id=placeholder.id,
-                player2_id=placeholder.id,
+                player1_id=None,
+                player2_id=None,
                 map_id=default_map.id,
                 round_name=round_name,
                 match_status="scheduled"
@@ -198,8 +197,8 @@ async def generate_brackets(
     # Grand Finals match
     gf_match = Match(
         bracket_id=gf_bracket.id,
-        player1_id=placeholder.id,
-        player2_id=placeholder.id,
+        player1_id=None,
+        player2_id=None,
         map_id=default_map.id,
         round_name="Grand Finals",
         match_status="scheduled"
