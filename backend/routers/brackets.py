@@ -83,11 +83,10 @@ async def generate_brackets(
     default_map = db.query(Map).first()
     if not default_map:
         default_map = Map(
-            beatmap_id=0,
-            artist="TBD",
-            title="TBD",
+            map_url="https://osu.ppy.sh/beatmaps/0",
+            map_name="TBD",
             difficulty_name="TBD",
-            mapper="TBD"
+            mapper_name="TBD"
         )
         db.add(default_map)
         db.commit()
