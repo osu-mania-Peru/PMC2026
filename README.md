@@ -2,10 +2,10 @@
   <img src="assets/logo.svg" alt="PMC" width="128">
 </p>
 
-<h1 align="center">Peru Mania Cup</h1>
+<h1 align="center">Peru Mania Cup 2026</h1>
 
 <p align="center">
-  Tournament management platform for osu!mania competitions.
+  Official website for PMC 2026, an osu!mania tournament.
 </p>
 
 <p align="center">
@@ -19,12 +19,11 @@
 
 ## Features
 
-- **Player Registration** — osu! OAuth login, team management
-- **Mappool Management** — Beatmap organization by round and mod
-- **Bracket System** — Double elimination brackets with loser's bracket support
-- **Match Scheduling** — Timeline view, referee assignments
-- **Live Updates** — Real-time score tracking and notifications
-- **Staff Tools** — Whitelist management, Discord integration
+- **Player Registration** — osu! OAuth login
+- **Mappool Showcase** — Beatmaps organized by round and mod
+- **Brackets** — Double elimination with loser's bracket
+- **Match Schedule** — Timeline view with referee info
+- **Staff Panel** — Whitelist and Discord integration
 
 ## Architecture
 
