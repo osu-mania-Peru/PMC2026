@@ -220,6 +220,7 @@ logs/
 # Documentation (keep local only)
 *.md
 !CLAUDE.md
+!README.md
 
 # Database
 *.db
