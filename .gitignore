@@ -262,4 +262,13 @@ static/uploads/
 # Test scripts
 test_api_key.sh
 test_api_key.ps1
-API_KEY_USAGE.mdfrontend/public/horse/umamusume-ui/
+
+# Video files
+*.mp4
+*.webm
+*.avi
+*.mov
+*.mkv
+
+# Horse game unused UI
+frontend/public/horse/umamusume-ui/
