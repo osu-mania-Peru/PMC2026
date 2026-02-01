@@ -29,7 +29,7 @@
 
 ```
 PMC/
-├── backend/          # FastAPI + SQLite
+├── backend/          # FastAPI + PostgreSQL
 │   ├── routers/      # API endpoints
 │   ├── models/       # SQLAlchemy models
 │   ├── services/     # Business logic
@@ -45,7 +45,7 @@ PMC/
 | Layer | Technology |
 |-------|------------|
 | Frontend | React, Vite, Lucide Icons |
-| Backend | FastAPI, SQLAlchemy, SQLite |
+| Backend | FastAPI, SQLAlchemy, PostgreSQL |
 | Auth | osu! OAuth via [MiauAuth](https://github.com/kitasenbei/MiauAuth) |
 | Deploy | Docker, Nginx |
 
