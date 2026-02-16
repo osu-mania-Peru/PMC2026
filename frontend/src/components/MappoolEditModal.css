@@ -255,6 +255,14 @@
   stroke: #ff0844;
 }
 
+.mpm-icon-btn-active svg {
+  stroke: #4ade80;
+}
+
+.mpm-icon-btn-active:hover svg {
+  stroke: #22c55e;
+}
+
 .mpm-icon-btn-danger svg {
   stroke: #666;
 }
@@ -265,6 +273,29 @@
 
 .mpm-icon-btn-danger:hover svg {
   stroke: #ff4444;
+}
+
+/* Link Edit Row */
+.mpm-link-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #111;
+  border-bottom: 1px solid #333;
+}
+
+.mpm-link-edit-row > svg {
+  width: 16px;
+  height: 16px;
+  stroke: #666;
+  flex-shrink: 0;
+}
+
+.mpm-link-input {
+  flex: 1;
+  font-size: 0.8rem;
+  padding: 6px 10px;
 }
 
 /* Add Pool Button */

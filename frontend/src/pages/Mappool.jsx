@@ -65,6 +65,7 @@ import MapEditModal from '../components/MapEditModal';
 import SlotEditModal from '../components/SlotEditModal';
 import PreviewPanel from '../components/PreviewPanel';
 import catGif from '../assets/cat.gif';
+import packShareLogo from '../assets/packshare-logo.svg';
 import './Mappool.css';
 
 // Icons as SVG components
@@ -351,9 +352,10 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                 href={pool.download_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="download-btn"
+                className="packshare-link"
               >
-                DESCARGAR POOL
+                <img src={packShareLogo} alt="PackShare" className="packshare-logo" />
+                <span>Abrir en PackShare</span>
               </a>
             </div>
           )}

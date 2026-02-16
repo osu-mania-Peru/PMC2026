@@ -35,6 +35,19 @@ const EditIcon = () => (
   </svg>
 );
 
+const LinkIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
 // Arrow Icons
 const ChevronUpIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -559,7 +572,7 @@ function AddMapForm({ poolId, onAdd, onCancel, loading, slots, onEditSlots }) {
 }
 
 // Pool Item Component
-function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots, onRename }) {
+function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, onMoveDown, isFirst, isLast, loading, slots, onEditSlots, onUpdate }) {
   const { addMapPoolId, addMapDraft } = useMappoolStore();
   const hasDraft = addMapPoolId === pool.id && addMapDraft !== null;
 
@@ -567,6 +580,8 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
   const [deletingMap, setDeletingMap] = useState(null);
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(pool.stage_name);
+  const [editingLink, setEditingLink] = useState(false);
+  const [linkValue, setLinkValue] = useState(pool.download_url || '');
 
   const getSlotColor = (slotName) => {
     const slot = slots?.find(s => s.name === slotName);
@@ -579,7 +594,7 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
       setNewName(pool.stage_name);
       return;
     }
-    await onRename(pool.id, newName.trim());
+    await onUpdate(pool.id, { stage_name: newName.trim() });
     setEditingName(false);
   };
 
@@ -589,6 +604,24 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
     } else if (e.key === 'Escape') {
       setEditingName(false);
       setNewName(pool.stage_name);
+    }
+  };
+
+  const handleLinkSave = async () => {
+    const trimmed = linkValue.trim();
+    const newUrl = trimmed || null;
+    if (newUrl !== (pool.download_url || null)) {
+      await onUpdate(pool.id, { download_url: newUrl });
+    }
+    setEditingLink(false);
+  };
+
+  const handleLinkKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleLinkSave();
+    } else if (e.key === 'Escape') {
+      setLinkValue(pool.download_url || '');
+      setEditingLink(false);
     }
   };
 
@@ -650,6 +683,14 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
         </button>
         <span className="mpm-pool-count">{pool.map_count} maps</span>
         <button
+          className={`mpm-icon-btn ${pool.download_url ? 'mpm-icon-btn-active' : ''}`}
+          onClick={() => setEditingLink(!editingLink)}
+          disabled={loading}
+          title={pool.download_url ? 'PackShare link configurado' : 'Agregar link de PackShare'}
+        >
+          {pool.download_url ? <CheckIcon /> : <LinkIcon />}
+        </button>
+        <button
           className="mpm-icon-btn mpm-icon-btn-danger"
           onClick={() => onDelete(pool.id)}
           disabled={loading}
@@ -658,6 +699,38 @@ function PoolItem({ pool, onDelete, onEditMap, onAddMap, onDeleteMap, onMoveUp, 
           {loading ? <img src={catGif} alt="" className="btn-loading-cat-small" /> : <TrashIcon />}
         </button>
       </div>
+
+      {editingLink && (
+        <div className="mpm-link-edit-row">
+          <LinkIcon />
+          <input
+            type="url"
+            value={linkValue}
+            onChange={(e) => setLinkValue(e.target.value)}
+            onBlur={handleLinkSave}
+            onKeyDown={handleLinkKeyDown}
+            placeholder="https://packshare.perudb.com/pack/..."
+            className="mpm-input mpm-link-input"
+            autoFocus
+            disabled={loading}
+          />
+          {linkValue.trim() && (
+            <button
+              className="mpm-icon-btn"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setLinkValue('');
+                onUpdate(pool.id, { download_url: null });
+                setEditingLink(false);
+              }}
+              title="Quitar link"
+              type="button"
+            >
+              <CloseIcon />
+            </button>
+          )}
+        </div>
+      )}
 
       {pool.maps && pool.maps.length > 0 && (
         <div className="mpm-maps-list">
@@ -801,13 +874,13 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
     }
   };
 
-  const handleRenamePool = async (poolId, newName) => {
+  const handleUpdatePool = async (poolId, data) => {
     setLoading(true);
     try {
-      await api.updateMappool(poolId, { stage_name: newName });
+      await api.updateMappool(poolId, data);
       onRefresh();
     } catch (err) {
-      console.error('Failed to rename pool:', err);
+      console.error('Failed to update pool:', err);
     } finally {
       setLoading(false);
     }
@@ -879,7 +952,7 @@ export default function MappoolEditModal({ isOpen, onClose, pools, onRefresh }) 
                   onDeleteMap={handleDeleteMap}
                   onMoveUp={handleMoveUp}
                   onMoveDown={handleMoveDown}
-                  onRename={handleRenamePool}
+                  onUpdate={handleUpdatePool}
                   isFirst={index === 0}
                   isLast={index === pools.length - 1}
                   loading={loading || deletingPool === pool.id}

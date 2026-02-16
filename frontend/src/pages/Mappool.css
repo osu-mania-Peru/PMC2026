@@ -406,7 +406,7 @@ td.col-title::after {
   color: #fff;
 }
 
-/* Download button */
+/* PackShare link */
 .mappool-download {
   display: flex;
   justify-content: flex-end;
@@ -414,25 +414,32 @@ td.col-title::after {
   background: #0a0a0a;
 }
 
-.download-btn {
-  display: inline-block;
+.packshare-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   background: transparent;
   border: 1px solid #444;
   color: #fff;
   font-family: 'Poppins', sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
-  padding: 0.75rem 1.5rem;
+  padding: 0.6rem 1.25rem;
   text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   transition: all 0.2s ease;
+  border-radius: 4px;
 }
 
-.download-btn:hover {
-  background: #fff;
-  color: #0a0a0a;
-  border-color: #fff;
+.packshare-link:hover {
+  border-color: #ff66ab;
+  background: rgba(255, 102, 171, 0.08);
+  color: #fff;
+}
+
+.packshare-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 /* Empty state */

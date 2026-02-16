@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&amp;display=swap');
+    .logo-text { font-family: 'Roboto', sans-serif; font-weight: 700; }
+  </style>
+  <!-- "pack" text -->
+  <text x="100" y="48" text-anchor="middle" class="logo-text" font-size="42" fill="#1a1a2a">pack</text>
+  <!-- "share" badge -->
+  <rect x="32" y="58" width="136" height="44" rx="8" ry="8" fill="#ff66ab"/>
+  <text x="100" y="90" text-anchor="middle" class="logo-text" font-size="36" fill="white">share</text>
+</svg>
