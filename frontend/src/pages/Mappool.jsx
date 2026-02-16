@@ -217,13 +217,27 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
 
   return (
     <div className="mappool-accordion">
-      <button
-        className="mappool-accordion-header"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className="accordion-title">{formatStageName(pool.stage_name)}</span>
-        <ChevronIcon isOpen={isOpen} />
-      </button>
+      <div className="mappool-accordion-header">
+        <button
+          className="accordion-toggle"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <span className="accordion-title">{formatStageName(pool.stage_name)}</span>
+          <ChevronIcon isOpen={isOpen} />
+        </button>
+        {pool.download_url && (
+          <a
+            href={pool.download_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="packshare-link"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img src={packShareLogo} alt="PackShare" className="packshare-logo" />
+            <span>Descargar Pool</span>
+          </a>
+        )}
+      </div>
 
       {isOpen && (
         <div className="mappool-accordion-content">
@@ -346,19 +360,6 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
             </table>
           </div>
 
-          {pool.download_url && (
-            <div className="mappool-download">
-              <a
-                href={pool.download_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="packshare-link"
-              >
-                <img src={packShareLogo} alt="PackShare" className="packshare-logo" />
-                <span>Abrir en PackShare</span>
-              </a>
-            </div>
-          )}
         </div>
       )}
     </div>
