@@ -6,7 +6,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
 import catGif from '../assets/cat.gif';
-import heroBgVideo from '../assets/hero-bg.mp4';
+const heroBgVideo = '/hero-bg.mp4';
 import './Home.css';
 
 // Parse DD/MM/YYYY or DD/MM date string to Date object

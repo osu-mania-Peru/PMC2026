@@ -33,4 +33,10 @@ jobs:
           npm install --legacy-peer-deps
           npm run build
           sudo cp -r dist/* /var/www/pmc/
+
+          # Copy hero video to web root if available
+          if [ -f src/assets/hero-bg.mp4 ]; then
+            sudo cp src/assets/hero-bg.mp4 /var/www/pmc/hero-bg.mp4
+          fi
+
           sudo systemctl reload nginx
