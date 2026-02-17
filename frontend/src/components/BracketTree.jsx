@@ -419,6 +419,18 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
   // Determine which tree-building method to use
   const hasLinks = data.matches?.some(m => m.next_match_id);
 
+  const contextMenuEl = ctxMenu && (
+    <div className="bracket-ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
+      <div className="bracket-ctx-header">
+        <Trophy size={12} /> ¿Marcar a <strong>{ctxMenu.playerName}</strong> como ganador?
+      </div>
+      <div className="bracket-ctx-actions">
+        <button className="bracket-ctx-confirm" onClick={handleMarkWinner}>Confirmar</button>
+        <button className="bracket-ctx-cancel" onClick={closeCtxMenu}>Cancelar</button>
+      </div>
+    </div>
+  );
+
   // Custom renderer for loser bracket (library creates too much empty space for asymmetric trees)
   if (bracketType === 'loser' && data.matches?.length > 0) {
     const matches = data.matches;
@@ -504,18 +516,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
         });
       }
     });
-
-    const contextMenuEl = ctxMenu && (
-      <div className="bracket-ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
-        <div className="bracket-ctx-header">
-          <Trophy size={12} /> ¿Marcar a <strong>{ctxMenu.playerName}</strong> como ganador?
-        </div>
-        <div className="bracket-ctx-actions">
-          <button className="bracket-ctx-confirm" onClick={handleMarkWinner}>Confirmar</button>
-          <button className="bracket-ctx-cancel" onClick={closeCtxMenu}>Cancelar</button>
-        </div>
-      </div>
-    );
 
     return (
       <div className="bracket-tree" ref={containerRef}>
@@ -693,18 +693,6 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   const GameWithProps = (props) => (
     <CustomGame {...props} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} onContextMenu={handleContextMenu} isStaff={user?.is_staff} bracketId={bracketId} />
-  );
-
-  const contextMenuEl = ctxMenu && (
-    <div className="bracket-ctx-menu" style={{ left: ctxMenu.x, top: ctxMenu.y }} onClick={(e) => e.stopPropagation()}>
-      <div className="bracket-ctx-header">
-        <Trophy size={12} /> ¿Marcar a <strong>{ctxMenu.playerName}</strong> como ganador?
-      </div>
-      <div className="bracket-ctx-actions">
-        <button className="bracket-ctx-confirm" onClick={handleMarkWinner}>Confirmar</button>
-        <button className="bracket-ctx-cancel" onClick={closeCtxMenu}>Cancelar</button>
-      </div>
-    </div>
   );
 
   return (
