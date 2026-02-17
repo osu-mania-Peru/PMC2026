@@ -5,6 +5,12 @@ import { Eye, Play, Pause, Upload, ChevronDown, Trash2, Gamepad2, Keyboard, X } 
 import { api } from '../api';
 import { loadSkinFromZip, saveSkinToStorage, getSavedSkins, deleteSkinFromStorage } from '../utils/skinLoader';
 
+const formatLength = (seconds) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+};
+
 // Speed options
 const SPEED_OPTIONS = [
   { value: 0.5, label: '0.5x' },
@@ -106,7 +112,7 @@ const PencilIcon = () => (
 );
 
 // Inline editable cell component
-function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
+function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots, displayValue }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editValue, setEditValue] = useState(value);
@@ -146,7 +152,7 @@ function InlineEditCell({ value, mapId, field, onSave, type = 'text', slots }) {
   if (!editing) {
     return (
       <span className="inline-edit-value" onClick={() => setEditing(true)}>
-        {value}
+        {displayValue ?? value}
       </span>
     );
   }
@@ -336,8 +342,8 @@ function MappoolAccordion({ pool, slots, defaultOpen = false, user, onEditMap, o
                     </td>
                     <td className="col-length">
                       {user?.is_staff ? (
-                        <InlineEditCell value={map.length_seconds} mapId={map.id} field="length_seconds" onSave={onInlineSave} type="number" />
-                      ) : map.length}
+                        <InlineEditCell value={map.length_seconds} mapId={map.id} field="length_seconds" onSave={onInlineSave} type="number" displayValue={formatLength(map.length_seconds)} />
+                      ) : formatLength(map.length_seconds)}
                     </td>
                     <td className="col-stats">
                       {user?.is_staff ? (
