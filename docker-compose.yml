@@ -63,6 +63,18 @@ services:
     networks:
       - pmc-network
 
+  # MiauriGuard Discord Bot
+  discord-bot:
+    build: ./discord-bot
+    container_name: pmc-discord-bot
+    env_file:
+      - ./discord-bot/.env
+    restart: unless-stopped
+    volumes:
+      - ./discord-bot/data:/app/data
+    networks:
+      - pmc-network
+
 networks:
   pmc-network:
     driver: bridge

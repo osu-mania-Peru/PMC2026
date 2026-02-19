@@ -235,6 +235,10 @@ docker-compose.override.yml
 !backend/alembic/versions/*.py
 backend/alembic/versions/.gitkeep
 
+# Discord Bot
+discord-bot/.env
+discord-bot/data/
+
 # Auth Service
 auth-service/.env
 auth-service/__pycache__/
@@ -249,6 +253,7 @@ backend/alembic.ini.bak
 # Secrets and credentials
 *.pem
 *.key
+openai.key
 *.cert
 *.crt
 secrets.json
