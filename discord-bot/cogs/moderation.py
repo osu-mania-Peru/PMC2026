@@ -114,7 +114,7 @@ class Moderation(commands.Cog):
         embed.set_footer(text=f"Warn #{warn_id}")
 
         try:
-            await message.channel.send(embed=embed, delete_after=15)
+            await message.channel.send(embed=embed)
         except discord.Forbidden:
             pass
 
