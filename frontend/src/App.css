@@ -570,6 +570,28 @@ a {
 .footer-hosted {
   color: var(--text-muted);
   font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.footer-host-link {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.footer-host-link:hover {
+  color: #fff;
+}
+
+.footer-host-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .footer-credit {
