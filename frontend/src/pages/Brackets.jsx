@@ -13,6 +13,7 @@ export default function Brackets({ user }) {
   const navigate = useNavigate();
   const [brackets, setBrackets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [editingMatch, setEditingMatch] = useState(null);
   const [users, setUsers] = useState([]);
   const [maps, setMaps] = useState([]);
@@ -23,7 +24,7 @@ export default function Brackets({ user }) {
   useEffect(() => {
     api.getBrackets()
       .then(data => setBrackets(data.brackets))
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
 
     // Load users and maps for staff modal
@@ -131,7 +132,7 @@ export default function Brackets({ user }) {
   ];
 
   return (
-    <PageTransition loading={loading} text="Cargando brackets...">
+    <PageTransition loading={loading} error={loadError} text="Cargando brackets...">
     <div className='brackets-page'>
       <div className='bracket-nav' data-active={bracketType || 'winner'}>
         {tabs.map((tab) => (

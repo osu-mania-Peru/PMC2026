@@ -8,11 +8,12 @@ import './Register.css';
 export default function Register({ user, setUser }) {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const [error, setError] = useState(null);
   const [showDiscordModal, setShowDiscordModal] = useState(false);
 
   useEffect(() => {
-    api.getTournamentStatus().then(setStatus).catch(console.error);
+    api.getTournamentStatus().then(setStatus).catch(err => setLoadError(err?.message || String(err)));
   }, []);
 
   const handleRegister = async (discordUsername) => {
@@ -51,7 +52,7 @@ export default function Register({ user, setUser }) {
   };
 
   return (
-    <PageTransition loading={!status} text="Cargando estado del torneo...">
+    <PageTransition loading={!status && !loadError} error={loadError} text="Cargando estado del torneo...">
     <div className="page">
       <h2>Registro al Torneo</h2>
 

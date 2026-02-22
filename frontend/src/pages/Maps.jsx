@@ -6,16 +6,17 @@ import './Maps.css';
 export default function Maps() {
   const [maps, setMaps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
     api.getMaps()
       .then(data => setMaps(data.maps))
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <PageTransition loading={loading} text="Cargando mapas...">
+    <PageTransition loading={loading} error={loadError} text="Cargando mapas...">
     <div className="maps-page">
       <div className="maps-header">
         <h2>Mappool</h2>

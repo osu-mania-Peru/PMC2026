@@ -8,6 +8,7 @@ export default function Matches() {
   const [matches, setMatches] = useState([]);
   const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const matchesPerPage = 5;
@@ -25,7 +26,7 @@ export default function Matches() {
         });
         setUsers(userMap);
       })
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
   }, [filter]);
 
@@ -82,7 +83,7 @@ export default function Matches() {
   const paginatedMatches = matches.slice(startIndex, startIndex + matchesPerPage);
 
   return (
-    <PageTransition loading={loading} text="Cargando partidas...">
+    <PageTransition loading={loading} error={loadError} text="Cargando partidas...">
       <div className="matches-page">
       <div className="matches-header">
         <div className="matches-header-left">

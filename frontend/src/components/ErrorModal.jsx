@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Copy, Check, X, AlertTriangle } from 'lucide-react';
+import { Copy, Check, RefreshCw, X } from 'lucide-react';
+import caterror from '../assets/caterror.gif';
 import './ErrorModal.css';
 
 export default function ErrorModal({ error, onClose }) {
@@ -65,57 +66,30 @@ export default function ErrorModal({ error, onClose }) {
   return (
     <div className="error-modal-overlay" onClick={onClose}>
       <div className="error-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="error-modal-header">
-          <div className="error-modal-title">
-            <AlertTriangle size={20} />
-            <h3>Ha ocurrido un error</h3>
-          </div>
-          <button className="error-close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
-        </div>
+        <button className="error-close-btn" onClick={onClose}>
+          <X size={18} />
+        </button>
 
-        <div className="error-modal-content">
-          <div className="error-message-box">
-            <strong>Error:</strong> {errorDetails.message}
+        <div className="error-modal-body">
+          <div className="error-cat-side">
+            <img src={caterror} alt="Error" className="error-cat-img" />
+            <span className="error-cat-title">Ha ocurrido un error</span>
           </div>
 
-          {errorDetails.endpoint && (
-            <div className="error-info-row">
-              <span className="error-info-label">Endpoint:</span>
-              <code>{errorDetails.endpoint}</code>
-            </div>
-          )}
-
-          {errorDetails.status && (
-            <div className="error-info-row">
-              <span className="error-info-label">Status:</span>
-              <code>{errorDetails.status} {errorDetails.statusText}</code>
-            </div>
-          )}
-
-          <div className="error-dump-container">
-            <div className="error-dump-header">
-              <span>Log completo</span>
-              <button className="error-copy-btn" onClick={handleCopy}>
+          <div className="error-details-side">
+            <div className="error-actions">
+              <button className="error-action-btn" onClick={() => window.location.reload()}>
+                <RefreshCw size={14} /> Recargar
+              </button>
+              <button className="error-action-btn" onClick={handleCopy}>
                 {copied ? <><Check size={14} /> Copiado</> : <><Copy size={14} /> Copiar</>}
               </button>
             </div>
-            <pre className="error-dump">{formatErrorDump()}</pre>
+            <pre className="error-trace">{formatErrorDump()}</pre>
+            <p className="error-help-text">
+              Si el problema persiste, copia este log y envíalo a los administradores.
+            </p>
           </div>
-
-          <p className="error-help-text">
-            Si el problema persiste, copia este log y envíalo a los administradores.
-          </p>
-        </div>
-
-        <div className="error-modal-footer">
-          <button className="error-btn error-btn-secondary" onClick={handleCopy}>
-            {copied ? <><Check size={16} /> Copiado</> : <><Copy size={16} /> Copiar Log</>}
-          </button>
-          <button className="error-btn error-btn-primary" onClick={onClose}>
-            Cerrar
-          </button>
         </div>
       </div>
     </div>

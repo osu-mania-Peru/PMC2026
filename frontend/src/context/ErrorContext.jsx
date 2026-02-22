@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, Component } from 'react';
 import ErrorModal from '../components/ErrorModal';
 import { setGlobalErrorHandler } from '../api';
+import caterror from '../assets/caterror.gif';
 
 const ErrorContext = createContext(null);
 
@@ -85,21 +86,24 @@ export class ErrorBoundary extends Component {
           fontFamily: 'Poppins, sans-serif',
           textAlign: 'center',
           padding: '20px',
+          gap: '1rem',
         }}>
-          <h1 style={{ color: '#ef4444', marginBottom: '16px' }}>Algo salió mal</h1>
-          <p style={{ color: '#888', marginBottom: '24px' }}>
+          <img src={caterror} alt="Error" style={{ width: '160px', height: 'auto' }} />
+          <h1 style={{ color: '#ff4444', marginBottom: '0', fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Algo salió mal</h1>
+          <p style={{ color: '#888', marginBottom: '8px', fontSize: '0.85rem' }}>
             Ha ocurrido un error inesperado. Por favor, recarga la página.
           </p>
           <button
             onClick={() => window.location.reload()}
             style={{
-              background: '#ef4444',
-              color: '#fff',
-              border: 'none',
-              padding: '12px 24px',
+              background: '#222',
+              color: '#ccc',
+              border: '1px solid #444',
+              padding: '10px 20px',
               borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '1rem',
+              fontSize: '0.85rem',
+              clipPath: 'none',
             }}
           >
             Recargar página

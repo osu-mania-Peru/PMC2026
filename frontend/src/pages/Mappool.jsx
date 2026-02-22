@@ -377,6 +377,7 @@ export default function Mappool({ user }) {
   const [data, setData] = useState({ total_maps: 0, pools: [] });
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSlotModal, setShowSlotModal] = useState(false);
   const [editingMap, setEditingMap] = useState(null);
@@ -478,7 +479,7 @@ export default function Mappool({ user }) {
     const fetchFn = user?.is_staff ? api.getMappoolsAdmin : api.getMappools;
     fetchFn()
       .then(setData)
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
   };
 
@@ -635,7 +636,7 @@ export default function Mappool({ user }) {
   };
 
   return (
-    <PageTransition loading={loading} text="Cargando mappools...">
+    <PageTransition loading={loading} error={loadError} text="Cargando mappools...">
     <div className={`mappool-page ${previewOpen ? 'panel-open' : ''}`}>
       {/* Header */}
       <div className="mappool-header">

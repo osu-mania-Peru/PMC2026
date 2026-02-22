@@ -8,6 +8,7 @@ import './StaffWhitelist.css';
 export default function StaffWhitelist() {
   const [whitelist, setWhitelist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [newUsername, setNewUsername] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState('');
@@ -15,7 +16,7 @@ export default function StaffWhitelist() {
   const fetchWhitelist = () => {
     api.getWhitelist()
       .then(data => setWhitelist(data.whitelist || []))
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
   };
 
@@ -55,7 +56,7 @@ export default function StaffWhitelist() {
   };
 
   return (
-    <PageTransition loading={loading} text="Cargando whitelist...">
+    <PageTransition loading={loading} error={loadError} text="Cargando whitelist...">
     <div className="staff-whitelist-page">
       <div className="staff-whitelist-header">
         <div className="staff-whitelist-header-left">

@@ -18,6 +18,7 @@ const REFRESH_COOLDOWN_KEY = 'players_refresh_timestamp';
 export default function Players({ user }) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('pp');
   const [countryFilter, setCountryFilter] = useState('all');
@@ -46,7 +47,10 @@ export default function Players({ user }) {
   const fetchPlayers = () => {
     api.getAllUsers()
       .then(data => setPlayers(data.users))
-      .catch(console.error)
+      .catch(err => {
+        console.error(err);
+        setLoadError(err?.message || String(err));
+      })
       .finally(() => setLoading(false));
   };
 
@@ -124,7 +128,7 @@ export default function Players({ user }) {
   }, [registeredPlayers, search, sortBy, countryFilter]);
 
   return (
-    <PageTransition loading={loading} text="Cargando jugadores...">
+    <PageTransition loading={loading} error={loadError} text="Cargando jugadores...">
       <div className="players-page">
       <div className="players-header">
         <div className="players-header-left">

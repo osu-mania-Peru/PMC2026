@@ -9,13 +9,14 @@ import './StaffDiscord.css';
 export default function StaffDiscord() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [actionLoading, setActionLoading] = useState(null);
 
   const fetchUsers = () => {
     api.getAllUsers()
       .then(data => setPlayers(data.users))
-      .catch(console.error)
+      .catch(err => setLoadError(err?.message || String(err)))
       .finally(() => setLoading(false));
   };
 
@@ -57,7 +58,7 @@ export default function StaffDiscord() {
     .sort((a, b) => a.username?.localeCompare(b.username));
 
   return (
-    <PageTransition loading={loading} text="Cargando usuarios...">
+    <PageTransition loading={loading} error={loadError} text="Cargando usuarios...">
     <div className="staff-discord-page">
       <div className="staff-discord-header">
         <div className="staff-discord-header-left">
