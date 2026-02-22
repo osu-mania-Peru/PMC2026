@@ -144,3 +144,9 @@
     padding: 0.8rem;
   }
 }
+
+@media (max-width: 480px) {
+  .maps-page {
+    padding: 1rem;
+  }
+}

@@ -740,21 +740,55 @@ button.cta-button:disabled {
     font-size: 0.8rem;
   }
 
+  .timeline-track {
+    flex-direction: column;
+    overflow-x: visible;
+    padding: 0;
+    gap: 0;
+  }
+
+  .timeline-line {
+    top: 0;
+    bottom: 0;
+    left: 12px;
+    right: auto;
+    width: 3px;
+    height: 100%;
+    transform: none;
+  }
+
+  .timeline-progress {
+    top: 0;
+    left: 12px;
+    width: 3px !important;
+    transform: none;
+  }
+
   .timeline-event {
-    min-width: 100px;
-  }
-
-  .timeline-event-title {
-    font-size: 0.45rem;
-  }
-
-  .timeline-event-date {
-    font-size: 0.4rem;
+    flex-direction: row;
+    align-items: center;
+    min-width: unset;
+    padding: 0.6rem 0;
+    gap: 1rem;
   }
 
   .timeline-dot {
-    width: 18px;
-    height: 18px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .timeline-content {
+    margin-top: 0;
+    text-align: left;
+  }
+
+  .timeline-event-title {
+    font-size: 0.6rem;
+  }
+
+  .timeline-event-date {
+    font-size: 0.5rem;
   }
 
   /* Registration Banner Mobile */
@@ -825,5 +859,72 @@ button.cta-button:disabled {
     flex-direction: column;
     gap: 1.5rem;
     text-align: center;
+  }
+
+  .hero-logo img {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .hero-stats {
+    gap: 1rem;
+  }
+
+  .stat-block {
+    min-width: 120px;
+  }
+
+  .stat-number {
+    font-size: 1.5rem;
+  }
+
+  .banner-number,
+  .banner-status {
+    font-size: 1.8rem;
+  }
+
+  .banner-label,
+  .banner-status-label {
+    font-size: 0.65rem;
+  }
+
+  .video-section {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .timeline-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .news-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .registration-banner {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .news-text {
+    font-size: 13px;
+  }
+
+  .news-date {
+    font-size: 12px;
+    padding: 0.5rem 0.75rem;
   }
 }

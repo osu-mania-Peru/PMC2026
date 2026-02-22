@@ -501,6 +501,7 @@ a {
 .footer-logo img {
   height: 100px;
   width: auto;
+  max-width: 100%;
   filter: brightness(0) invert(1);
 }
 
@@ -646,9 +647,17 @@ a {
   }
 
   .nav-hamburger {
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: center;
+    margin-left: auto;
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: auto !important;
+    background: transparent !important;
+    padding: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    clip-path: none !important;
   }
 
   .nav-links {
@@ -698,7 +707,10 @@ a {
     margin-top: 1rem;
     clip-path: none !important;
     padding: 1rem !important;
+    padding-left: 1rem !important;
     justify-content: center;
+    margin-right: 0;
+    padding-right: 1rem !important;
   }
 
   .stats {
@@ -743,6 +755,41 @@ a {
 
   .main.has-container {
     padding: 1.5rem;
+  }
+
+  /* Reset nav button edge extension on mobile */
+  .nav-links > button:last-child,
+  .nav-links > .btn-full-height:last-child,
+  .nav-links > .btn-full-height-iniciar-sesion:last-child {
+    margin-right: 0;
+    padding-right: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 0.75rem;
+  }
+
+  .page h2 {
+    font-size: 1.2rem;
+    padding: 0.6rem 2rem 0.6rem 1rem;
+  }
+
+  .main.has-container {
+    padding: 1rem;
+  }
+
+  .footer-nav {
+    gap: 0.75rem;
+  }
+
+  .footer-nav a {
+    font-size: 0.75rem;
+  }
+
+  .footer-logo img {
+    height: 60px;
   }
 }
 

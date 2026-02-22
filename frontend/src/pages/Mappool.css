@@ -515,13 +515,65 @@ td.col-title::after {
   }
 
   .col-title {
-    min-width: 200px;
+    min-width: 150px;
   }
 
   .map-title {
-    max-width: 200px;
+    max-width: 150px;
   }
 
+  .col-mapper {
+    min-width: 100px;
+  }
+
+  .col-stats {
+    width: 80px;
+  }
+
+  .mappool-table td {
+    font-size: 13px;
+    padding: 8px 0.5rem;
+  }
+
+  .accordion-toggle {
+    padding: 0.75rem 1rem;
+  }
+
+  .packshare-link {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    margin-right: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mappool-title {
+    font-size: 1.2rem;
+  }
+
+  .accordion-title {
+    font-size: 0.85rem;
+  }
+
+  .col-title {
+    min-width: 120px;
+  }
+
+  .col-mapper,
+  .col-stats,
+  .col-beatmap {
+    display: none;
+  }
+
+  .mappool-table td {
+    font-size: 12px;
+    padding: 6px 4px;
+  }
+
+  .mappool-table th {
+    font-size: 0.65rem;
+    padding: 0.4rem 4px;
+  }
 }
 
 /* Inline Edit */

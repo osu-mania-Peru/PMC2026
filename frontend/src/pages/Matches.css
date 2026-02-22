@@ -182,8 +182,21 @@
   }
 
   .filter-tag {
-    font-size: 0.6rem;
-    padding: 0.35rem 0.75rem;
+    font-size: 0.7rem;
+    padding: 0.4rem 0.85rem;
     clip-path: none;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .matches-page {
+    padding: 1rem;
+  }
+
+  .matches-title {
+    font-size: 1.2rem;
   }
 }

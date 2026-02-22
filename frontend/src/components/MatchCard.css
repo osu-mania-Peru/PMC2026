@@ -179,4 +179,39 @@
   .match-no-info {
     font-size: 1rem;
   }
+
+  .match-card {
+    min-height: 120px;
+  }
+
+  .match-card-left {
+    padding: 0.75rem 1rem;
+    padding-bottom: 2rem;
+  }
+
+  .match-team {
+    font-size: 0.75rem;
+  }
+
+  .match-info {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .match-card-right {
+    width: 25%;
+  }
+
+  .match-score {
+    font-size: 1.2rem;
+  }
+
+  .match-no-info {
+    font-size: 0.8rem;
+  }
+
+  .match-team {
+    font-size: 0.7rem;
+  }
 }

@@ -388,3 +388,77 @@
 .hit-position-exit-btn:hover {
   background: rgba(255, 8, 68, 1) !important;
 }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .preview-sidebar {
+    top: 0.5rem;
+    left: 0.5rem;
+    max-height: calc(100vh - 180px);
+  }
+
+  .beatmap-card-content {
+    width: 260px;
+  }
+
+  .preview-page-close {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .preview-beatmap-list-items {
+    max-height: 250px;
+  }
+
+  .hit-position-exit-btn {
+    bottom: 1rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .overlay-toolbar {
+    gap: 8px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+
+  .overlay-control-group {
+    gap: 6px;
+  }
+
+  .skin-dropdown-container {
+    margin-left: 0;
+  }
+
+  .floating-controls {
+    left: 10px;
+    bottom: 70px;
+  }
+
+  .audio-time-display {
+    font-size: 0.85rem;
+    bottom: 12px;
+    left: 12px;
+    padding: 6px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .beatmap-card-content {
+    width: 200px;
+  }
+
+  .overlay-toolbar {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .overlay-play-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .overlay-label {
+    display: none;
+  }
+}

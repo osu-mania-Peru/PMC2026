@@ -341,4 +341,56 @@
   .players-grid {
     grid-template-columns: 1fr;
   }
+
+  .player-card {
+    height: auto;
+    min-height: 100px;
+  }
+
+  .player-seed-container {
+    width: 55px;
+  }
+
+  .player-seed {
+    font-size: 1.25rem;
+  }
+
+  .player-name {
+    font-size: 1rem;
+  }
+
+  .player-meta {
+    font-size: 0.8rem;
+    gap: 0.5rem;
+  }
+
+  .player-country-rank {
+    font-size: 0.9rem;
+  }
+
+  .player-pp {
+    font-size: 0.85rem;
+  }
+
+  .players-filters {
+    flex-direction: column;
+  }
+
+  .filter-search {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .players-page {
+    padding: 1rem;
+  }
+
+  .players-title {
+    font-size: 1.5rem;
+  }
+
+  .player-info {
+    padding: 0 0.5rem;
+  }
 }

@@ -261,4 +261,37 @@
   .staff-discord-search-input {
     max-width: 100%;
   }
+
+  .staff-discord-card {
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .staff-discord-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .staff-discord-action-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-discord-page {
+    padding: 1rem;
+  }
+
+  .staff-discord-title {
+    font-size: 1.5rem;
+  }
+
+  .staff-discord-osu-name {
+    font-size: 0.9rem;
+  }
+
+  .staff-discord-discord-name {
+    font-size: 0.75rem;
+  }
 }

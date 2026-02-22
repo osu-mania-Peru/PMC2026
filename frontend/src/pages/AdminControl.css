@@ -291,4 +291,36 @@
     display: block;
     overflow-x: auto;
   }
+
+  .admin-control button {
+    min-height: 36px;
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+
+  .admin-control input,
+  .admin-control select {
+    min-height: 36px;
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .admin-control td button {
+    min-height: 30px;
+    padding: 4px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-control {
+    padding: 12px;
+  }
+
+  .admin-control fieldset {
+    padding: 12px;
+  }
+
+  .admin-control h1 {
+    font-size: 18px;
+  }
 }

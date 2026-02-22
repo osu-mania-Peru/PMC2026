@@ -245,4 +245,27 @@
   .staff-whitelist-grid {
     grid-template-columns: 1fr;
   }
+
+  .staff-whitelist-add-btn {
+    min-height: 44px;
+  }
+
+  .staff-whitelist-input {
+    min-height: 44px;
+  }
+
+  .staff-whitelist-action-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-whitelist-page {
+    padding: 1rem;
+  }
+
+  .staff-whitelist-title {
+    font-size: 1.5rem;
+  }
 }
