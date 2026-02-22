@@ -544,6 +544,20 @@ td.col-title::after {
     font-size: 0.7rem;
     margin-right: 0.5rem;
   }
+
+  /* Vertical slot text on mobile */
+  .mappool-table td.col-slot {
+    width: 30px;
+  }
+
+  .slot-badge {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    right: 4px;
+    border-right-width: 6px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -551,18 +565,30 @@ td.col-title::after {
     font-size: 1.2rem;
   }
 
+  .mappool-subtitle {
+    display: none;
+  }
+
+  .mappool-count {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.75rem;
+  }
+
+  .mappool-legend {
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
+  }
+
   .accordion-title {
     font-size: 0.85rem;
   }
 
   .col-title {
-    min-width: 120px;
-  }
-
-  .col-mapper,
-  .col-stats,
-  .col-beatmap {
-    display: none;
+    min-width: 100px;
   }
 
   .mappool-table td {
@@ -573,6 +599,25 @@ td.col-title::after {
   .mappool-table th {
     font-size: 0.65rem;
     padding: 0.4rem 4px;
+  }
+
+  /* Move packshare link below the red header */
+  .mappool-accordion-header {
+    flex-wrap: wrap;
+  }
+
+  .accordion-toggle {
+    flex-basis: 100%;
+  }
+
+  .packshare-link {
+    width: 100%;
+    justify-content: center;
+    margin: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 0;
   }
 }
 

@@ -390,7 +390,69 @@
     font-size: 1.5rem;
   }
 
+  .players-subtitle {
+    display: none;
+  }
+
+  .players-count {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.75rem;
+  }
+
+  .players-filters select {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .filter-search {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .player-card {
+    height: 80px;
+  }
+
+  .player-seed-container {
+    width: 45px;
+  }
+
+  .player-seed {
+    font-size: 1rem;
+  }
+
+  .player-seed.unranked {
+    font-size: 0.75rem;
+  }
+
+  .player-avatar {
+    height: 80px;
+    width: 80px;
+  }
+
   .player-info {
     padding: 0 0.5rem;
+  }
+
+  .player-name {
+    font-size: 0.9rem;
+  }
+
+  .player-meta {
+    font-size: 0.75rem;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+  }
+
+  .player-stats {
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+  }
+
+  .player-country-rank {
+    font-size: 0.8rem;
+  }
+
+  .player-pp {
+    font-size: 0.75rem;
   }
 }
