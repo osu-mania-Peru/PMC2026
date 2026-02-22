@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Copy, UserX, Trash2 } from 'lucide-react';
 import { FaDiscord } from 'react-icons/fa';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import catGif from '../assets/cat.gif';
 import './StaffDiscord.css';
 
@@ -49,8 +49,6 @@ export default function StaffDiscord() {
     }
   };
 
-  if (loading) return <Spinner size="large" text="Cargando usuarios..." />;
-
   const filteredPlayers = players
     .filter(p =>
       p.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -59,6 +57,7 @@ export default function StaffDiscord() {
     .sort((a, b) => a.username?.localeCompare(b.username));
 
   return (
+    <PageTransition loading={loading} text="Cargando usuarios...">
     <div className="staff-discord-page">
       <div className="staff-discord-header">
         <div className="staff-discord-header-left">
@@ -154,5 +153,6 @@ export default function StaffDiscord() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

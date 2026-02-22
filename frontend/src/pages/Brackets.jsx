@@ -4,7 +4,7 @@ import { Trophy } from 'lucide-react';
 import { api } from '../api';
 import BracketTree from '../components/BracketTree';
 import MatchEditModal from '../components/MatchEditModal';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import catGif from '../assets/cat.gif';
 import './Brackets.css'
 
@@ -131,6 +131,7 @@ export default function Brackets({ user }) {
   ];
 
   return (
+    <PageTransition loading={loading} text="Cargando brackets...">
     <div className='brackets-page'>
       <div className='bracket-nav' data-active={bracketType || 'winner'}>
         {tabs.map((tab) => (
@@ -145,9 +146,7 @@ export default function Brackets({ user }) {
         ))}
       </div>
 
-      {loading ? (
-        <Spinner size="large" text="Cargando brackets..." />
-      ) : brackets.length === 0 && user?.is_staff ? (
+      {brackets.length === 0 && user?.is_staff ? (
         <div className="no-brackets-container">
           <div className="no-brackets-card">
             <Trophy size={48} className="no-brackets-icon" />
@@ -203,5 +202,6 @@ export default function Brackets({ user }) {
         onClose={handleCloseModal}
       />
     </div>
+    </PageTransition>
   );
 }

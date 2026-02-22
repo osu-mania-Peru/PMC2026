@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import DiscordModal from '../components/DiscordModal';
 import catGif from '../assets/cat.gif';
 import './Register.css';
@@ -50,9 +50,8 @@ export default function Register({ user, setUser }) {
     setUser(null);
   };
 
-  if (!status) return <Spinner size="large" text="Cargando estado del torneo..." />;
-
   return (
+    <PageTransition loading={!status} text="Cargando estado del torneo...">
     <div className="page">
       <h2>Registro al Torneo</h2>
 
@@ -106,5 +105,6 @@ export default function Register({ user, setUser }) {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

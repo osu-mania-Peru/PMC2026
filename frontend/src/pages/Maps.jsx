@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import './Maps.css';
 
 export default function Maps() {
@@ -14,9 +14,8 @@ export default function Maps() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spinner size="large" text="Cargando mapas..." />;
-
   return (
+    <PageTransition loading={loading} text="Cargando mapas...">
     <div className="maps-page">
       <div className="maps-header">
         <h2>Mappool</h2>
@@ -48,5 +47,6 @@ export default function Maps() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

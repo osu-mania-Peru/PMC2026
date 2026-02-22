@@ -11,10 +11,13 @@
 
 /* Full screen spinner for app loading */
 .spinner-container.large {
-  min-height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
+  min-height: calc(100vh - 96px);
+}
+
+@media (max-width: 900px) {
+  .spinner-container.large {
+    min-height: calc(100vh - 60px);
+  }
 }
 
 .spinner-cat {

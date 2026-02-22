@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Trash2, Shield } from 'lucide-react';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import catGif from '../assets/cat.gif';
 import './StaffWhitelist.css';
 
@@ -54,9 +54,8 @@ export default function StaffWhitelist() {
     }
   };
 
-  if (loading) return <Spinner size="large" text="Cargando whitelist..." />;
-
   return (
+    <PageTransition loading={loading} text="Cargando whitelist...">
     <div className="staff-whitelist-page">
       <div className="staff-whitelist-header">
         <div className="staff-whitelist-header-left">
@@ -127,5 +126,6 @@ export default function StaffWhitelist() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import { Search, RefreshCw } from 'lucide-react';
 import catGif from '../assets/cat.gif';
 import './Players.css';
@@ -123,10 +123,9 @@ export default function Players({ user }) {
     return result;
   }, [registeredPlayers, search, sortBy, countryFilter]);
 
-  if (loading) return <Spinner size="large" text="Cargando jugadores..." />;
-
   return (
-    <div className="players-page">
+    <PageTransition loading={loading} text="Cargando jugadores...">
+      <div className="players-page">
       <div className="players-header">
         <div className="players-header-left">
           <h1 className="players-title">Jugadores</h1>
@@ -230,5 +229,6 @@ export default function Players({ user }) {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

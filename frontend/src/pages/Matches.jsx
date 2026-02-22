@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import MatchCard from '../components/MatchCard';
 import './Matches.css';
 
@@ -81,10 +81,9 @@ export default function Matches() {
   const startIndex = (currentPage - 1) * matchesPerPage;
   const paginatedMatches = matches.slice(startIndex, startIndex + matchesPerPage);
 
-  if (loading) return <Spinner size="large" text="Cargando partidas..." />;
-
   return (
-    <div className="matches-page">
+    <PageTransition loading={loading} text="Cargando partidas...">
+      <div className="matches-page">
       <div className="matches-header">
         <div className="matches-header-left">
           <h1 className="matches-title">PARTIDAS // MATCHS</h1>
@@ -149,6 +148,7 @@ export default function Matches() {
           )}
         </>
       )}
-    </div>
+      </div>
+    </PageTransition>
   );
 }

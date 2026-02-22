@@ -65,7 +65,7 @@ const formatTime = (ms) => {
   const millis = totalMs % 1000;
   return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${millis.toString().padStart(3, '0')}`;
 };
-import Spinner from '../components/Spinner';
+import PageTransition from '../components/PageTransition';
 import MappoolEditModal from '../components/MappoolEditModal';
 import MapEditModal from '../components/MapEditModal';
 import SlotEditModal from '../components/SlotEditModal';
@@ -634,15 +634,8 @@ export default function Mappool({ user }) {
     setSelectedMap(null);
   };
 
-  if (loading) {
-    return (
-      <div className="mappool-page">
-        <Spinner size="large" text="Cargando mappools..." />
-      </div>
-    );
-  }
-
   return (
+    <PageTransition loading={loading} text="Cargando mappools...">
     <div className={`mappool-page ${previewOpen ? 'panel-open' : ''}`}>
       {/* Header */}
       <div className="mappool-header">
@@ -1015,5 +1008,6 @@ export default function Mappool({ user }) {
         document.body
       )}
     </div>
+    </PageTransition>
   );
 }
