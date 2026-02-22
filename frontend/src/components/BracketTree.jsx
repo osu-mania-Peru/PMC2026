@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Bracket } from 'react-tournament-bracket';
-import { Pencil, Plus, Trophy } from 'lucide-react';
+import { Pencil, Plus, Trophy, ChevronDown } from 'lucide-react';
 import Spinner from './Spinner';
 import './BracketTree.css';
 
@@ -106,6 +106,133 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isS
         </div>
       </div>
     </foreignObject>
+  );
+}
+
+function MobileBracketView({ matches, bracketId, user, onEditMatch, onCreateMatch, onContextMenu }) {
+  const [collapsed, setCollapsed] = useState({});
+
+  if (!matches || matches.length === 0) {
+    return <div className="bracket-mobile"><div className="no-matches">No hay partidas programadas</div></div>;
+  }
+
+  // Compute round depth via topological sort (same approach as loser bracket)
+  const matchMap = {};
+  matches.forEach(m => { matchMap[m.id] = m; });
+
+  const feedersOf = {};
+  matches.forEach(m => { feedersOf[m.id] = []; });
+  matches.forEach(m => {
+    if (m.next_match_id && matchMap[m.next_match_id]) {
+      feedersOf[m.next_match_id].push(m.id);
+    }
+  });
+
+  const roundOf = {};
+  const assignRound = (matchId, visited = new Set()) => {
+    if (roundOf[matchId] !== undefined) return roundOf[matchId];
+    if (visited.has(matchId)) return 0;
+    visited.add(matchId);
+    const feeders = feedersOf[matchId] || [];
+    if (feeders.length === 0) {
+      roundOf[matchId] = 0;
+    } else {
+      roundOf[matchId] = Math.max(...feeders.map(fid => assignRound(fid, visited))) + 1;
+    }
+    return roundOf[matchId];
+  };
+  matches.forEach(m => assignRound(m.id));
+
+  // Group by round_name, ordered by computed round depth
+  const roundGroups = {};
+  matches.forEach(m => {
+    const name = m.round_name || `Round ${roundOf[m.id] + 1}`;
+    if (!roundGroups[name]) roundGroups[name] = { depth: roundOf[m.id], matches: [] };
+    roundGroups[name].matches.push(m);
+    roundGroups[name].depth = Math.min(roundGroups[name].depth, roundOf[m.id]);
+  });
+
+  const sortedRounds = Object.entries(roundGroups)
+    .sort((a, b) => a[1].depth - b[1].depth)
+    .map(([name, group]) => ({ name, matches: group.matches.sort((a, b) => a.id - b.id) }));
+
+  const toggleRound = (name) => {
+    setCollapsed(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  return (
+    <div className="bracket-mobile">
+      {sortedRounds.map(round => {
+        const isCollapsed = collapsed[round.name];
+        return (
+          <div key={round.name} className="mobile-round">
+            <button className="mobile-round-header" onClick={() => toggleRound(round.name)}>
+              <span className="mobile-round-name">{round.name}</span>
+              <span className="mobile-round-count">{round.matches.length} partida{round.matches.length !== 1 ? 's' : ''}</span>
+              <ChevronDown size={16} className={`mobile-round-chevron ${isCollapsed ? 'collapsed' : ''}`} />
+            </button>
+            {!isCollapsed && (
+              <div className="mobile-round-matches">
+                {round.matches.map(m => {
+                  const isCompleted = m.is_completed;
+                  const winnerId = m.winner_id;
+                  const homeIsWinner = winnerId && winnerId === m.player1_id;
+                  const visitorIsWinner = winnerId && winnerId === m.player2_id;
+                  const statusClass = m.match_status === 'in_progress' ? 'live' : isCompleted ? 'completed' : '';
+
+                  return (
+                    <div key={m.id} className={`mobile-match ${statusClass}`}>
+                      <div className="mobile-match-header">
+                        {m.match_status === 'in_progress' && <span className="match-live-badge">EN VIVO</span>}
+                        {user?.is_staff && m.id && (
+                          <button className="bracket-edit-btn" onClick={() => onEditMatch?.(m)} title="Editar partida">
+                            <Pencil size={12} />
+                          </button>
+                        )}
+                        {user?.is_staff && !m.id && bracketId && (
+                          <button className="bracket-edit-btn bracket-add-btn" onClick={() => onCreateMatch?.({ bracket_id: bracketId, round_name: m.round_name })} title="Crear partida">
+                            <Plus size={14} />
+                          </button>
+                        )}
+                      </div>
+                      <div
+                        className={`mobile-match-player ${homeIsWinner ? 'winner' : ''} ${!m.player1_id ? 'tbd' : ''} ${user?.is_staff && m.player1_id && !isCompleted ? 'clickable' : ''}`}
+                        onClick={(e) => {
+                          if (user?.is_staff && m.player1_id && !isCompleted) {
+                            e.stopPropagation();
+                            onContextMenu?.(e, m, m.player1_id, m.player1_username);
+                          }
+                        }}
+                      >
+                        <span className="mobile-player-name">{m.player1_username || 'TBD'}</span>
+                        <span className={`mobile-player-score ${homeIsWinner ? 'winner' : ''}`}>
+                          {m.player1_score != null ? m.player1_score.toLocaleString() : ''}
+                        </span>
+                      </div>
+                      <div className="mobile-match-vs">vs</div>
+                      <div
+                        className={`mobile-match-player ${visitorIsWinner ? 'winner' : ''} ${!m.player2_id ? 'tbd' : ''} ${user?.is_staff && m.player2_id && !isCompleted ? 'clickable' : ''}`}
+                        onClick={(e) => {
+                          if (user?.is_staff && m.player2_id && !isCompleted) {
+                            e.stopPropagation();
+                            onContextMenu?.(e, m, m.player2_id, m.player2_username);
+                          }
+                        }}
+                      >
+                        <span className="mobile-player-name">{m.player2_username || 'TBD'}</span>
+                        <span className={`mobile-player-score ${visitorIsWinner ? 'winner' : ''}`}>
+                          {m.player2_score != null ? m.player2_score.toLocaleString() : ''}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -519,7 +646,8 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
     return (
       <div className="bracket-tree" ref={containerRef}>
-        <div className="bracket-section">
+        <MobileBracketView matches={matches} bracketId={bracketId} user={user} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} onContextMenu={handleContextMenu} />
+        <div className="bracket-section bracket-desktop">
           <svg width={totalWidth} height={totalHeight} key={data.matches?.map(m => `${m.id}:${m.winner_id}:${m.player1_id}:${m.player2_id}`).join(',')}>
             {/* Connector paths */}
             {connectorPaths.map((p, i) => (
@@ -636,7 +764,8 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
     return (
       <div className="bracket-tree" ref={containerRef}>
-        <div className="bracket-section">
+        <MobileBracketView matches={data.matches} bracketId={bracketId} user={user} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} onContextMenu={handleContextMenu} />
+        <div className="bracket-section bracket-desktop">
           <div className="single-match-view">
             <div className={`styled-match single ${matchData?.is_completed ? 'completed' : ''} ${matchData?.match_status === 'in_progress' ? 'live' : ''}`}>
               <div className="match-round-text">
@@ -697,7 +826,8 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
 
   return (
     <div className="bracket-tree" ref={containerRef}>
-      <div className="bracket-section">
+      <MobileBracketView matches={data.matches} bracketId={bracketId} user={user} onEditMatch={onEditMatch} onCreateMatch={onCreateMatch} onContextMenu={handleContextMenu} />
+      <div className="bracket-section bracket-desktop">
         <Bracket
           key={data.matches?.map(m => `${m.id}:${m.winner_id}:${m.player1_id}:${m.player2_id}`).join(',')}
           game={finalGame}

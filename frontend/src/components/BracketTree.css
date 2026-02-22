@@ -17,6 +17,8 @@
   justify-content: flex-start;
   background: transparent;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   padding-top: 1rem;
   padding-left: 2rem;
   min-height: 0;
@@ -34,8 +36,8 @@
 }
 
 /* Use library default styles - just ensure SVG fills container */
-.bracket-section > svg,
-.bracket-section > div {
+.bracket-desktop > svg,
+.bracket-desktop > div {
   width: 100% !important;
   min-width: 100% !important;
 }
@@ -132,6 +134,11 @@
 .bracket-section foreignObject {
   overflow: visible;
   pointer-events: all;
+  touch-action: pan-x pan-y;
+}
+
+.custom-match {
+  touch-action: pan-x pan-y;
 }
 
 /* Bracket connector lines - gray by default, colored by JS for completed matches */
@@ -439,15 +446,187 @@
   background: rgba(255, 8, 68, 0.05);
 }
 
+/* Mobile bracket list view — hidden on desktop */
+.bracket-mobile {
+  display: none;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .bracket-tree {
     border-radius: 0;
-    min-height: 500px;
+    min-height: auto;
+  }
+
+  .bracket-desktop {
+    display: none !important;
+  }
+
+  .bracket-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0.5rem;
+    width: 100%;
   }
 
   .no-data {
     padding: 1.5rem;
     font-size: 1rem;
   }
+}
+
+/* Mobile round sections */
+.mobile-round {
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #141414;
+}
+
+.mobile-round-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 12px;
+  background: #1a1a1a;
+  border: none;
+  color: #ccc;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  clip-path: none !important;
+  transition: background 0.15s;
+}
+
+.mobile-round-header:hover {
+  background: #222;
+}
+
+.mobile-round-name {
+  flex: 1;
+  text-align: left;
+}
+
+.mobile-round-count {
+  color: #666;
+  font-size: 11px;
+  font-weight: 400;
+  margin-right: 8px;
+}
+
+.mobile-round-chevron {
+  color: #666;
+  transition: transform 0.2s;
+}
+
+.mobile-round-chevron.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* Mobile match cards */
+.mobile-round-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+}
+
+.mobile-match {
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mobile-match.live {
+  border-color: rgba(255, 8, 68, 0.5);
+  box-shadow: 0 0 8px rgba(255, 8, 68, 0.15);
+}
+
+.mobile-match.completed {
+  border-color: #333;
+}
+
+.mobile-match-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 4px 8px;
+  min-height: 24px;
+}
+
+.mobile-match-header:empty {
+  display: none;
+}
+
+.mobile-match-player {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  transition: background 0.15s;
+}
+
+.mobile-match-player.winner {
+  background: rgba(255, 8, 68, 0.08);
+}
+
+.mobile-match-player.winner .mobile-player-name {
+  color: #fff;
+  font-weight: 600;
+}
+
+.mobile-match-player.winner .mobile-player-score {
+  color: #ff0844;
+  font-weight: 700;
+}
+
+.mobile-match-player.tbd .mobile-player-name {
+  color: #444;
+  font-style: italic;
+}
+
+.mobile-match-player.clickable {
+  cursor: pointer;
+}
+
+.mobile-match-player.clickable:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.mobile-player-name {
+  flex: 1;
+  color: #ccc;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobile-player-score {
+  color: #888;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+}
+
+.mobile-match-vs {
+  text-align: center;
+  color: #444;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 2px 0;
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
 }
