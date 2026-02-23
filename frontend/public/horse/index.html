@@ -603,7 +603,7 @@
                     }));
                     loadingText.textContent = '';
                 } else {
-                    loadingText.textContent = '(Inicia sesion primero)';
+                    loadingText.innerHTML = '(Inicia sesion primero)<br><a href="/home" style="color:#aaff00;margin-top:2vh;display:inline-block;font-size:2vh;">Ir a la página principal</a>';
                 }
             } catch (error) {
                 console.error('Failed to load players:', error);
