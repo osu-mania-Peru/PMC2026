@@ -1,5 +1,5 @@
 /* Reset global button styles inside the scheduling panel */
-.scheduling-panel button:not(.scheduling-save-btn):not(.scheduling-clear-btn):not(.scheduling-accept-btn):not(.scheduling-reject-btn):not(.avail-week-nav-btn) {
+.scheduling-panel button {
   background: none !important;
   color: inherit !important;
   padding: 0 !important;
@@ -11,6 +11,66 @@
   clip-path: none !important;
   display: inline-flex !important;
   border: none !important;
+}
+
+/* Re-apply styles for action buttons after the reset */
+.scheduling-panel .scheduling-save-btn,
+.scheduling-panel .scheduling-clear-btn {
+  padding: 6px 20px !important;
+  padding-right: calc(20px + 10px) !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.5rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  cursor: pointer !important;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%) !important;
+}
+
+.scheduling-panel .scheduling-save-btn {
+  background: linear-gradient(90deg, #00ff88 0%, #00d9ff 100%) !important;
+  color: #000 !important;
+}
+
+.scheduling-panel .scheduling-clear-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.scheduling-panel .scheduling-accept-btn,
+.scheduling-panel .scheduling-reject-btn {
+  padding: 4px 16px !important;
+  padding-right: calc(16px + 8px) !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.45rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  cursor: pointer !important;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%) !important;
+}
+
+.scheduling-panel .scheduling-accept-btn {
+  background: linear-gradient(90deg, #00ff88, #00d9ff) !important;
+  color: #000 !important;
+}
+
+.scheduling-panel .scheduling-reject-btn {
+  background: var(--accent-secondary) !important;
+  color: #fff !important;
+}
+
+.scheduling-panel .avail-week-nav-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  padding: 4px 12px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.45rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%) !important;
 }
 
 /* Modal overlay */
