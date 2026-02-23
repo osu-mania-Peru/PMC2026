@@ -1,0 +1,462 @@
+/* Reset global button styles inside the scheduling panel */
+.scheduling-panel button {
+  background: none !important;
+  color: inherit !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  clip-path: none !important;
+  display: inline-flex !important;
+  border: none !important;
+}
+
+/* Modal overlay */
+.scheduling-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* Panel */
+.scheduling-panel {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  max-width: 100%;
+  width: 100%;
+}
+
+.scheduling-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--text-primary);
+  padding: 12px 20px;
+}
+
+.scheduling-panel-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--bg-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scheduling-close {
+  background: none;
+  border: none;
+  color: var(--bg-primary);
+  cursor: pointer;
+  padding: 4px;
+  clip-path: none !important;
+}
+
+.scheduling-close:hover {
+  color: var(--accent-secondary);
+}
+
+.scheduling-loading {
+  display: flex;
+  justify-content: center;
+  padding: 32px;
+}
+
+/* Sections */
+.scheduling-section {
+  margin: 0;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.scheduling-section:last-child {
+  border-bottom: none;
+}
+
+.scheduling-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0 0 10px 0;
+}
+
+.scheduling-empty {
+  color: var(--text-muted);
+  font-size: 0.5rem;
+  margin: 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.scheduling-hint {
+  color: var(--text-muted);
+  font-size: 0.45rem;
+  font-style: italic;
+  margin: 4px 0;
+}
+
+/* Windows */
+.scheduling-windows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scheduling-window-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-tertiary);
+  padding: 8px 12px;
+  border-left: 3px solid var(--border);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  color: var(--text-primary);
+}
+
+.scheduling-window-row.opponent {
+  border-left-color: #00d9ff;
+}
+
+.scheduling-window-row.overlap {
+  border-left-color: #00ff88;
+  background: rgba(0, 255, 136, 0.05);
+}
+
+.scheduling-remove-btn {
+  background: none;
+  border: none;
+  color: var(--accent-secondary);
+  cursor: pointer;
+  padding: 4px;
+  clip-path: none !important;
+}
+
+.scheduling-remove-btn:hover {
+  color: #fff;
+}
+
+/* Add row */
+.scheduling-add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.scheduling-add-row input {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+}
+
+.scheduling-add-row span {
+  color: var(--text-muted);
+  font-size: 0.5rem;
+}
+
+.scheduling-add-btn {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  width: 28px;
+  height: 28px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%) !important;
+}
+
+.scheduling-add-btn:hover {
+  background: var(--accent-secondary);
+  color: #fff;
+}
+
+/* Action buttons */
+.scheduling-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.scheduling-save-btn,
+.scheduling-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  padding-right: calc(20px + 10px);
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%) !important;
+}
+
+.scheduling-save-btn {
+  background: linear-gradient(90deg, #00ff88 0%, #00d9ff 100%);
+  color: #000;
+}
+
+.scheduling-save-btn:hover {
+  background: var(--text-primary);
+}
+
+.scheduling-clear-btn {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.scheduling-clear-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.scheduling-save-btn:disabled,
+.scheduling-clear-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Proposals */
+.scheduling-proposals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scheduling-proposal {
+  background: var(--bg-tertiary);
+  padding: 10px 12px;
+  border-left: 3px solid var(--border);
+}
+
+.scheduling-proposal.accepted {
+  border-left-color: #00ff88;
+}
+
+.scheduling-proposal.rejected {
+  border-left-color: var(--accent-secondary);
+  opacity: 0.5;
+}
+
+.scheduling-proposal.pending {
+  border-left-color: #ffa726;
+}
+
+.scheduling-proposal-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.scheduling-proposal-who {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.scheduling-proposal-time {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  color: var(--text-secondary);
+}
+
+.scheduling-proposal-status {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 10px;
+  transform: skewX(-10deg);
+  display: inline-block;
+}
+
+.scheduling-proposal-status.pending {
+  background: #5f5f2d;
+  color: #ffff90;
+}
+
+.scheduling-proposal-status.accepted {
+  background: #2d5f2d;
+  color: #90ee90;
+}
+
+.scheduling-proposal-status.rejected {
+  background: rgba(255, 8, 68, 0.2);
+  color: var(--accent-secondary);
+}
+
+.scheduling-proposal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.scheduling-accept-btn,
+.scheduling-reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 16px;
+  padding-right: calc(16px + 8px);
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.45rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%) !important;
+}
+
+.scheduling-accept-btn {
+  background: linear-gradient(90deg, #00ff88, #00d9ff);
+  color: #000;
+}
+
+.scheduling-accept-btn:hover {
+  background: var(--text-primary);
+}
+
+.scheduling-reject-btn {
+  background: var(--accent-secondary);
+  color: #fff;
+}
+
+.scheduling-reject-btn:hover {
+  background: #ff4444;
+}
+
+/* Propose row */
+.scheduling-propose-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.scheduling-propose-row input {
+  flex: 1;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+}
+
+.scheduling-propose-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 20px;
+  padding-right: calc(20px + 10px);
+  background: linear-gradient(90deg, #FF2057 0%, #FF743E 50%, #E0FF00 100%);
+  color: #000;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%) !important;
+}
+
+.scheduling-propose-btn:hover {
+  background: var(--text-primary);
+}
+
+.scheduling-propose-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Toast notification */
+.scheduling-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-left: 4px solid #00ff88;
+  z-index: 2000;
+  animation: scheduling-toast-in 0.3s ease-out;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+
+.scheduling-toast--success {
+  border-left-color: #00ff88;
+}
+
+.scheduling-toast--success svg {
+  color: #00ff88;
+}
+
+@keyframes scheduling-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .scheduling-panel {
+    max-width: 100%;
+  }
+
+  .scheduling-add-row {
+    flex-wrap: wrap;
+  }
+
+  .scheduling-proposal-info {
+    gap: 6px;
+  }
+}
