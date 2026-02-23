@@ -293,7 +293,8 @@
 /* Player seed badge (inline after name) */
 .bracket-player-seed {
   color: #666;
-  font-weight: 400;
+  font-weight: 700;
+  margin-left: 4px;
 }
 
 /* Player avatars */
