@@ -236,6 +236,25 @@ export const api = {
     method: 'POST',
   }),
 
+  // Scheduling
+  getMatchAvailability: (matchId) => api.fetch(`/matches/${matchId}/availability`),
+  addMatchAvailability: (matchId, windows) => api.fetch(`/matches/${matchId}/availability`, {
+    method: 'POST',
+    body: JSON.stringify({ windows }),
+  }),
+  clearMatchAvailability: (matchId) => api.fetch(`/matches/${matchId}/availability`, {
+    method: 'DELETE',
+  }),
+  proposeMatchTime: (matchId, proposedTime) => api.fetch(`/matches/${matchId}/propose-time`, {
+    method: 'POST',
+    body: JSON.stringify({ proposed_time: proposedTime }),
+  }),
+  respondToProposal: (matchId, proposalId, status) => api.fetch(`/matches/${matchId}/proposals/${proposalId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }),
+  getMatchProposals: (matchId) => api.fetch(`/matches/${matchId}/proposals`),
+
   // Whitelist
   getWhitelist: () => api.fetch('/whitelist'),
   addToWhitelist: (username) => api.fetch('/whitelist', {

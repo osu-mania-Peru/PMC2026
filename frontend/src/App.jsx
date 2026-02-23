@@ -49,11 +49,13 @@ import Preview from "./pages/Preview";
 import StaffDiscord from "./pages/StaffDiscord";
 import StaffWhitelist from "./pages/StaffWhitelist";
 import AdminControl from "./pages/AdminControl";
+import MatchScheduling from "./pages/MatchScheduling";
 // Timba removed - tournament committee prohibits gambling
 
 // Components
 import AdminPanel from "./components/AdminPanel";
 import Spinner from "./components/Spinner";
+import NotificationBell from "./components/NotificationBell";
 // SlotMachine minigame available at /timba
 
 function RedirectToHorse() {
@@ -116,6 +118,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             )}
             {user ? (
               <>
+                <NotificationBell />
                 <span className="nav-user">
                   {user.username}
                   {user.is_staff && <span className="staff-badge">STAFF</span>}
@@ -177,7 +180,15 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           path="/matches"
           element={
             <main className="main has-container">
-              <Matches />
+              <Matches user={user} />
+            </main>
+          }
+        />
+        <Route
+          path="/matches/:matchId/schedule"
+          element={
+            <main className="main">
+              <MatchScheduling user={user} />
             </main>
           }
         />

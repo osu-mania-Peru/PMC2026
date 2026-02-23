@@ -1,0 +1,100 @@
+.match-scheduling-page {
+  padding: 2rem;
+  min-height: 100%;
+}
+
+.match-scheduling-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}
+
+.match-scheduling-error {
+  color: var(--accent-secondary);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.7rem;
+  text-align: center;
+  padding: 40px;
+}
+
+.match-scheduling-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 1.5rem;
+}
+
+.match-scheduling-back {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  padding: 6px 16px !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.5rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  cursor: pointer !important;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%) !important;
+  padding-right: calc(16px + 8px) !important;
+  flex-shrink: 0;
+}
+
+.match-scheduling-back:hover {
+  background: var(--text-primary) !important;
+  color: var(--bg-primary) !important;
+}
+
+.match-scheduling-players {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.match-scheduling-player {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.match-scheduling-vs {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+/* Override panel styles for full-page layout */
+.match-scheduling-page .scheduling-panel {
+  max-width: 100%;
+  max-height: none;
+  border: 1px solid var(--border);
+}
+
+@media (max-width: 768px) {
+  .match-scheduling-page {
+    padding: 1.5rem;
+  }
+
+  .match-scheduling-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .match-scheduling-player {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .match-scheduling-page {
+    padding: 1rem;
+  }
+}

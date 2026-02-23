@@ -12,6 +12,7 @@ from models.timeline_event import TimelineEvent
 from models.news_item import NewsItem
 from models.mappool import Mappool, MappoolMap
 from models.slot import Slot
+from models.availability import MatchAvailability, MatchTimeProposal
 
 __all__ = [
     "Base",
@@ -29,4 +30,6 @@ __all__ = [
     "Mappool",
     "MappoolMap",
     "Slot",
+    "MatchAvailability",
+    "MatchTimeProposal",
 ]
