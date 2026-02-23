@@ -69,15 +69,22 @@
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x pan-y;
     background-color: #080808;
-    background-image:
-        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e),
-        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e);
-    background-size: 40px 70px;
-    background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
+    position: relative;
+}
+
+.bracket-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    height: 900px;
+    background: url('/2026/PMCcolor.svg') no-repeat center / contain;
+    filter: grayscale(1);
+    opacity: 0.10;
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* No Brackets - Generate UI */
@@ -87,15 +94,6 @@
     align-items: center;
     justify-content: center;
     background-color: #080808;
-    background-image:
-        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(30deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(150deg, #111111 12%, transparent 12.5%, transparent 87%, #111111 87.5%, #111111),
-        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e),
-        linear-gradient(60deg, #0e0e0e 25%, transparent 25.5%, transparent 75%, #0e0e0e 75%, #0e0e0e);
-    background-size: 40px 70px;
-    background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
 }
 
 .no-brackets-card {
