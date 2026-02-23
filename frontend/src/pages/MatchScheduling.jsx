@@ -60,9 +60,15 @@ export default function MatchScheduling({ user }) {
           <ArrowLeft size={14} /> Volver
         </button>
         <div className="match-scheduling-players">
-          <span className="match-scheduling-player">{player1?.username || 'TBD'}</span>
+          <div className="match-scheduling-player">
+            {player1?.osu_id && <img src={`https://a.ppy.sh/${player1.osu_id}`} alt="" className="match-scheduling-avatar" />}
+            <span>{player1?.username || 'TBD'}</span>
+          </div>
           <span className="match-scheduling-vs">vs</span>
-          <span className="match-scheduling-player">{player2?.username || 'TBD'}</span>
+          <div className="match-scheduling-player">
+            {player2?.osu_id && <img src={`https://a.ppy.sh/${player2.osu_id}`} alt="" className="match-scheduling-avatar" />}
+            <span>{player2?.username || 'TBD'}</span>
+          </div>
         </div>
       </div>
 

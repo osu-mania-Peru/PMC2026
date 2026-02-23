@@ -55,11 +55,22 @@
 }
 
 .match-scheduling-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
   text-transform: uppercase;
+}
+
+.match-scheduling-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  object-fit: cover;
 }
 
 .match-scheduling-vs {
