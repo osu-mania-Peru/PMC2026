@@ -237,6 +237,90 @@
   margin-right: 4px;
 }
 
+/* Custom Player Select */
+.player-select {
+  position: relative;
+}
+
+.player-select-trigger {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  min-height: 38px;
+}
+
+.player-select-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-select-placeholder {
+  color: #666;
+}
+
+.player-select-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.player-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  margin-top: 2px;
+  z-index: 10;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.player-select-search {
+  width: 100%;
+  padding: 8px 10px;
+  background: #0d0d0d;
+  border: none;
+  border-bottom: 1px solid #333;
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.player-select-search::placeholder {
+  color: #555;
+}
+
+.player-select-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.player-select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  color: #ccc;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.player-select-option:hover {
+  background: #2a2a2a;
+}
+
+.player-select-option.selected {
+  background: rgba(255, 8, 68, 0.15);
+  color: #fff;
+}
+
 /* Responsive */
 @media (max-width: 500px) {
   .match-edit-modal {

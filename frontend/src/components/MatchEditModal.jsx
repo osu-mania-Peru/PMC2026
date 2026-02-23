@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import catGif from '../assets/cat.gif';
 import './MatchEditModal.css';
 
@@ -17,6 +17,77 @@ const MATCH_STATUSES = [
   { value: 'cancelled', label: 'Cancelado' },
   { value: 'forfeit', label: 'Forfeit' },
 ];
+
+function PlayerSelect({ value, onChange, players, disabled, placeholder = '-- Seleccionar --' }) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const ref = useRef(null);
+
+  const selected = players.find(p => String(p.id) === String(value));
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [open]);
+
+  const filtered = search
+    ? players.filter(p => p.username.toLowerCase().includes(search.toLowerCase()))
+    : players;
+
+  return (
+    <div className="player-select" ref={ref}>
+      <button
+        type="button"
+        className="player-select-trigger match-edit-input"
+        onClick={() => !disabled && setOpen(!open)}
+        disabled={disabled}
+      >
+        {selected ? (
+          <span className="player-select-value">
+            <img src={`https://a.ppy.sh/${selected.osu_id}`} alt="" className="player-select-avatar" />
+            {selected.username}
+          </span>
+        ) : (
+          <span className="player-select-placeholder">{placeholder}</span>
+        )}
+      </button>
+      {open && (
+        <div className="player-select-dropdown">
+          <input
+            type="text"
+            className="player-select-search"
+            placeholder="Buscar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoFocus
+          />
+          <div className="player-select-options">
+            <div
+              className="player-select-option"
+              onClick={() => { onChange(''); setOpen(false); setSearch(''); }}
+            >
+              <span className="player-select-placeholder">{placeholder}</span>
+            </div>
+            {filtered.map(p => (
+              <div
+                key={p.id}
+                className={`player-select-option ${String(p.id) === String(value) ? 'selected' : ''}`}
+                onClick={() => { onChange(String(p.id)); setOpen(false); setSearch(''); }}
+              >
+                <img src={`https://a.ppy.sh/${p.osu_id}`} alt="" className="player-select-avatar" />
+                {p.username}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MatchEditModal({ isOpen, match, users, maps, onSave, onCreate, onClose }) {
   const [formData, setFormData] = useState(null);
@@ -126,13 +197,6 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
     onClose();
   };
 
-  // Get player name by ID
-  const getPlayerName = (playerId) => {
-    if (!playerId) return 'TBD';
-    const user = users?.find(u => u.id === playerId);
-    return user?.username || `ID: ${playerId}`;
-  };
-
   // Filter registered users for player dropdowns
   const registeredUsers = users?.filter(u => u.is_registered) || [];
 
@@ -180,35 +244,21 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
           <div className="match-edit-row">
             <div className="match-edit-field">
               <label className="match-edit-label">Jugador 1</label>
-              <select
-                value={formData.player1_id || ''}
-                onChange={(e) => handleChange('player1_id', e.target.value)}
-                className="match-edit-input"
+              <PlayerSelect
+                value={formData.player1_id}
+                onChange={(val) => handleChange('player1_id', val)}
+                players={registeredUsers}
                 disabled={saving}
-              >
-                <option value="">-- Seleccionar --</option>
-                {registeredUsers.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             <div className="match-edit-field">
               <label className="match-edit-label">Jugador 2</label>
-              <select
-                value={formData.player2_id || ''}
-                onChange={(e) => handleChange('player2_id', e.target.value)}
-                className="match-edit-input"
+              <PlayerSelect
+                value={formData.player2_id}
+                onChange={(val) => handleChange('player2_id', val)}
+                players={registeredUsers}
                 disabled={saving}
-              >
-                <option value="">-- Seleccionar --</option>
-                {registeredUsers.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
@@ -244,24 +294,16 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
           <div className="match-edit-row">
             <div className="match-edit-field">
               <label className="match-edit-label">Ganador</label>
-              <select
-                value={formData.winner_id || ''}
-                onChange={(e) => handleChange('winner_id', e.target.value)}
-                className="match-edit-input"
+              <PlayerSelect
+                value={formData.winner_id}
+                onChange={(val) => handleChange('winner_id', val)}
+                players={[
+                  ...(formData.player1_id ? registeredUsers.filter(u => String(u.id) === String(formData.player1_id)) : []),
+                  ...(formData.player2_id ? registeredUsers.filter(u => String(u.id) === String(formData.player2_id)) : []),
+                ]}
                 disabled={saving}
-              >
-                <option value="">-- Sin ganador --</option>
-                {formData.player1_id && (
-                  <option value={formData.player1_id}>
-                    {getPlayerName(parseInt(formData.player1_id))}
-                  </option>
-                )}
-                {formData.player2_id && (
-                  <option value={formData.player2_id}>
-                    {getPlayerName(parseInt(formData.player2_id))}
-                  </option>
-                )}
-              </select>
+                placeholder="-- Sin ganador --"
+              />
             </div>
             <div className="match-edit-field">
               <label className="match-edit-label">Estado</label>

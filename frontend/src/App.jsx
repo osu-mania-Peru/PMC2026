@@ -310,33 +310,29 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   );
 }
 
+// Process auth callback token before React renders (prevents redirect race condition)
+(function processAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const error = params.get("error");
+
+  if (token) {
+    api.setToken(token);
+    window.history.replaceState({}, "", "/home");
+  }
+
+  if (error) {
+    console.error('Login error:', error);
+    window.history.replaceState({}, "", "/home");
+  }
+})();
+
 function App() {
   const [user, setUser] = useState(null);
   const [blocked, setBlocked] = useState(false);
-  const [loading, setLoading] = useState(() => {
-    // Initialize loading based on whether we have a token
-    return (
-      !!api.getToken() ||
-      !!new URLSearchParams(window.location.search).get("token")
-    );
-  });
+  const [loading, setLoading] = useState(() => !!api.getToken());
 
   useEffect(() => {
-    // Check for token in URL (from auth callback)
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const error = params.get("error");
-
-    if (token) {
-      api.setToken(token);
-      window.history.replaceState({}, "", "/");
-    }
-
-    if (error) {
-      console.error('Login error:', error);
-      window.history.replaceState({}, "", "/");
-    }
-
     // Fetch user if token exists
     const authToken = api.getToken();
     if (authToken) {

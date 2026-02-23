@@ -109,6 +109,13 @@
   font-style: italic;
 }
 
+.styled-match.single .bracket-player-avatar {
+  width: 28px;
+  height: 28px;
+  margin-left: 0;
+  margin-right: 8px;
+}
+
 .styled-match.single .team-name {
   flex: 1;
   color: #ccc;
@@ -281,6 +288,16 @@
 .custom-match .bracket-player-row.tbd .bracket-player-name {
   color: #444;
   font-style: italic;
+}
+
+/* Player avatars */
+.bracket-player-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-left: 6px;
+  flex-shrink: 0;
 }
 
 .custom-match .bracket-player-name {
@@ -596,6 +613,13 @@
 
 .mobile-match-player.clickable:hover {
   background: rgba(255, 255, 255, 0.03);
+}
+
+.mobile-match-player .bracket-player-avatar {
+  width: 24px;
+  height: 24px;
+  margin-left: 0;
+  margin-right: 8px;
 }
 
 .mobile-player-name {

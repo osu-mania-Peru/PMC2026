@@ -85,6 +85,9 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isS
             }
           }}
         >
+          {matchData?.player1_osu_id && (
+            <img src={`https://a.ppy.sh/${matchData.player1_osu_id}`} alt="" className="bracket-player-avatar" />
+          )}
           <span className="bracket-player-name">{homeTeam?.name || 'TBD'}</span>
           <span className={`bracket-indicator ${homeIsWinner ? 'winner' : ''}`}>
             {homeScore != null ? homeScore.toLocaleString() : ''}
@@ -99,6 +102,9 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isS
             }
           }}
         >
+          {matchData?.player2_osu_id && (
+            <img src={`https://a.ppy.sh/${matchData.player2_osu_id}`} alt="" className="bracket-player-avatar" />
+          )}
           <span className="bracket-player-name">{visitorTeam?.name || 'TBD'}</span>
           <span className={`bracket-indicator ${visitorIsWinner ? 'winner' : ''}`}>
             {visitorScore != null ? visitorScore.toLocaleString() : ''}
@@ -204,6 +210,9 @@ function MobileBracketView({ matches, bracketId, user, onEditMatch, onCreateMatc
                           }
                         }}
                       >
+                        {m.player1_osu_id && (
+                          <img src={`https://a.ppy.sh/${m.player1_osu_id}`} alt="" className="bracket-player-avatar" />
+                        )}
                         <span className="mobile-player-name">{m.player1_username || 'TBD'}</span>
                         <span className={`mobile-player-score ${homeIsWinner ? 'winner' : ''}`}>
                           {m.player1_score != null ? m.player1_score.toLocaleString() : ''}
@@ -219,6 +228,9 @@ function MobileBracketView({ matches, bracketId, user, onEditMatch, onCreateMatc
                           }
                         }}
                       >
+                        {m.player2_osu_id && (
+                          <img src={`https://a.ppy.sh/${m.player2_osu_id}`} alt="" className="bracket-player-avatar" />
+                        )}
                         <span className="mobile-player-name">{m.player2_username || 'TBD'}</span>
                         <span className={`mobile-player-score ${visitorIsWinner ? 'winner' : ''}`}>
                           {m.player2_score != null ? m.player2_score.toLocaleString() : ''}
@@ -697,6 +709,9 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                         }
                       }}
                     >
+                      {m.player1_osu_id && (
+                        <img src={`https://a.ppy.sh/${m.player1_osu_id}`} alt="" className="bracket-player-avatar" />
+                      )}
                       <span className="bracket-player-name">{m.player1_username || 'TBD'}</span>
                       <span className={`bracket-indicator ${homeIsWinner ? 'winner' : ''}`}>
                         {m.player1_score != null ? m.player1_score.toLocaleString() : ''}
@@ -711,6 +726,9 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                         }
                       }}
                     >
+                      {m.player2_osu_id && (
+                        <img src={`https://a.ppy.sh/${m.player2_osu_id}`} alt="" className="bracket-player-avatar" />
+                      )}
                       <span className="bracket-player-name">{m.player2_username || 'TBD'}</span>
                       <span className={`bracket-indicator ${visitorIsWinner ? 'winner' : ''}`}>
                         {m.player2_score != null ? m.player2_score.toLocaleString() : ''}
@@ -793,6 +811,9 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                   }
                 }}
               >
+                {matchData?.player1_osu_id && (
+                  <img src={`https://a.ppy.sh/${matchData.player1_osu_id}`} alt="" className="bracket-player-avatar" />
+                )}
                 <span className="team-name">{finalGame.sides.home.team?.name || 'TBD'}</span>
                 <span className="team-score">
                   {matchData?.player1_score != null ? matchData.player1_score.toLocaleString() : ''}
@@ -807,6 +828,9 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                   }
                 }}
               >
+                {matchData?.player2_osu_id && (
+                  <img src={`https://a.ppy.sh/${matchData.player2_osu_id}`} alt="" className="bracket-player-avatar" />
+                )}
                 <span className="team-name">{finalGame.sides.visitor.team?.name || 'TBD'}</span>
                 <span className="team-score">
                   {matchData?.player2_score != null ? matchData.player2_score.toLocaleString() : ''}
