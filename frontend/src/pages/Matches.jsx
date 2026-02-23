@@ -19,7 +19,8 @@ export default function Matches() {
       api.getAllUsers()
     ])
       .then(([matchesData, usersData]) => {
-        setMatches(matchesData.matches);
+        // Filter out placeholder matches where both players are TBD
+        setMatches(matchesData.matches.filter(m => m.player1_id || m.player2_id));
         const userMap = {};
         usersData.users.forEach(user => {
           userMap[user.id] = user;
