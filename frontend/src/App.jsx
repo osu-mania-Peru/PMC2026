@@ -138,6 +138,14 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           element={<RedirectToHorse />}
         />
         <Route
+          path="/home"
+          element={
+            <main className="main">
+              <Home user={user} setUser={setUser} dangerHover={dangerHover} setDangerHover={setDangerHover} />
+            </main>
+          }
+        />
+        <Route
           path="/register"
           element={
             <main className="main has-container">
