@@ -20,7 +20,7 @@ export default function Players({ user }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('pp');
+  const [sortBy, setSortBy] = useState('seed');
   const [countryFilter, setCountryFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [refreshResult, setRefreshResult] = useState(null);
@@ -118,6 +118,7 @@ export default function Players({ user }) {
     }
 
     result = [...result].sort((a, b) => {
+      if (sortBy === 'seed') return (a.seed_number || 9999) - (b.seed_number || 9999);
       if (sortBy === 'pp') return (b.mania_pp || 0) - (a.mania_pp || 0);
       if (sortBy === 'rank') return (a.mania_country_rank || 9999) - (b.mania_country_rank || 9999);
       if (sortBy === 'name') return a.username.localeCompare(b.username);
@@ -181,6 +182,7 @@ export default function Players({ user }) {
           />
         </div>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+          <option value="seed">Ordenar por Seed</option>
           <option value="pp">Ordenar por PP</option>
           <option value="rank">Ordenar por Rank</option>
           <option value="name">Ordenar por Nombre</option>
@@ -205,8 +207,9 @@ export default function Players({ user }) {
               href={`https://osu.ppy.sh/users/${player.osu_id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="player-card"
+              className={`player-card ${!player.seed_number ? 'disqualified' : ''}`}
             >
+              {!player.seed_number && <div className="player-disqualified-overlay">DESCALIFICADO</div>}
               <div className={`player-seed-container ${player.seed_number === 1 ? 'gold' : player.seed_number === 2 ? 'silver' : player.seed_number === 3 ? 'bronze' : ''}`}>
                 <span className={`player-seed ${!player.seed_number ? 'unranked' : ''}`}>
                   {player.seed_number || '—'}
