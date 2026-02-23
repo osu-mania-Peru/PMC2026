@@ -145,6 +145,8 @@ export default function MatchSchedulingPanel({ match, user, users, onClose }) {
           myWindows={getMyWindows()}
           opponentWindows={getOpponentWindows()}
           busyWindows={busyWindows}
+          myName={users?.[perspectiveId]?.username || 'Tú'}
+          opponentName={users?.[perspectiveId === match.player1_id ? match.player2_id : match.player1_id]?.username || 'Oponente'}
           onChange={(windows) => setPendingWindows(windows)}
           onProposeTime={hasControls ? handleCalendarPropose : undefined}
           readOnly={!hasControls}

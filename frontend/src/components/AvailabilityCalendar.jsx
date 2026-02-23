@@ -186,6 +186,8 @@ export default function AvailabilityCalendar({
   myWindows = [],
   opponentWindows = [],
   busyWindows = [],
+  myName = '',
+  opponentName = '',
   onChange,
   onProposeTime,
   readOnly = false,
@@ -452,21 +454,34 @@ export default function AvailabilityCalendar({
 
   const blockEdges = useMemo(() => {
     const edges = {};
+    const makeDurLabel = (block) => {
+      const slotCount = block.end - block.start + 1;
+      const totalMin = slotCount * SLOT_MINUTES;
+      const hours = Math.floor(totalMin / 60);
+      const mins = totalMin % 60;
+      return hours > 0 && mins > 0 ? `${hours}h${mins}m` : hours > 0 ? `${hours}h` : `${mins}m`;
+    };
     for (let d = 0; d < 7; d++) {
+      // My blocks
       const blocks = findBlocks(selectedCells, d);
       for (const block of blocks) {
-        const slotCount = block.end - block.start + 1;
-        const totalMin = slotCount * SLOT_MINUTES;
-        const hours = Math.floor(totalMin / 60);
-        const mins = totalMin % 60;
         const startLabel = formatSlotTime(block.start);
         const endLabel = formatSlotTime(block.end + 1);
-        const durLabel = hours > 0 && mins > 0 ? `${hours}h${mins}m` : hours > 0 ? `${hours}h` : `${mins}m`;
-        const blockLabel = `${startLabel}–${endLabel} (${durLabel})`;
+        const nameTag = myName ? ` · ${myName}` : '';
+        const blockLabel = `${startLabel}–${endLabel} (${makeDurLabel(block)})${nameTag}`;
         edges[cellKey(d, block.start)] = { ...(edges[cellKey(d, block.start)] || {}), isBlockStart: true, blockLabel };
         edges[cellKey(d, block.end)] = { ...(edges[cellKey(d, block.end)] || {}), isBlockEnd: true };
       }
-      // Busy block — put match label on start cell (same as green blocks)
+      // Opponent blocks
+      const oppBlocks = findBlocks(opponentCells, d);
+      for (const block of oppBlocks) {
+        const startLabel = formatSlotTime(block.start);
+        const endLabel = formatSlotTime(block.end + 1);
+        const nameTag = opponentName ? ` · ${opponentName}` : '';
+        const oppBlockLabel = `${startLabel}–${endLabel} (${makeDurLabel(block)})${nameTag}`;
+        edges[cellKey(d, block.start)] = { ...(edges[cellKey(d, block.start)] || {}), oppBlockLabel };
+      }
+      // Busy blocks
       const busyBlocks = findBlocks(busyCells, d);
       for (const block of busyBlocks) {
         const startLabel = formatSlotTime(block.start);
@@ -476,7 +491,7 @@ export default function AvailabilityCalendar({
       }
     }
     return edges;
-  }, [selectedCells, busyCells, busyLabelMap]);
+  }, [selectedCells, opponentCells, busyCells, busyLabelMap, myName, opponentName]);
 
   const weekLabel = useMemo(() => {
     const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -590,6 +605,7 @@ export default function AvailabilityCalendar({
                   onMouseLeave={() => setHoveredCell(null)}
                 >
                   {edge.blockLabel && <span className="avail-block-label">{edge.blockLabel}</span>}
+                  {edge.oppBlockLabel && <span className="avail-opp-label">{edge.oppBlockLabel}</span>}
                   {edge.busyBlockLabel && <span className="avail-busy-label">{edge.busyBlockLabel}</span>}
                 </div>
               );
