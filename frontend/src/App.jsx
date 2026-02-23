@@ -56,6 +56,13 @@ import AdminPanel from "./components/AdminPanel";
 import Spinner from "./components/Spinner";
 // SlotMachine minigame available at /timba
 
+function RedirectToHorse() {
+  useEffect(() => {
+    window.location.href = '/horse';
+  }, []);
+  return null;
+}
+
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dangerHover, setDangerHover] = useState(false);
@@ -128,11 +135,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
       <Routes>
         <Route
           path="/"
-          element={
-            <main className="main">
-              <Home user={user} setUser={setUser} dangerHover={dangerHover} setDangerHover={setDangerHover} />
-            </main>
-          }
+          element={<RedirectToHorse />}
         />
         <Route
           path="/register"
