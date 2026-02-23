@@ -34,6 +34,32 @@
 
 .matches-header-right {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.matches-export-btn {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 20px !important;
+  padding-right: calc(20px + 10px) !important;
+  background: var(--bg-tertiary) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 0.5rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.03em !important;
+  cursor: pointer !important;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%) !important;
+}
+
+.matches-export-btn:hover {
+  background: var(--text-primary) !important;
+  color: var(--bg-primary) !important;
 }
 
 .trophy-icon {
@@ -150,6 +176,41 @@
   background: #ff0844;
   border-color: #ff0844;
   color: #fff;
+}
+
+/* Schedule button */
+.match-card-wrapper {
+  position: relative;
+}
+
+a.match-schedule-btn {
+  text-decoration: none;
+}
+
+.match-schedule-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 0.4rem 1.2rem;
+  padding-right: calc(1.2rem + 12px);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 0 100%) !important;
+  transition: all 0.2s;
+}
+
+.match-schedule-btn:hover {
+  background: var(--accent-secondary);
+  color: #fff;
+  border-color: var(--accent-secondary);
 }
 
 /* Responsive */
