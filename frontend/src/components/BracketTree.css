@@ -305,6 +305,7 @@
   object-fit: cover;
   margin-left: 6px;
   flex-shrink: 0;
+  align-self: center;
 }
 
 .custom-match .bracket-player-name {
