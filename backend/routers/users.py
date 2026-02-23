@@ -2,6 +2,7 @@
 Endpoints de gestión de usuarios
 """
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from utils.auth import get_current_staff_user, get_user_or_api_key
@@ -43,6 +44,7 @@ async def get_all_users_public(db: Session = Depends(get_db)):
                 "mania_rank": u.mania_rank,
                 "mania_country_rank": u.mania_country_rank,
                 "mania_pp": u.mania_pp,
+                "stays_playing": u.stays_playing,
             }
             for u in users
         ],
@@ -129,6 +131,56 @@ async def admin_delete_user(
     db.delete(user)
     db.commit()
     return {"message": f"User {username} deleted successfully"}
+
+
+class SetStaysPlayingRequest(BaseModel):
+    usernames: list[str]
+
+
+@router.patch("/{user_id}/stays-playing", response_model=UserResponse)
+async def update_user_stays_playing(
+    user_id: int,
+    stays_playing: bool,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Toggle stays_playing status for a user (staff only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.stays_playing = stays_playing
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/set-stays-playing")
+async def bulk_set_stays_playing(
+    body: SetStaysPlayingRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_staff_user)
+):
+    """Bulk-set stays_playing=True for a list of usernames (staff only)."""
+    # Reset all users first
+    db.query(User).update({User.stays_playing: False})
+
+    matched = []
+    not_found = []
+    for username in body.usernames:
+        user = db.query(User).filter(User.username == username).first()
+        if user:
+            user.stays_playing = True
+            matched.append(username)
+        else:
+            not_found.append(username)
+
+    db.commit()
+    return {
+        "matched": len(matched),
+        "not_found": not_found,
+        "usernames": matched,
+    }
 
 
 @router.post("/sync-stats")

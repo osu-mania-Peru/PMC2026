@@ -11,6 +11,7 @@ class UserResponse(BaseModel):
     is_staff: bool
     is_registered: bool
     seed_number: Optional[int] = None
+    stays_playing: bool = False
 
     class Config:
         from_attributes = True

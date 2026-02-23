@@ -847,8 +847,7 @@
             font-weight: 700;
             color: #593b00;
             background: #fff;
-            padding: 1.2vh 4vw;
-            padding-left: 6vw;
+            padding: 1.2vh 2vw;
             border-radius: 2vh;
             box-shadow: 0 0 4px #000;
             -webkit-text-stroke: 0.5px #593b00;
@@ -857,22 +856,16 @@
             top: 2vh;
             left: 2vw;
             right: 2vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5vw;
         }
 
-        .prerace-title-badge {
-            position: absolute;
-            left: 1vw;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
-            color: #fff;
-            font-size: 1.5vh;
-            font-weight: 700;
-            padding: 0.5vh 1.2vw;
-            border-radius: 1.2vh;
-            border: 2px solid #16a34a;
-            -webkit-text-stroke: 0.5px #fff;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        .prerace-title-logo {
+            height: 4vh;
+            width: auto;
+            flex-shrink: 0;
         }
 
         .prerace-participants-wrapper {
@@ -1147,6 +1140,39 @@
             box-shadow: 0 2px 0 rgba(56, 56, 56, 0.54);
         }
 
+        .prerace-goto {
+            position: absolute;
+            bottom: 3vh;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1.5vh 6vw;
+            font-family: 'Noto Sans SC', 'Noto Sans JP', sans-serif;
+            font-size: 2.2vh;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            background: linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-image: url('umamusume-ui/packages/assets/images/umbtn_bg.png'), linear-gradient(180deg, #aaff00 0%, #5fcb00 100%);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            border: 2px solid #005e00;
+            border-radius: 1.5vh;
+            box-shadow: 0 4px 0 rgba(56, 56, 56, 0.54);
+            cursor: pointer;
+            transition: all 0.05s linear;
+            -webkit-text-stroke: 1px #fff;
+            pointer-events: auto;
+        }
+
+        .prerace-goto:hover {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        .prerace-goto:active {
+            transform: translateX(-50%) scale(0.9);
+            box-shadow: 0 2px 0 rgba(56, 56, 56, 0.54);
+        }
+
         /* ===== RACE PROGRESS BAR ===== */
         .race-progress {
             position: fixed;
@@ -1327,10 +1353,11 @@
             <img src="assets/bg3.jpg" alt="">
         </div>
         <div class="prerace-bg-overlay"></div>
-        <div class="prerace-title"><span class="prerace-title-badge">PE</span>Peru Mania Cup 2026</div>
+        <div class="prerace-title"><img src="/logo.svg" alt="PMC" class="prerace-title-logo prerace-title-logo-left"><span>Peru Mania Cup 2026</span><img src="/logo.svg" alt="PMC" class="prerace-title-logo prerace-title-logo-right"></div>
         <div class="prerace-participants-wrapper">
             <div class="prerace-participants" id="preraceParticipants"></div>
         </div>
+        <a href="/" class="prerace-goto">Ir a la página principal</a>
         <button class="prerace-button" id="preraceButton">Empezar!</button>
     </div>
 
@@ -1409,11 +1436,13 @@
                 const data = await response.json();
 
                 if (data.users && data.users.length > 0) {
-                    // Shuffle players for random lane assignment
-                    const shuffled = data.users.sort(() => Math.random() - 0.5);
+                    // Filter to only players still in the tournament
+                    const active = data.users.filter(u => u.stays_playing === true);
 
-                    // Take up to 12 players
-                    const players = shuffled.slice(0, 40);
+                    // Shuffle players for random lane assignment
+                    const shuffled = active.sort(() => Math.random() - 0.5);
+
+                    const players = shuffled;
 
                     window.HORSE_DATA = players.map((player, index) => ({
                         id: player.id,

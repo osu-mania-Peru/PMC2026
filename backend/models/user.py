@@ -42,6 +42,7 @@ class User(Base):
     mania_rank: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='osu!mania global rank')
     mania_country_rank: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, comment='osu!mania country rank')
     mania_pp: Mapped[Optional[float]] = mapped_column(Float, nullable=True, comment='osu!mania performance points')
+    stays_playing: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment='Still active in the tournament')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
