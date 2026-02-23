@@ -85,6 +85,7 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isS
             }
           }}
         >
+          {matchData?.player1_seed && <span className="bracket-player-seed">#{matchData.player1_seed}</span>}
           {matchData?.player1_osu_id && (
             <img src={`https://a.ppy.sh/${matchData.player1_osu_id}`} alt="" className="bracket-player-avatar" />
           )}
@@ -102,6 +103,7 @@ function CustomGame({ game, x, y, onEditMatch, onCreateMatch, onContextMenu, isS
             }
           }}
         >
+          {matchData?.player2_seed && <span className="bracket-player-seed">#{matchData.player2_seed}</span>}
           {matchData?.player2_osu_id && (
             <img src={`https://a.ppy.sh/${matchData.player2_osu_id}`} alt="" className="bracket-player-avatar" />
           )}
@@ -210,6 +212,7 @@ function MobileBracketView({ matches, bracketId, user, onEditMatch, onCreateMatc
                           }
                         }}
                       >
+                        {m.player1_seed && <span className="bracket-player-seed">#{m.player1_seed}</span>}
                         {m.player1_osu_id && (
                           <img src={`https://a.ppy.sh/${m.player1_osu_id}`} alt="" className="bracket-player-avatar" />
                         )}
@@ -228,6 +231,7 @@ function MobileBracketView({ matches, bracketId, user, onEditMatch, onCreateMatc
                           }
                         }}
                       >
+                        {m.player2_seed && <span className="bracket-player-seed">#{m.player2_seed}</span>}
                         {m.player2_osu_id && (
                           <img src={`https://a.ppy.sh/${m.player2_osu_id}`} alt="" className="bracket-player-avatar" />
                         )}
@@ -709,6 +713,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                         }
                       }}
                     >
+                      {m.player1_seed && <span className="bracket-player-seed">#{m.player1_seed}</span>}
                       {m.player1_osu_id && (
                         <img src={`https://a.ppy.sh/${m.player1_osu_id}`} alt="" className="bracket-player-avatar" />
                       )}
@@ -726,6 +731,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                         }
                       }}
                     >
+                      {m.player2_seed && <span className="bracket-player-seed">#{m.player2_seed}</span>}
                       {m.player2_osu_id && (
                         <img src={`https://a.ppy.sh/${m.player2_osu_id}`} alt="" className="bracket-player-avatar" />
                       )}
@@ -811,6 +817,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                   }
                 }}
               >
+                {matchData?.player1_seed && <span className="bracket-player-seed">#{matchData.player1_seed}</span>}
                 {matchData?.player1_osu_id && (
                   <img src={`https://a.ppy.sh/${matchData.player1_osu_id}`} alt="" className="bracket-player-avatar" />
                 )}
@@ -828,6 +835,7 @@ export default function BracketTree({ bracketId, api, defaultBracket, hideTitle 
                   }
                 }}
               >
+                {matchData?.player2_seed && <span className="bracket-player-seed">#{matchData.player2_seed}</span>}
                 {matchData?.player2_osu_id && (
                   <img src={`https://a.ppy.sh/${matchData.player2_osu_id}`} alt="" className="bracket-player-avatar" />
                 )}
