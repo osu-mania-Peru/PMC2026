@@ -118,7 +118,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             )}
             {user ? (
               <>
-                <NotificationBell />
+                {/* <NotificationBell /> */}
                 <span className="nav-user">
                   {user.username}
                   {user.is_staff && <span className="staff-badge">STAFF</span>}

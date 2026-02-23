@@ -163,9 +163,6 @@ export default function Matches({ user }) {
               const statusInfo = getStatusInfo(match);
               const hasScore = match.player1_score !== null && match.player2_score !== null;
 
-              const isParticipant = user && (user.id === match.player1_id || user.id === match.player2_id);
-              const canSchedule = (isParticipant || user?.is_staff) && !match.is_completed;
-
               return (
                 <div key={match.id} className="match-card-wrapper">
                   <MatchCard
@@ -175,14 +172,6 @@ export default function Matches({ user }) {
                     statusInfo={statusInfo}
                     hasScore={hasScore}
                   />
-                  {canSchedule && (
-                    <Link
-                      to={`/matches/${match.id}/schedule`}
-                      className="match-schedule-btn"
-                    >
-                      <Calendar size={14} /> Coordinar Horario
-                    </Link>
-                  )}
                 </div>
               );
             })}
