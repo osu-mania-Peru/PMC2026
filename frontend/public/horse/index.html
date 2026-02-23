@@ -544,6 +544,25 @@
             box-shadow: 0 2px 0 rgba(56, 56, 56, 0.54);
         }
 
+        .prerace-skip-label {
+            position: absolute;
+            bottom: 1vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            cursor: pointer;
+            pointer-events: auto;
+            user-select: none;
+        }
+
+        .prerace-skip-label input {
+            cursor: pointer;
+        }
+
         /* ===== SCROLLBAR STYLING ===== */
         .prerace-participants {
             scrollbar-width: none;
@@ -573,9 +592,23 @@
             <div class="prerace-participants" id="preraceParticipants"></div>
         </div>
         <a href="/home" class="prerace-goto">Ir a la página principal</a>
+        <label class="prerace-skip-label">
+            <input type="checkbox" id="skipHorseCheckbox">
+            <span>No volver a mostrar</span>
+        </label>
     </div>
 
     <script>
+        // Skip horse page if user opted out
+        if (localStorage.getItem('skip_horse') === 'true') {
+            window.location.href = '/home';
+        }
+
+        // Save preference when checkbox changes
+        document.getElementById('skipHorseCheckbox').addEventListener('change', function() {
+            localStorage.setItem('skip_horse', this.checked ? 'true' : 'false');
+        });
+
         // Always use production API for real player data
         const API_BASE = 'https://api.perumaniacup.info';
 

@@ -58,7 +58,11 @@ import Spinner from "./components/Spinner";
 
 function RedirectToHorse() {
   useEffect(() => {
-    window.location.href = '/horse';
+    if (localStorage.getItem('skip_horse') === 'true') {
+      window.location.href = '/home';
+    } else {
+      window.location.href = '/horse';
+    }
   }, []);
   return null;
 }
