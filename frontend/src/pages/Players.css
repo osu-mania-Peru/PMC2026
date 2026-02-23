@@ -160,6 +160,18 @@
   opacity: 0.7;
 }
 
+.player-seed-container.gold {
+  background: linear-gradient(135deg, #d4a017 0%, #ffd700 50%, #d4a017 100%);
+}
+
+.player-seed-container.silver {
+  background: linear-gradient(135deg, #8a8a8a 0%, #c0c0c0 50%, #8a8a8a 100%);
+}
+
+.player-seed-container.bronze {
+  background: linear-gradient(135deg, #8b5e3c 0%, #cd7f32 50%, #8b5e3c 100%);
+}
+
 /* Avatar */
 .player-avatar {
   height: 100%;

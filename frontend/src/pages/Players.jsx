@@ -207,7 +207,7 @@ export default function Players({ user }) {
               rel="noopener noreferrer"
               className="player-card"
             >
-              <div className="player-seed-container">
+              <div className={`player-seed-container ${player.seed_number === 1 ? 'gold' : player.seed_number === 2 ? 'silver' : player.seed_number === 3 ? 'bronze' : ''}`}>
                 <span className={`player-seed ${!player.seed_number ? 'unranked' : ''}`}>
                   {player.seed_number || '—'}
                 </span>
