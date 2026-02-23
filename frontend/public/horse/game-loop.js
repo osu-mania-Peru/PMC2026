@@ -58,7 +58,7 @@ class PlayerDisplay {
     // Setup music
     this.preraceMusic = new Audio("assets/entry-table.mp3");
     this.preraceMusic.loop = true;
-    this.preraceMusic.volume = 0.7;
+    this.preraceMusic.volume = 0.24;
 
     // Wait for player data then show
     if (this.players.length > 0) {
