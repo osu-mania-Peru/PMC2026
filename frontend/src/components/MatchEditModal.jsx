@@ -130,7 +130,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
   const getPlayerName = (playerId) => {
     if (!playerId) return 'TBD';
     const user = users?.find(u => u.id === playerId);
-    return user?.osu_username || user?.discord_username || `ID: ${playerId}`;
+    return user?.username || `ID: ${playerId}`;
   };
 
   // Filter registered users for player dropdowns
@@ -189,7 +189,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
                 <option value="">-- Seleccionar --</option>
                 {registeredUsers.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.osu_username || user.discord_username}
+                    {user.username}
                   </option>
                 ))}
               </select>
@@ -205,7 +205,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
                 <option value="">-- Seleccionar --</option>
                 {registeredUsers.map(user => (
                   <option key={user.id} value={user.id}>
-                    {user.osu_username || user.discord_username}
+                    {user.username}
                   </option>
                 ))}
               </select>

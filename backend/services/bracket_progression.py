@@ -6,6 +6,7 @@ and Grand Finals with bracket reset.
 """
 from sqlalchemy.orm import Session
 from models.match import Match
+from models.user import User
 
 
 class BracketProgressionService:
@@ -68,6 +69,9 @@ class BracketProgressionService:
             if loser_match:
                 self._assign_player_to_match(loser_match, loser_id)
                 result["loser_advanced_to"] = loser_match.id
+        else:
+            # No loser progression = eliminated from tournament
+            self._eliminate_player(loser_id)
 
         # Handle Grand Finals bracket reset
         if self._is_grandfinals_match(match) and not match.is_grandfinals_reset:
@@ -80,6 +84,17 @@ class BracketProgressionService:
 
         self.db.commit()
         return result
+
+    def _eliminate_player(self, player_id: int) -> None:
+        """
+        Mark a player as eliminated (no longer active in the tournament).
+
+        Args:
+            player_id: User ID of the eliminated player.
+        """
+        user = self.db.query(User).filter(User.id == player_id).first()
+        if user:
+            user.stays_playing = False
 
     def _assign_player_to_match(self, match: Match, player_id: int) -> None:
         """
