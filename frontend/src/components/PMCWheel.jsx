@@ -168,6 +168,14 @@ export default function PMCWheel({ user }) {
 
   return (
     <>
+      {/* Tamper overlay - covers entire page */}
+      {tampered && (
+        <div className="wheel-tampered">
+          <span className="tamper-quote">El que con trampa juega, con trampa se queda.</span>
+          <span className="tamper-reload">Recarga la página.</span>
+        </div>
+      )}
+
       {/* Floating Button */}
       <button
         className={`pmc-wheel-fab ${open ? 'fab-hidden' : ''}`}
@@ -186,13 +194,6 @@ export default function PMCWheel({ user }) {
           <button className="pmc-wheel-close" onClick={handleClose}>&times;</button>
 
           <div ref={containerRef} className={`pmc-wheel-container ${closing ? 'closing' : ''}`}>
-            {tampered && (
-              <div className="wheel-tampered">
-                <span>Tampering detected</span>
-                <span>Reload to continue</span>
-              </div>
-            )}
-
             <div className="pmc-wheel-title">
               <img src={pmcLogo} alt="PMC" className="wheel-title-logo" />
               <span>WHEEL</span>

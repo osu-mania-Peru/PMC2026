@@ -346,37 +346,41 @@
   cursor: not-allowed;
 }
 
-/* Tamper Overlay */
+/* Tamper Overlay - covers entire page */
 .wheel-tampered {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.85);
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(8px) grayscale(1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  border-radius: 12px;
 }
 
-.wheel-tampered span:first-child {
+.tamper-quote {
   font-family: 'Poppins', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 800;
+  font-style: italic;
   color: #ff2057;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
+  text-align: center;
+  max-width: 500px;
+  text-shadow: 0 0 20px rgba(255, 32, 87, 0.5);
 }
 
-.wheel-tampered span:last-child {
+.tamper-reload {
   font-family: 'Poppins', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #888;
+  color: #555;
+  margin-top: 8px;
 }
 
 /* Mobile */
