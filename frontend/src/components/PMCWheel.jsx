@@ -1,4 +1,5 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { api } from '../api';
 import pmcLogo from '../assets/pmclogo.svg';
 import caballero from '../assets/caballero.png';
 import catGif from '../assets/cat.gif';
@@ -22,37 +23,44 @@ const SEGMENTS = [
 
 const SEGMENT_ANGLE = 360 / SEGMENTS.length;
 
-// PMC segment is index 0
 const PMC_INDEX = 0;
 
-// Given a target segment index, compute the rotation that lands the pointer on it
 const rotationForSegment = (index, baseRotation) => {
-  // Pointer is at top (0deg). To land on segment i, the center of that segment
-  // needs to be at the top after rotation.
   const segmentCenter = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
-  // We need (totalRotation % 360) to equal (360 - segmentCenter)
   const targetMod = (360 - segmentCenter + 360) % 360;
-  // Add some jitter within the segment so it doesn't always hit dead center
   const jitter = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.7);
   const extraSpins = (5 + Math.random() * 5) * 360;
   const raw = baseRotation + extraSpins;
-  // Adjust to land on targetMod
   const currentMod = raw % 360;
   const adjust = (targetMod - currentMod + jitter + 360) % 360;
   return raw + adjust;
 };
 
-export default function PMCWheel() {
+export default function PMCWheel({ user }) {
   const [open, setOpen] = useState(false);
   const [closing, setClosing] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState(null);
   const [score, setScore] = useState(0);
-  const [scoreFlash, setScoreFlash] = useState(null); // {points, key}
+  const [scoreFlash, setScoreFlash] = useState(null);
   const spinCountRef = useRef(0);
   const hasHitPMCRef = useRef(false);
   const wheelRef = useRef(null);
+
+  // Load score from server on open
+  useEffect(() => {
+    if (open && user) {
+      api.getWheelScore().then(data => {
+        setScore(data.score);
+        spinCountRef.current = data.spins;
+        // If they already have spins, they've hit PMC before (assume so)
+        if (data.spins > 0) hasHitPMCRef.current = true;
+      }).catch(() => {});
+    }
+  }, [open, user]);
+
+  if (!user) return null;
 
   const handleOpen = () => {
     setResult(null);
@@ -76,7 +84,6 @@ export default function PMCWheel() {
     spinCountRef.current += 1;
     const spinNum = spinCountRef.current;
 
-    // Rig early spins: 50% chance of PMC until they hit it, then 3 more rigged spins after
     let totalRotation;
     const rigged = !hasHitPMCRef.current || spinNum <= (hasHitPMCRef.current ? hasHitPMCRef.current + 3 : Infinity);
     const riggedPMC = rigged && Math.random() < 0.5;
@@ -84,7 +91,6 @@ export default function PMCWheel() {
     if (riggedPMC) {
       totalRotation = rotationForSegment(PMC_INDEX, rotation);
     } else {
-      // Normal random spin
       const extraSpins = (5 + Math.random() * 5) * 360;
       const randomOffset = Math.random() * 360;
       totalRotation = rotation + extraSpins + randomOffset;
@@ -137,6 +143,9 @@ export default function PMCWheel() {
         setScore(prev => prev + totalPoints);
         setScoreFlash({ points: totalPoints, bonus, curse, key: Date.now() });
         setSpinning(false);
+
+        // Save to server
+        api.recordWheelSpin(totalPoints).catch(() => {});
       }
     };
 

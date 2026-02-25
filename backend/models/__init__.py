@@ -13,6 +13,7 @@ from models.news_item import NewsItem
 from models.mappool import Mappool, MappoolMap
 from models.slot import Slot
 from models.availability import MatchAvailability, MatchTimeProposal
+from models.wheel_score import WheelScore
 
 __all__ = [
     "Base",
@@ -32,4 +33,5 @@ __all__ = [
     "Slot",
     "MatchAvailability",
     "MatchTimeProposal",
+    "WheelScore",
 ]

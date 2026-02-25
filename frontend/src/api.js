@@ -255,6 +255,13 @@ export const api = {
   }),
   getMatchProposals: (matchId) => api.fetch(`/matches/${matchId}/proposals`),
 
+  // Wheel
+  getWheelScore: () => api.fetch('/wheel/score'),
+  recordWheelSpin: (points) => api.fetch('/wheel/spin', {
+    method: 'POST',
+    body: JSON.stringify({ points }),
+  }),
+
   // Whitelist
   getWhitelist: () => api.fetch('/whitelist'),
   addToWhitelist: (username) => api.fetch('/whitelist', {

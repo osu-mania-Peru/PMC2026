@@ -439,7 +439,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         onRefresh={refreshNews}
       />
 
-      <PMCWheel />
+      <PMCWheel user={user} />
     </div>
   );
 }
