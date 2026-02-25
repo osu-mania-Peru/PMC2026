@@ -346,6 +346,39 @@
   cursor: not-allowed;
 }
 
+/* Tamper Overlay */
+.wheel-tampered {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 12px;
+}
+
+.wheel-tampered span:first-child {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ff2057;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.wheel-tampered span:last-child {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #888;
+}
+
 /* Mobile */
 @media (max-width: 480px) {
   .wheel-wrapper {

@@ -1,7 +1,7 @@
 """Wheel score model for PMC Wheel minigame."""
 from datetime import datetime
 
-from sqlalchemy import Integer, DateTime, ForeignKey
+from sqlalchemy import Integer, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
@@ -16,4 +16,6 @@ class WheelScore(Base):
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     score: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     spins: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    has_hit_pmc: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    first_pmc_spin: Mapped[int | None] = mapped_column(Integer, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

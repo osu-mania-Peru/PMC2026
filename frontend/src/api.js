@@ -257,9 +257,8 @@ export const api = {
 
   // Wheel
   getWheelScore: () => api.fetch('/wheel/score'),
-  recordWheelSpin: (points) => api.fetch('/wheel/spin', {
+  recordWheelSpin: () => api.fetch('/wheel/spin', {
     method: 'POST',
-    body: JSON.stringify({ points }),
   }),
 
   // Whitelist

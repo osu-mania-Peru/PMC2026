@@ -23,8 +23,6 @@ const SEGMENTS = [
 
 const SEGMENT_ANGLE = 360 / SEGMENTS.length;
 
-const PMC_INDEX = 0;
-
 const rotationForSegment = (index, baseRotation) => {
   const segmentCenter = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
   const targetMod = (360 - segmentCenter + 360) % 360;
@@ -44,21 +42,54 @@ export default function PMCWheel({ user }) {
   const [result, setResult] = useState(null);
   const [score, setScore] = useState(0);
   const [scoreFlash, setScoreFlash] = useState(null);
-  const spinCountRef = useRef(0);
-  const hasHitPMCRef = useRef(false);
+  const [tampered, setTampered] = useState(false);
   const wheelRef = useRef(null);
+  const containerRef = useRef(null);
+  const reactMutatingRef = useRef(false);
 
   // Load score from server on open
   useEffect(() => {
     if (open && user) {
       api.getWheelScore().then(data => {
         setScore(data.score);
-        spinCountRef.current = data.spins;
-        // If they already have spins, they've hit PMC before (assume so)
-        if (data.spins > 0) hasHitPMCRef.current = true;
       }).catch(() => {});
     }
   }, [open, user]);
+
+  // MutationObserver for tamper detection
+  useEffect(() => {
+    if (!open || !containerRef.current) return;
+
+    const observer = new MutationObserver((mutations) => {
+      if (reactMutatingRef.current) return;
+      // Check if any mutation is NOT from React internals
+      for (const m of mutations) {
+        // React sets data-reactroot or has __reactFiber keys; external edits won't
+        if (m.type === 'childList' || m.type === 'attributes') {
+          setTampered(true);
+          observer.disconnect();
+          return;
+        }
+      }
+    });
+
+    observer.observe(containerRef.current, {
+      childList: true,
+      attributes: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    return () => observer.disconnect();
+  }, [open]);
+
+  // Wrap state setters to flag React mutations
+  const reactUpdate = useCallback((fn) => {
+    reactMutatingRef.current = true;
+    fn();
+    // Reset after React flushes (microtask)
+    queueMicrotask(() => { reactMutatingRef.current = false; });
+  }, []);
 
   if (!user) return null;
 
@@ -76,31 +107,28 @@ export default function PMCWheel({ user }) {
     }, 500);
   };
 
-  const spin = useCallback(() => {
-    if (spinning) return;
+  const spin = useCallback(async () => {
+    if (spinning || tampered) return;
     setSpinning(true);
     setResult(null);
 
-    spinCountRef.current += 1;
-    const spinNum = spinCountRef.current;
-
-    let totalRotation;
-    const rigged = !hasHitPMCRef.current || spinNum <= (hasHitPMCRef.current ? hasHitPMCRef.current + 3 : Infinity);
-    const riggedPMC = rigged && Math.random() < 0.5;
-
-    if (riggedPMC) {
-      totalRotation = rotationForSegment(PMC_INDEX, rotation);
-    } else {
-      const extraSpins = (5 + Math.random() * 5) * 360;
-      const randomOffset = Math.random() * 360;
-      totalRotation = rotation + extraSpins + randomOffset;
+    let serverResult;
+    try {
+      serverResult = await api.recordWheelSpin();
+    } catch {
+      setSpinning(false);
+      return;
     }
+
+    const { segment_index, points, bonus, curse, score: newScore } = serverResult;
+    const landed = SEGMENTS[segment_index];
+
+    const totalRotation = rotationForSegment(segment_index, rotation);
 
     const duration = 5000;
     const startTime = performance.now();
     const startRotation = rotation;
     const delta = totalRotation - startRotation;
-    const animRef = { id: null };
 
     const easeInOut = (t) => {
       if (t < 0.3) {
@@ -119,38 +147,24 @@ export default function PMCWheel({ user }) {
       const t = Math.min(elapsed / duration, 1);
       const progress = easeInOut(t);
       const currentRot = startRotation + delta * progress;
-      setRotation(currentRot);
+
+      reactUpdate(() => setRotation(currentRot));
 
       if (t < 1) {
-        animRef.id = requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
       } else {
-        setRotation(totalRotation);
-        const normalizedAngle = totalRotation % 360;
-        const pointerAngle = (360 - normalizedAngle + 360) % 360;
-        const segmentIndex = Math.floor(pointerAngle / SEGMENT_ANGLE) % SEGMENTS.length;
-        const landed = SEGMENTS[segmentIndex];
-        if (landed.label === 'PMC' && !hasHitPMCRef.current) {
-          hasHitPMCRef.current = spinNum;
-        }
-        // 15% chance of a random bonus (+15 to +30)
-        const hasBonus = Math.random() < 0.15;
-        const bonus = hasBonus ? Math.floor(Math.random() * 16) + 15 : 0;
-        // 8% chance of catastrophic hit (-80 to -150)
-        const hasCurse = !hasBonus && landed.label !== 'PMC' && Math.random() < 0.08;
-        const curse = hasCurse ? -(Math.floor(Math.random() * 71) + 80) : 0;
-        const totalPoints = landed.points + bonus + curse;
-        setResult({ ...landed, bonus, curse });
-        setScore(prev => prev + totalPoints);
-        setScoreFlash({ points: totalPoints, bonus, curse, key: Date.now() });
-        setSpinning(false);
-
-        // Save to server
-        api.recordWheelSpin(totalPoints).catch(() => {});
+        reactUpdate(() => {
+          setRotation(totalRotation);
+          setResult({ ...landed, bonus, curse });
+          setScore(newScore);
+          setScoreFlash({ points, bonus, curse, key: Date.now() });
+          setSpinning(false);
+        });
       }
     };
 
-    animRef.id = requestAnimationFrame(animate);
-  }, [spinning, rotation]);
+    requestAnimationFrame(animate);
+  }, [spinning, rotation, tampered, reactUpdate]);
 
   return (
     <>
@@ -171,7 +185,14 @@ export default function PMCWheel({ user }) {
         >
           <button className="pmc-wheel-close" onClick={handleClose}>&times;</button>
 
-          <div className={`pmc-wheel-container ${closing ? 'closing' : ''}`}>
+          <div ref={containerRef} className={`pmc-wheel-container ${closing ? 'closing' : ''}`}>
+            {tampered && (
+              <div className="wheel-tampered">
+                <span>Tampering detected</span>
+                <span>Reload to continue</span>
+              </div>
+            )}
+
             <div className="pmc-wheel-title">
               <img src={pmcLogo} alt="PMC" className="wheel-title-logo" />
               <span>WHEEL</span>
@@ -263,8 +284,8 @@ export default function PMCWheel({ user }) {
             </div>
 
             {/* Spin Button */}
-            <button className="wheel-spin-btn" onClick={spin} disabled={spinning}>
-              {spinning ? 'Spinning...' : 'SPIN!'}
+            <button className="wheel-spin-btn" onClick={spin} disabled={spinning || tampered}>
+              {spinning ? 'Spinning...' : tampered ? 'DISABLED' : 'SPIN!'}
             </button>
           </div>
         </div>
