@@ -6,21 +6,41 @@ import catError from '../assets/caterror.gif';
 import './PMCWheel.css';
 
 const SEGMENTS = [
-  { label: 'PMC', image: pmcLogo },
-  { label: 'Uma', image: caballero },
-  { label: 'Miaurichesu', image: catGif },
-  { label: 'Gatofuego', image: catError },
-  { label: 'Uma', image: caballero },
-  { label: 'Miaurichesu', image: catGif },
-  { label: 'Gatofuego', image: catError },
-  { label: 'Uma', image: caballero },
-  { label: 'Miaurichesu', image: catGif },
-  { label: 'Gatofuego', image: catError },
-  { label: 'Uma', image: caballero },
-  { label: 'Miaurichesu', image: catGif },
+  { label: 'PMC', image: pmcLogo, points: 80 },
+  { label: 'Uma', image: caballero, points: -20 },
+  { label: 'Miaurichesu', image: catGif, points: -15 },
+  { label: 'Gatofuego', image: catError, points: -8 },
+  { label: 'Uma', image: caballero, points: -20 },
+  { label: 'Miaurichesu', image: catGif, points: -15 },
+  { label: 'Gatofuego', image: catError, points: -8 },
+  { label: 'Uma', image: caballero, points: -20 },
+  { label: 'Miaurichesu', image: catGif, points: -15 },
+  { label: 'Gatofuego', image: catError, points: -8 },
+  { label: 'Uma', image: caballero, points: -20 },
+  { label: 'Miaurichesu', image: catGif, points: -15 },
 ];
 
 const SEGMENT_ANGLE = 360 / SEGMENTS.length;
+
+// PMC segment is index 0
+const PMC_INDEX = 0;
+
+// Given a target segment index, compute the rotation that lands the pointer on it
+const rotationForSegment = (index, baseRotation) => {
+  // Pointer is at top (0deg). To land on segment i, the center of that segment
+  // needs to be at the top after rotation.
+  const segmentCenter = index * SEGMENT_ANGLE + SEGMENT_ANGLE / 2;
+  // We need (totalRotation % 360) to equal (360 - segmentCenter)
+  const targetMod = (360 - segmentCenter + 360) % 360;
+  // Add some jitter within the segment so it doesn't always hit dead center
+  const jitter = (Math.random() - 0.5) * (SEGMENT_ANGLE * 0.7);
+  const extraSpins = (5 + Math.random() * 5) * 360;
+  const raw = baseRotation + extraSpins;
+  // Adjust to land on targetMod
+  const currentMod = raw % 360;
+  const adjust = (targetMod - currentMod + jitter + 360) % 360;
+  return raw + adjust;
+};
 
 export default function PMCWheel() {
   const [open, setOpen] = useState(false);
@@ -28,6 +48,10 @@ export default function PMCWheel() {
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [result, setResult] = useState(null);
+  const [score, setScore] = useState(0);
+  const [scoreFlash, setScoreFlash] = useState(null); // {points, key}
+  const spinCountRef = useRef(0);
+  const hasHitPMCRef = useRef(false);
   const wheelRef = useRef(null);
 
   const handleOpen = () => {
@@ -49,9 +73,22 @@ export default function PMCWheel() {
     setSpinning(true);
     setResult(null);
 
-    const extraSpins = (5 + Math.random() * 5) * 360;
-    const randomOffset = Math.random() * 360;
-    const totalRotation = rotation + extraSpins + randomOffset;
+    spinCountRef.current += 1;
+    const spinNum = spinCountRef.current;
+
+    // Rig early spins: 50% chance of PMC until they hit it, then 3 more rigged spins after
+    let totalRotation;
+    const rigged = !hasHitPMCRef.current || spinNum <= (hasHitPMCRef.current ? hasHitPMCRef.current + 3 : Infinity);
+    const riggedPMC = rigged && Math.random() < 0.5;
+
+    if (riggedPMC) {
+      totalRotation = rotationForSegment(PMC_INDEX, rotation);
+    } else {
+      // Normal random spin
+      const extraSpins = (5 + Math.random() * 5) * 360;
+      const randomOffset = Math.random() * 360;
+      totalRotation = rotation + extraSpins + randomOffset;
+    }
 
     const duration = 5000;
     const startTime = performance.now();
@@ -85,7 +122,20 @@ export default function PMCWheel() {
         const normalizedAngle = totalRotation % 360;
         const pointerAngle = (360 - normalizedAngle + 360) % 360;
         const segmentIndex = Math.floor(pointerAngle / SEGMENT_ANGLE) % SEGMENTS.length;
-        setResult(SEGMENTS[segmentIndex]);
+        const landed = SEGMENTS[segmentIndex];
+        if (landed.label === 'PMC' && !hasHitPMCRef.current) {
+          hasHitPMCRef.current = spinNum;
+        }
+        // 15% chance of a random bonus (+15 to +30)
+        const hasBonus = Math.random() < 0.15;
+        const bonus = hasBonus ? Math.floor(Math.random() * 16) + 15 : 0;
+        // 8% chance of catastrophic hit (-80 to -150)
+        const hasCurse = !hasBonus && landed.label !== 'PMC' && Math.random() < 0.08;
+        const curse = hasCurse ? -(Math.floor(Math.random() * 71) + 80) : 0;
+        const totalPoints = landed.points + bonus + curse;
+        setResult({ ...landed, bonus, curse });
+        setScore(prev => prev + totalPoints);
+        setScoreFlash({ points: totalPoints, bonus, curse, key: Date.now() });
         setSpinning(false);
       }
     };
@@ -116,6 +166,20 @@ export default function PMCWheel() {
             <div className="pmc-wheel-title">
               <img src={pmcLogo} alt="PMC" className="wheel-title-logo" />
               <span>WHEEL</span>
+            </div>
+
+            {/* Score Display */}
+            <div className={`wheel-score ${score > 0 ? 'positive' : score < 0 ? 'negative' : ''}`}>
+              <span className="score-label">SCORE</span>
+              <span className="score-value">{score}</span>
+              {scoreFlash && (
+                <span
+                  key={scoreFlash.key}
+                  className={`score-flash ${scoreFlash.points > 0 ? 'flash-positive' : 'flash-negative'}`}
+                >
+                  {scoreFlash.points > 0 ? '+' : ''}{scoreFlash.points}
+                </span>
+              )}
             </div>
 
             <div className="wheel-wrapper">
@@ -183,6 +247,8 @@ export default function PMCWheel() {
                 <>
                   <img src={result.image} alt={result.label} className="result-image" />
                   <span className="result-label">{result.label}</span>
+                  {result.bonus > 0 && <span className="result-bonus">+{result.bonus} BONUS!</span>}
+                  {result.curse < 0 && <span className="result-curse">{result.curse} MALDICIÓN!</span>}
                 </>
               )}
             </div>
