@@ -45,7 +45,6 @@ export default function PMCWheel({ user }) {
   const [tampered, setTampered] = useState(false);
   const wheelRef = useRef(null);
   const containerRef = useRef(null);
-  const reactMutatingRef = useRef(false);
 
   // Load score from server on open
   useEffect(() => {
@@ -60,36 +59,65 @@ export default function PMCWheel({ user }) {
   useEffect(() => {
     if (!open || !containerRef.current) return;
 
-    const observer = new MutationObserver((mutations) => {
-      if (reactMutatingRef.current) return;
-      // Check if any mutation is NOT from React internals
-      for (const m of mutations) {
-        // React sets data-reactroot or has __reactFiber keys; external edits won't
-        if (m.type === 'childList' || m.type === 'attributes') {
-          setTampered(true);
-          observer.disconnect();
-          return;
+    const container = containerRef.current;
+    let observer;
+
+    // Snapshot all existing nodes after React finishes rendering
+    const knownNodes = new WeakSet();
+    const walkTree = (node) => {
+      knownNodes.add(node);
+      for (const child of node.childNodes) walkTree(child);
+    };
+
+    // Delay observer setup so React's initial render + first data fetch are done
+    const timerId = setTimeout(() => {
+      walkTree(container);
+
+      const isReactNode = (node) =>
+        node && Object.keys(node).some(k => k.startsWith('__react'));
+
+      observer = new MutationObserver((mutations) => {
+        for (const m of mutations) {
+          if (m.type === 'childList') {
+            // Only flag nodes that aren't React-managed
+            for (const node of m.addedNodes) {
+              if (!isReactNode(node) && !knownNodes.has(node) && node.nodeType === 1) {
+                setTampered(true);
+                observer.disconnect();
+                return;
+              }
+            }
+            for (const node of m.removedNodes) {
+              if (node.nodeType === 1 && !isReactNode(node)) {
+                setTampered(true);
+                observer.disconnect();
+                return;
+              }
+            }
+          }
+          // Attribute changes on non-React elements (e.g. manually editing style)
+          if (m.type === 'attributes' && m.target !== container) {
+            if (!isReactNode(m.target)) {
+              setTampered(true);
+              observer.disconnect();
+              return;
+            }
+          }
         }
-      }
-    });
+      });
 
-    observer.observe(containerRef.current, {
-      childList: true,
-      attributes: true,
-      subtree: true,
-      characterData: true,
-    });
+      observer.observe(container, {
+        childList: true,
+        attributes: true,
+        subtree: true,
+      });
+    }, 2000);
 
-    return () => observer.disconnect();
+    return () => {
+      clearTimeout(timerId);
+      observer?.disconnect();
+    };
   }, [open]);
-
-  // Wrap state setters to flag React mutations
-  const reactUpdate = useCallback((fn) => {
-    reactMutatingRef.current = true;
-    fn();
-    // Reset after React flushes (microtask)
-    queueMicrotask(() => { reactMutatingRef.current = false; });
-  }, []);
 
   if (!user) return null;
 
@@ -148,23 +176,21 @@ export default function PMCWheel({ user }) {
       const progress = easeInOut(t);
       const currentRot = startRotation + delta * progress;
 
-      reactUpdate(() => setRotation(currentRot));
+      setRotation(currentRot);
 
       if (t < 1) {
         requestAnimationFrame(animate);
       } else {
-        reactUpdate(() => {
-          setRotation(totalRotation);
-          setResult({ ...landed, bonus, curse });
-          setScore(newScore);
-          setScoreFlash({ points, bonus, curse, key: Date.now() });
-          setSpinning(false);
-        });
+        setRotation(totalRotation);
+        setResult({ ...landed, bonus, curse });
+        setScore(newScore);
+        setScoreFlash({ points, bonus, curse, key: Date.now() });
+        setSpinning(false);
       }
     };
 
     requestAnimationFrame(animate);
-  }, [spinning, rotation, tampered, reactUpdate]);
+  }, [spinning, rotation, tampered]);
 
   return (
     <>
