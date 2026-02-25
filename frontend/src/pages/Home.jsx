@@ -6,6 +6,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import TimelineEditModal from '../components/TimelineEditModal';
 import NewsEditModal from '../components/NewsEditModal';
 import catGif from '../assets/cat.gif';
+import PMCWheel from '../components/PMCWheel';
 const heroBgVideo = '/hero-bg.mp4';
 import './Home.css';
 
@@ -437,6 +438,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         items={newsItems}
         onRefresh={refreshNews}
       />
+
+      <PMCWheel />
     </div>
   );
 }
