@@ -56,52 +56,40 @@ export default function PMCWheel({ user }) {
   }, [open, user]);
 
   // MutationObserver for tamper detection
+  // React attaches __reactFiber$… and __reactProps$… keys on every DOM node it owns.
+  // Nodes injected via dev-tools won't have these, and neither will their parent's
+  // React tree know about them. We check the *mutation target* (the parent for
+  // childList mutations) — if React manages the parent, the mutation is React's own work.
   useEffect(() => {
     if (!open || !containerRef.current) return;
 
     const container = containerRef.current;
     let observer;
 
-    // Snapshot all existing nodes after React finishes rendering
-    const knownNodes = new WeakSet();
-    const walkTree = (node) => {
-      knownNodes.add(node);
-      for (const child of node.childNodes) walkTree(child);
+    const isReactManaged = (node) => {
+      if (!node || node.nodeType !== 1) return true;
+      return Object.keys(node).some(k => k.startsWith('__reactFiber') || k.startsWith('__reactProps'));
     };
 
-    // Delay observer setup so React's initial render + first data fetch are done
     const timerId = setTimeout(() => {
-      walkTree(container);
-
-      const isReactNode = (node) =>
-        node && Object.keys(node).some(k => k.startsWith('__react'));
-
       observer = new MutationObserver((mutations) => {
         for (const m of mutations) {
+          // For childList, the target is the parent where nodes were added/removed.
+          // If the parent is React-managed, React did this mutation.
           if (m.type === 'childList') {
-            // Only flag nodes that aren't React-managed
-            for (const node of m.addedNodes) {
-              if (!isReactNode(node) && !knownNodes.has(node) && node.nodeType === 1) {
-                setTampered(true);
-                observer.disconnect();
-                return;
-              }
-            }
-            for (const node of m.removedNodes) {
-              if (node.nodeType === 1 && !isReactNode(node)) {
-                setTampered(true);
-                observer.disconnect();
-                return;
-              }
-            }
-          }
-          // Attribute changes on non-React elements (e.g. manually editing style)
-          if (m.type === 'attributes' && m.target !== container) {
-            if (!isReactNode(m.target)) {
+            if (!isReactManaged(m.target)) {
               setTampered(true);
               observer.disconnect();
               return;
             }
+          }
+          // For attribute changes, check the element itself
+          if (m.type === 'attributes') {
+            // Ignore style/class on React-managed nodes (React sets these)
+            if (isReactManaged(m.target)) continue;
+            setTampered(true);
+            observer.disconnect();
+            return;
           }
         }
       });
@@ -110,8 +98,9 @@ export default function PMCWheel({ user }) {
         childList: true,
         attributes: true,
         subtree: true,
+        attributeFilter: ['style', 'class', 'className', 'href', 'src', 'onclick', 'value'],
       });
-    }, 2000);
+    }, 1000);
 
     return () => {
       clearTimeout(timerId);
