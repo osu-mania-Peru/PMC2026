@@ -5,6 +5,7 @@ import { FaDiscord, FaYoutube, FaTwitch } from "react-icons/fa";
 import { Menu, X } from "lucide-react";
 import logo from "./assets/logo.svg";
 import catGif from "./assets/cat.gif";
+import supportQr from "./assets/support.png";
 import "./App.css";
 
 // Fuzzy match for stinky detection
@@ -67,6 +68,27 @@ function RedirectToHorse() {
     }
   }, []);
   return null;
+}
+
+function SupportButton() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="support-float">
+      {open && (
+        <div className="support-popup">
+          <button className="support-popup-close" onClick={() => setOpen(false)}>
+            <X size={16} />
+          </button>
+          <img src={supportQr} alt="Yape QR" className="support-qr" />
+          <p className="support-popup-text">Escanea para apoyar</p>
+        </div>
+      )}
+      <button className="support-btn" onClick={() => setOpen(!open)}>
+        Apoya al PMC
+      </button>
+    </div>
+  );
 }
 
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
@@ -318,6 +340,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           <span className="footer-credit">Designed by @r_koshiin</span>
         </div>
       </footer>
+
+      {/* Floating Yape Support Button */}
+      <SupportButton />
 
       {/* Admin Debug Panel - Hidden */}
       {/* <AdminPanel /> */}
