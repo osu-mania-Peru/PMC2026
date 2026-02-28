@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Download } from 'lucide-react';
+import { ArrowDownUp, Download } from 'lucide-react';
 import { api } from '../api';
 import PageTransition from '../components/PageTransition';
 import MatchCard from '../components/MatchCard';
@@ -16,6 +16,7 @@ export default function Matches({ user }) {
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [editingMatch, setEditingMatch] = useState(null);
+  const [sortBy, setSortBy] = useState('date_desc');
   const matchesPerPage = 5;
 
   useEffect(() => {
@@ -135,10 +136,17 @@ export default function Matches({ user }) {
     { value: 'completed', label: 'FINALIZADAS' },
   ];
 
+  // Sort
+  const sortedMatches = [...matches].sort((a, b) => {
+    const timeA = a.scheduled_time ? new Date(a.scheduled_time).getTime() : 0;
+    const timeB = b.scheduled_time ? new Date(b.scheduled_time).getTime() : 0;
+    return sortBy === 'date_asc' ? timeA - timeB : timeB - timeA;
+  });
+
   // Pagination
-  const totalPages = Math.ceil(matches.length / matchesPerPage);
+  const totalPages = Math.ceil(sortedMatches.length / matchesPerPage);
   const startIndex = (currentPage - 1) * matchesPerPage;
-  const paginatedMatches = matches.slice(startIndex, startIndex + matchesPerPage);
+  const paginatedMatches = sortedMatches.slice(startIndex, startIndex + matchesPerPage);
 
   return (
     <PageTransition loading={loading} error={loadError} text="Cargando partidas...">
@@ -158,18 +166,35 @@ export default function Matches({ user }) {
         </div>
       </div>
 
-      <div className="matches-filter">
-        <span className="filter-label">FILTRAR POR:</span>
-        <div className="filter-tags">
-          {filterOptions.map(option => (
-            <button
-              key={option.value}
-              className={`filter-tag ${filter === option.value ? 'active' : ''}`}
-              onClick={() => handleFilterChange(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+      <div className="matches-controls">
+        <div className="matches-filter">
+          <span className="filter-label">FILTRAR POR:</span>
+          <div className="filter-tags">
+            {filterOptions.map(option => (
+              <button
+                key={option.value}
+                className={`filter-tag ${filter === option.value ? 'active' : ''}`}
+                onClick={() => handleFilterChange(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="matches-sort">
+          <ArrowDownUp size={14} className="sort-icon" />
+          <button
+            className={`filter-tag ${sortBy === 'date_desc' ? 'active' : ''}`}
+            onClick={() => { setSortBy('date_desc'); setCurrentPage(1); }}
+          >
+            MÁS RECIENTES
+          </button>
+          <button
+            className={`filter-tag ${sortBy === 'date_asc' ? 'active' : ''}`}
+            onClick={() => { setSortBy('date_asc'); setCurrentPage(1); }}
+          >
+            MÁS ANTIGUOS
+          </button>
         </div>
       </div>
 

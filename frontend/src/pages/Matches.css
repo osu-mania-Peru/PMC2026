@@ -68,12 +68,32 @@
   opacity: 0.9;
 }
 
+/* Controls (filter + sort) */
+.matches-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
 /* Filter */
 .matches-filter {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+}
+
+/* Sort */
+.matches-sort {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sort-icon {
+  color: #666;
+  flex-shrink: 0;
 }
 
 .filter-label {
@@ -232,10 +252,19 @@ a.match-schedule-btn {
     display: none;
   }
 
+  .matches-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .matches-filter {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  .matches-sort {
+    flex-wrap: wrap;
   }
 
   .filter-tags {
