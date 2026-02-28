@@ -1,6 +1,7 @@
+import { Pencil } from 'lucide-react';
 import './MatchCard.css';
 
-export default function MatchCard({ match, player1, player2, statusInfo, hasScore }) {
+export default function MatchCard({ match, player1, player2, statusInfo, hasScore, onEdit }) {
   const getAvatarUrl = (player) => {
     if (!player?.osu_id) return null;
     return `https://a.ppy.sh/${player.osu_id}`;
@@ -47,6 +48,13 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
           )}
         </div>
       </div>
+
+      {/* Edit button for staff */}
+      {onEdit && (
+        <button className="match-card-edit-btn" onClick={(e) => { e.stopPropagation(); onEdit(match); }}>
+          <Pencil size={14} />
+        </button>
+      )}
 
       {/* Footer overlay */}
       <a href="#" className={`match-link ${statusInfo.type}`}>

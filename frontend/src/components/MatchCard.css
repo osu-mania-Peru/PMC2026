@@ -166,6 +166,35 @@
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
 }
 
+/* Admin Edit Button */
+.match-card-edit-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 15;
+  background: rgba(0, 0, 0, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #fff !important;
+  padding: 6px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  clip-path: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.match-card:hover .match-card-edit-btn {
+  opacity: 1;
+}
+
+.match-card-edit-btn:hover {
+  background: rgba(255, 8, 68, 0.8) !important;
+  border-color: #ff0844 !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .match-card-right {

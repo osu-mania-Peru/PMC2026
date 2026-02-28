@@ -4,15 +4,18 @@ import { Calendar, Download } from 'lucide-react';
 import { api } from '../api';
 import PageTransition from '../components/PageTransition';
 import MatchCard from '../components/MatchCard';
+import MatchEditModal from '../components/MatchEditModal';
 import './Matches.css';
 
 export default function Matches({ user }) {
   const [matches, setMatches] = useState([]);
   const [users, setUsers] = useState({});
+  const [usersList, setUsersList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [filter, setFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [editingMatch, setEditingMatch] = useState(null);
   const matchesPerPage = 5;
 
   useEffect(() => {
@@ -23,6 +26,7 @@ export default function Matches({ user }) {
       .then(([matchesData, usersData]) => {
         // Filter out placeholder matches where both players are TBD
         setMatches(matchesData.matches.filter(m => m.player1_id || m.player2_id));
+        setUsersList(usersData.users);
         const userMap = {};
         usersData.users.forEach(user => {
           userMap[user.id] = user;
@@ -41,6 +45,13 @@ export default function Matches({ user }) {
   };
 
   const getPlayer = (playerId) => users[playerId] || null;
+
+  const handleSaveMatch = async (matchId, payload) => {
+    await api.updateMatch(matchId, payload);
+    // Refresh matches
+    const matchesData = await api.getMatches(filter !== 'all' ? { status: filter } : {});
+    setMatches(matchesData.matches.filter(m => m.player1_id || m.player2_id));
+  };
 
   const formatDate = (time) => {
     if (!time) return 'DD/MM/YYYY';
@@ -171,6 +182,7 @@ export default function Matches({ user }) {
                     player2={player2}
                     statusInfo={statusInfo}
                     hasScore={hasScore}
+                    onEdit={user?.is_staff ? setEditingMatch : undefined}
                   />
                 </div>
               );
@@ -192,6 +204,15 @@ export default function Matches({ user }) {
           )}
         </>
       )}
+
+      {/* Admin Edit Modal */}
+      <MatchEditModal
+        isOpen={!!editingMatch}
+        match={editingMatch}
+        users={usersList}
+        onSave={handleSaveMatch}
+        onClose={() => setEditingMatch(null)}
+      />
       </div>
     </PageTransition>
   );
