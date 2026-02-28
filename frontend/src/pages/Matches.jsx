@@ -55,12 +55,20 @@ export default function Matches({ user }) {
   };
 
   const formatDate = (time) => {
-    if (!time) return 'DD/MM/YYYY';
-    return new Date(time).toLocaleDateString('es-PE', {
+    if (!time) return null;
+    const dt = new Date(time);
+    const date = dt.toLocaleDateString('es-PE', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'America/Lima'
     });
+    const hour = dt.toLocaleTimeString('es-PE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Lima'
+    });
+    return `${date} ${hour}`;
   };
 
   const getStatusInfo = (match) => {
@@ -206,7 +214,6 @@ export default function Matches({ user }) {
             {paginatedMatches.map(match => {
               const player1 = getPlayer(match.player1_id);
               const player2 = getPlayer(match.player2_id);
-              const referee = getPlayer(match.referee_id);
               const statusInfo = getStatusInfo(match);
               const hasScore = match.player1_score !== null && match.player2_score !== null;
 
@@ -216,7 +223,6 @@ export default function Matches({ user }) {
                     match={match}
                     player1={player1}
                     player2={player2}
-                    referee={referee}
                     statusInfo={statusInfo}
                     hasScore={hasScore}
                     onEdit={user?.is_staff ? setEditingMatch : undefined}

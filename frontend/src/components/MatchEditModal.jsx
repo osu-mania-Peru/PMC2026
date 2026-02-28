@@ -112,7 +112,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         scheduled_time: match.scheduled_time ? formatDatetimeLocal(match.scheduled_time) : '',
         round_name: match.round_name || '',
         forfeit_reason: match.forfeit_reason || '',
-        referee_id: match.referee_id ?? '',
+        referee_name: match.referee_name || '',
       });
       setError(null);
     }
@@ -160,8 +160,8 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         if (formData.scheduled_time) {
           createPayload.scheduled_time = new Date(formData.scheduled_time).toISOString();
         }
-        if (formData.referee_id) {
-          createPayload.referee_id = parseInt(formData.referee_id);
+        if (formData.referee_name) {
+          createPayload.referee_name = formData.referee_name;
         }
 
         await onCreate(createPayload);
@@ -184,7 +184,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         }
         if (formData.round_name) payload.round_name = formData.round_name;
         if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
-        if (formData.referee_id) payload.referee_id = parseInt(formData.referee_id);
+        if (formData.referee_name) payload.referee_name = formData.referee_name;
 
         await onSave(match.id, payload);
       }
@@ -356,12 +356,13 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
           <div className="match-edit-row">
             <div className="match-edit-field match-edit-field-full">
               <label className="match-edit-label">Árbitro (Referee)</label>
-              <PlayerSelect
-                value={formData.referee_id}
-                onChange={(val) => handleChange('referee_id', val)}
-                players={users || []}
+              <input
+                type="text"
+                value={formData.referee_name}
+                onChange={(e) => handleChange('referee_name', e.target.value)}
+                className="match-edit-input"
+                placeholder="Nombre del árbitro"
                 disabled={saving}
-                placeholder="-- Sin árbitro --"
               />
             </div>
           </div>

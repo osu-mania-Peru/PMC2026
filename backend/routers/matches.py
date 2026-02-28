@@ -22,7 +22,7 @@ class MatchCreate(BaseModel):
     player2_id: int
     map_id: int
     scheduled_time: Optional[datetime] = None
-    referee_id: Optional[int] = None
+    referee_name: Optional[str] = None
 
 
 class ScoreUpdate(BaseModel):
@@ -43,7 +43,7 @@ class MatchUpdate(BaseModel):
     round_name: Optional[str] = None
     forfeit_reason: Optional[str] = None
     no_show_player_id: Optional[int] = None
-    referee_id: Optional[int] = None
+    referee_name: Optional[str] = None
 
 
 @router.get("")
