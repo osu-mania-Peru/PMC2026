@@ -24,6 +24,7 @@ class Match(Base):
         winner_id: Winner's user ID.
         scheduled_time: Scheduled start time.
         actual_start_time: Actual start time.
+        referee_id: Referee's user ID.
         match_status: One of 'scheduled', 'in_progress', 'completed', 'cancelled', 'forfeit'.
         is_completed: Whether match has finished.
         round_name: Display name (e.g., 'Quarterfinals').
@@ -50,6 +51,7 @@ class Match(Base):
         comment='scheduled, in_progress, completed, cancelled, forfeit'
     )
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    referee_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Referee user ID')
     no_show_player_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Player who didn\'t show up')
     forfeit_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment='Reason for forfeit/cancellation')
     round_name: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, comment='Round name (e.g., Round of 16, Quarterfinals)')
@@ -64,6 +66,7 @@ class Match(Base):
     player1 = relationship("User", foreign_keys=[player1_id])
     player2 = relationship("User", foreign_keys=[player2_id])
     winner = relationship("User", foreign_keys=[winner_id])
+    referee = relationship("User", foreign_keys=[referee_id])
     no_show_player = relationship("User", foreign_keys=[no_show_player_id])
     map = relationship("Map", back_populates="matches")
     notifications = relationship("Notification", back_populates="related_match")
@@ -77,6 +80,7 @@ class Match(Base):
         Index('ix_matches_player2_id', 'player2_id'),
         Index('ix_matches_winner_id', 'winner_id'),
         Index('ix_matches_match_status', 'match_status'),
+        Index('ix_matches_referee_id', 'referee_id'),
         Index('ix_matches_next_match_id', 'next_match_id'),
         Index('ix_matches_loser_next_match_id', 'loser_next_match_id'),
     )

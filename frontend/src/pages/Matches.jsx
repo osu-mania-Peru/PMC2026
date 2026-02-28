@@ -66,7 +66,7 @@ export default function Matches({ user }) {
     switch (match.match_status) {
       case 'scheduled':
         return {
-          text: `Programado para el ${formatDate(match.scheduled_time)}`,
+          text: match.scheduled_time ? `Programado para el ${formatDate(match.scheduled_time)}` : 'Programado',
           type: 'scheduled'
         };
       case 'in_progress':
@@ -76,7 +76,17 @@ export default function Matches({ user }) {
         };
       case 'completed':
         return {
-          text: `Jugado el ${formatDate(match.scheduled_time)}`,
+          text: match.scheduled_time ? `Jugado el ${formatDate(match.scheduled_time)}` : 'Finalizado',
+          type: 'completed'
+        };
+      case 'forfeit':
+        return {
+          text: 'Forfeit',
+          type: 'completed'
+        };
+      case 'cancelled':
+        return {
+          text: 'Cancelado',
           type: 'completed'
         };
       default:
@@ -171,6 +181,7 @@ export default function Matches({ user }) {
             {paginatedMatches.map(match => {
               const player1 = getPlayer(match.player1_id);
               const player2 = getPlayer(match.player2_id);
+              const referee = getPlayer(match.referee_id);
               const statusInfo = getStatusInfo(match);
               const hasScore = match.player1_score !== null && match.player2_score !== null;
 
@@ -180,6 +191,7 @@ export default function Matches({ user }) {
                     match={match}
                     player1={player1}
                     player2={player2}
+                    referee={referee}
                     statusInfo={statusInfo}
                     hasScore={hasScore}
                     onEdit={user?.is_staff ? setEditingMatch : undefined}

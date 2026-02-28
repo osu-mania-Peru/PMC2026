@@ -1,7 +1,7 @@
 import { Pencil } from 'lucide-react';
 import './MatchCard.css';
 
-export default function MatchCard({ match, player1, player2, statusInfo, hasScore, onEdit }) {
+export default function MatchCard({ match, player1, player2, referee, statusInfo, hasScore, onEdit }) {
   const getAvatarUrl = (player) => {
     if (!player?.osu_id) return null;
     return `https://a.ppy.sh/${player.osu_id}`;
@@ -26,7 +26,7 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
         </div>
         <div className="match-info">
           <span className="match-status-text">{statusInfo.text}</span>
-          <span className="match-referee">Refeado por &lt;username del ref&gt;</span>
+          {referee && <span className="match-referee">Refeado por {referee.username}</span>}
         </div>
       </div>
 

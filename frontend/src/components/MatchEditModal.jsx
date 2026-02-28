@@ -112,6 +112,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         scheduled_time: match.scheduled_time ? formatDatetimeLocal(match.scheduled_time) : '',
         round_name: match.round_name || '',
         forfeit_reason: match.forfeit_reason || '',
+        referee_id: match.referee_id ?? '',
       });
       setError(null);
     }
@@ -159,6 +160,9 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         if (formData.scheduled_time) {
           createPayload.scheduled_time = new Date(formData.scheduled_time).toISOString();
         }
+        if (formData.referee_id) {
+          createPayload.referee_id = parseInt(formData.referee_id);
+        }
 
         await onCreate(createPayload);
       } else {
@@ -180,6 +184,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         }
         if (formData.round_name) payload.round_name = formData.round_name;
         if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
+        if (formData.referee_id) payload.referee_id = parseInt(formData.referee_id);
 
         await onSave(match.id, payload);
       }
@@ -343,6 +348,20 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
                 className="match-edit-input"
                 placeholder="Quarterfinals"
                 disabled={saving}
+              />
+            </div>
+          </div>
+
+          {/* Referee */}
+          <div className="match-edit-row">
+            <div className="match-edit-field match-edit-field-full">
+              <label className="match-edit-label">Árbitro (Referee)</label>
+              <PlayerSelect
+                value={formData.referee_id}
+                onChange={(val) => handleChange('referee_id', val)}
+                players={users || []}
+                disabled={saving}
+                placeholder="-- Sin árbitro --"
               />
             </div>
           </div>
