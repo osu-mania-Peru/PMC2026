@@ -15,12 +15,14 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
           <div className="match-team">
             <span className="team-label">TEAM 1</span>
             <span className="team-dash"> - </span>
+            {player1 && <img src={getAvatarUrl(player1)} alt="" className="match-team-avatar" />}
             <span className="team-name">{player1?.username || 'TBD'}</span>
             <span className="team-dash"> -</span>
           </div>
           <div className="match-team">
             <span className="team-label">TEAM 2</span>
             <span className="team-dash"> </span>
+            {player2 && <img src={getAvatarUrl(player2)} alt="" className="match-team-avatar" />}
             <span className="team-name">{player2?.username || 'TBD'}</span>
           </div>
         </div>

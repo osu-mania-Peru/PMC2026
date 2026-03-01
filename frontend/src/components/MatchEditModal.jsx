@@ -275,7 +275,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
               <label className="match-edit-label">Score P1</label>
               <input
                 type="number"
-                min="0"
+                min="-1"
                 value={formData.player1_score}
                 onChange={(e) => handleChange('player1_score', e.target.value)}
                 className="match-edit-input"
@@ -287,7 +287,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
               <label className="match-edit-label">Score P2</label>
               <input
                 type="number"
-                min="0"
+                min="-1"
                 value={formData.player2_score}
                 onChange={(e) => handleChange('player2_score', e.target.value)}
                 className="match-edit-input"
