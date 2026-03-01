@@ -100,13 +100,19 @@ class BracketProgressionService:
         """
         Assign a player to the next available slot in a match.
 
+        Skips assignment if player is already in the match (idempotent).
+
         Args:
             match: Target match to assign player to.
             player_id: User ID to assign.
 
         Raises:
-            ValueError: If both player slots are already filled.
+            ValueError: If both player slots are already filled by other players.
         """
+        # Skip if player is already assigned to this match
+        if match.player1_id == player_id or match.player2_id == player_id:
+            return
+
         if not match.player1_id:
             match.player1_id = player_id
         elif not match.player2_id:
