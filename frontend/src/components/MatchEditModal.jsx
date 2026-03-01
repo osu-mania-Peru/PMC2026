@@ -113,6 +113,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         round_name: match.round_name || '',
         forfeit_reason: match.forfeit_reason || '',
         referee_name: match.referee_name || '',
+        mp_link: match.mp_link || '',
       });
       setError(null);
     }
@@ -185,6 +186,7 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
         if (formData.round_name) payload.round_name = formData.round_name;
         if (formData.forfeit_reason) payload.forfeit_reason = formData.forfeit_reason;
         if (formData.referee_name) payload.referee_name = formData.referee_name;
+        if (formData.mp_link) payload.mp_link = formData.mp_link;
 
         await onSave(match.id, payload);
       }
@@ -362,6 +364,21 @@ export default function MatchEditModal({ isOpen, match, users, maps, onSave, onC
                 onChange={(e) => handleChange('referee_name', e.target.value)}
                 className="match-edit-input"
                 placeholder="Nombre del árbitro"
+                disabled={saving}
+              />
+            </div>
+          </div>
+
+          {/* MP Link */}
+          <div className="match-edit-row">
+            <div className="match-edit-field match-edit-field-full">
+              <label className="match-edit-label">Link MP</label>
+              <input
+                type="url"
+                value={formData.mp_link}
+                onChange={(e) => handleChange('mp_link', e.target.value)}
+                className="match-edit-input"
+                placeholder="https://osu.ppy.sh/mp/..."
                 disabled={saving}
               />
             </div>

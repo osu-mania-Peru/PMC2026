@@ -57,9 +57,15 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
       )}
 
       {/* Footer overlay */}
-      <a href="#" className={`match-link ${statusInfo.type}`}>
-        CLICK PARA IR AL MP {statusInfo.type === 'scheduled' && '(NO DISPONIBLE AUN)'} &gt;
-      </a>
+      {match.mp_link ? (
+        <a href={match.mp_link} target="_blank" rel="noopener noreferrer" className={`match-link ${statusInfo.type}`}>
+          CLICK PARA IR AL MP &gt;
+        </a>
+      ) : (
+        <span className={`match-link ${statusInfo.type}`}>
+          MP NO DISPONIBLE AUN
+        </span>
+      )}
     </div>
   );
 }

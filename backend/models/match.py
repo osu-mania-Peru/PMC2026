@@ -24,6 +24,7 @@ class Match(Base):
         winner_id: Winner's user ID.
         scheduled_time: Scheduled start time.
         actual_start_time: Actual start time.
+        mp_link: Multiplayer lobby link.
         referee_name: Referee display name (free text).
         match_status: One of 'scheduled', 'in_progress', 'completed', 'cancelled', 'forfeit'.
         is_completed: Whether match has finished.
@@ -51,6 +52,7 @@ class Match(Base):
         comment='scheduled, in_progress, completed, cancelled, forfeit'
     )
     is_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    mp_link: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, comment='Multiplayer lobby link (e.g. osu.ppy.sh/mp/...)')
     referee_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment='Referee display name (free text)')
     no_show_player_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey('users.id'), nullable=True, comment='Player who didn\'t show up')
     forfeit_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True, comment='Reason for forfeit/cancellation')

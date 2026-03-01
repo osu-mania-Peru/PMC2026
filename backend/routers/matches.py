@@ -43,6 +43,7 @@ class MatchUpdate(BaseModel):
     round_name: Optional[str] = None
     forfeit_reason: Optional[str] = None
     no_show_player_id: Optional[int] = None
+    mp_link: Optional[str] = None
     referee_name: Optional[str] = None
 
 
