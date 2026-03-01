@@ -27,6 +27,7 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
         <div className="match-info">
           <span className="match-status-text">{statusInfo.text}</span>
           {match.referee_name && <span className="match-referee">Refeado por {match.referee_name}</span>}
+          {match.forfeit_reason && <span className="match-forfeit-reason">{match.forfeit_reason}</span>}
         </div>
       </div>
 

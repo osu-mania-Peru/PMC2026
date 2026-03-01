@@ -91,12 +91,12 @@ export default function Matches({ user }) {
       case 'forfeit':
         return {
           text: 'Forfeit',
-          type: 'completed'
+          type: 'forfeit'
         };
       case 'cancelled':
         return {
           text: 'Cancelado',
-          type: 'completed'
+          type: 'forfeit'
         };
       default:
         return { text: '', type: '' };
@@ -142,6 +142,7 @@ export default function Matches({ user }) {
     { value: 'scheduled', label: 'PROGRAMADAS' },
     { value: 'in_progress', label: 'EN VIVO' },
     { value: 'completed', label: 'FINALIZADAS' },
+    { value: 'forfeit', label: 'FORFEIT' },
   ];
 
   // Sort
