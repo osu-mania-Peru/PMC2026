@@ -196,8 +196,7 @@ export default function ManiaPreview({
   // Canvas dimensions
   const CANVAS_WIDTH = 400;
   const CANVAS_HEIGHT = 800;
-  const RECEPTOR_Y = CANVAS_HEIGHT - 100; // Fixed position for note calculations
-  const RECEPTOR_VISUAL_Y = CANVAS_HEIGHT - hitPosition; // Visual receptor position (adjustable)
+  const RECEPTOR_Y = CANVAS_HEIGHT - hitPosition; // Position for note calculations and visuals
 
   // For 4K, use fixed 100px columns; for other key counts, divide canvas evenly
   const COLUMN_WIDTH = keyCount === 4 ? 100 : CANVAS_WIDTH / keyCount;
@@ -576,7 +575,7 @@ export default function ManiaPreview({
       const mouseY = (e.clientY - rect.top) * scaleY;
 
       // Check if mouse is near the hit line (within 20px)
-      if (Math.abs(mouseY - RECEPTOR_VISUAL_Y) < 20) {
+      if (Math.abs(mouseY - RECEPTOR_Y) < 20) {
         setIsDraggingHitLine(true);
         e.preventDefault();
       }
@@ -607,7 +606,7 @@ export default function ManiaPreview({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [hitPositionEditMode, isDraggingHitLine, RECEPTOR_VISUAL_Y, CANVAS_HEIGHT, onHitPositionChange]);
+  }, [hitPositionEditMode, isDraggingHitLine, RECEPTOR_Y, CANVAS_HEIGHT, onHitPositionChange]);
 
   // Expose seek function via ref
   useEffect(() => {
@@ -1056,11 +1055,11 @@ export default function ManiaPreview({
         const x = col * COLUMN_WIDTH + (COLUMN_WIDTH - NOTE_SIZE) / 2;
 
         if (skin === 'arrow' && keyCount === 4) {
-          ctx.drawImage(receptorImg, x, RECEPTOR_VISUAL_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - CANVAS_HEIGHT, NOTE_SIZE, CANVAS_HEIGHT);
         } else {
           const aspectRatio = receptorImg.height / receptorImg.width;
           const receptorHeight = NOTE_SIZE * Math.min(aspectRatio, 8);
-          ctx.drawImage(receptorImg, x, RECEPTOR_VISUAL_Y - receptorHeight, NOTE_SIZE, receptorHeight);
+          ctx.drawImage(receptorImg, x, RECEPTOR_Y - receptorHeight, NOTE_SIZE, receptorHeight);
         }
       }
     }
@@ -1308,22 +1307,22 @@ export default function ManiaPreview({
       ctx.lineWidth = 3;
       ctx.setLineDash([10, 5]);
       ctx.beginPath();
-      ctx.moveTo(0, RECEPTOR_VISUAL_Y);
-      ctx.lineTo(CANVAS_WIDTH, RECEPTOR_VISUAL_Y);
+      ctx.moveTo(0, RECEPTOR_Y);
+      ctx.lineTo(CANVAS_WIDTH, RECEPTOR_Y);
       ctx.stroke();
       ctx.setLineDash([]);
 
       // Draw handle indicator
       ctx.fillStyle = isDraggingHitLine ? '#ff0844' : '#00ff00';
       ctx.beginPath();
-      ctx.arc(CANVAS_WIDTH / 2, RECEPTOR_VISUAL_Y, 8, 0, Math.PI * 2);
+      ctx.arc(CANVAS_WIDTH / 2, RECEPTOR_Y, 8, 0, Math.PI * 2);
       ctx.fill();
 
       // Draw label
       ctx.fillStyle = '#fff';
       ctx.font = '14px Poppins, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`Hit Position: ${hitPosition}px`, CANVAS_WIDTH / 2, RECEPTOR_VISUAL_Y - 20);
+      ctx.fillText(`Hit Position: ${hitPosition}px`, CANVAS_WIDTH / 2, RECEPTOR_Y - 20);
     }
 
     // Draw key press visualization on KPS canvas
@@ -1426,7 +1425,7 @@ export default function ManiaPreview({
 
     // Continue animation loop using ref to avoid stale closure
     animationRef.current = requestAnimationFrame(() => renderRef.current?.());
-  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, keyCount, playMode, judgements, customKeyBindings, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, RECEPTOR_VISUAL_Y, NOTE_HEIGHT, NOTE_WIDTH, hitPositionEditMode, isDraggingHitLine, hitPosition]);
+  }, [imagesLoaded, notesData, scrollSpeedMultiplier, skin, customSkinData, keyCount, playMode, judgements, customKeyBindings, CANVAS_WIDTH, CANVAS_HEIGHT, COLUMN_WIDTH, RECEPTOR_Y, NOTE_HEIGHT, NOTE_WIDTH, hitPositionEditMode, isDraggingHitLine, hitPosition]);
 
   // Store render function in ref and start/stop animation loop
   useEffect(() => {
