@@ -331,8 +331,9 @@ function StoryboardRenderer({
     const sprites = storyboard.sprites;
     for (let i = 0; i < sprites.length; i++) {
       const s = sprites[i];
-      // Only process Background (0) and Foreground (3) layers
-      if (s.layer !== 0 && s.layer !== 3) continue;
+      // Process Background (0), Foreground (3), and Overlay (4) layers
+      // Skip Fail (1) and Pass (2) as they are conditional game state layers
+      if (s.layer !== 0 && s.layer !== 3 && s.layer !== 4) continue;
 
       const range = spriteTimeRanges[s.id];
       if (!range) continue;

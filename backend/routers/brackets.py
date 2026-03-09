@@ -247,23 +247,31 @@ async def generate_brackets(
     db.commit()
 
     # Set loser_next_match_id on winner bracket matches
-    # WR1 losers → LR1 (2:1 mapping, pairs of WR1 losers into each LR1 match)
+    # Uses Challonge-style mirrored seeding to prevent early rematches:
+    # top-seed losers pair with bottom-seed losers (fold pattern)
     if loser_rounds:
         wr1_matches = winner_rounds[0]
         lr1_matches = loser_rounds[0]
-        for j, wr_match in enumerate(wr1_matches):
-            wr_match.loser_next_match_id = lr1_matches[j // 2].id
+        # Mirror WR1 losers into LR1: pair match 0 with match N-1, match 1 with N-2, etc.
+        n = len(wr1_matches)
+        for j in range(n):
+            mirrored_j = n - 1 - j if j % 2 == 1 else j
+            wr1_matches[j].loser_next_match_id = lr1_matches[mirrored_j // 2].id
 
         # WR(k) losers → LR(2*(k-1)) for k >= 2
         # WR2 → LR2, WR3 → LR4, WR4 → LR6, etc.
+        # Reverse the order so losers enter from opposite ends
         for wr_round_idx in range(1, num_winner_rounds):
             lr_target_idx = 2 * wr_round_idx - 1  # LR index (0-based): 1, 3, 5, ...
             if lr_target_idx < num_loser_rounds:
                 wr_matches = winner_rounds[wr_round_idx]
                 lr_targets = loser_rounds[lr_target_idx]
+                # Reverse mapping: WR match 0 → last LR slot, etc.
+                m = len(wr_matches)
                 for j, wr_match in enumerate(wr_matches):
-                    if j < len(lr_targets):
-                        wr_match.loser_next_match_id = lr_targets[j].id
+                    reversed_j = m - 1 - j
+                    if reversed_j < len(lr_targets):
+                        wr_match.loser_next_match_id = lr_targets[reversed_j].id
     db.commit()
 
     # Grand Finals match
