@@ -269,7 +269,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         <div className="home-hero">
           <div className="hero-left">
           <h1 className="hero-title">
-            <img src="/munchies.jpeg" alt="Munchies" className="hero-munchies-inline" /> Mania<br />
+            <span className="hero-peru-text">Peru</span> Mania<br />
             Cup 2026
           </h1>
           <p className="hero-subtitle">

@@ -1060,12 +1060,12 @@ a {
 }
 
 /* Munchies inline images replacing "Peru" text */
-.hero-munchies-inline,
-.footer-munchies-inline {
+.peru-munchies-inline {
   height: 1em;
   width: auto;
   vertical-align: baseline;
   margin-right: 0.15em;
+  display: inline;
 }
 
 /* Munchies nav link names */

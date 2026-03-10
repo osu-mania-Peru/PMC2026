@@ -187,6 +187,13 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           link.classList.add('munchies-bloom');
         });
 
+        // Replace "Peru" text with munchies image (same bloom)
+        document.querySelectorAll('.hero-peru-text').forEach(el => {
+          const img = document.createElement('img');
+          img.src = munchiesImg;
+          img.className = 'peru-munchies-inline munchies-bloom';
+          el.replaceWith(img);
+        });
       }, 3300));
 
       return () => timers.forEach(t => clearTimeout(t));
@@ -433,7 +440,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
         </div>
         <div className="footer-bottom">
           <span className="footer-hosted">
-            <img src={munchiesImg} alt="Munchies" className="footer-munchies-inline" /> Mania Cup 2026 Hosteado por
+            Peru Mania Cup 2026 Hosteado por
             <a href="https://osu.ppy.sh/users/11646616" target="_blank" rel="noopener noreferrer" className="footer-host-link">
               <img src="https://a.ppy.sh/11646616" alt="Marguenka" className="footer-host-avatar" />
               Marguenka
