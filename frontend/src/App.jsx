@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 import logo from "./assets/logo.svg";
 import catGif from "./assets/cat.gif";
 import supportQr from "./assets/support.png";
+import munchiesImg from "./assets/munchies.jpeg";
 import "./App.css";
 
 // Fuzzy match for stinky detection
@@ -94,6 +95,7 @@ function SupportButton() {
 function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dangerHover, setDangerHover] = useState(false);
+  const [munchiesMode, setMunchiesMode] = useState(false);
   const location = useLocation();
 
   // Close mobile menu on route change
@@ -101,12 +103,102 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
     setMobileMenuOpen(false);
   }, [location]);
 
+  // Munchies mode: 100% chance for testing (change to 0.4 for 40%)
+  // Wait until page is done loading (no spinner)
+  useEffect(() => {
+    if (loading) return;
+    if (Math.random() < 0.8) {
+      setMunchiesMode(true);
+      const timers = [];
+
+      // Timeline:
+      // 0ms      - Shake starts (1.2s) + munchies start spawning
+      // 200ms    - Flashbang starts building up (1.5s to peak)
+      // 0-1.2s   - 60 munchies stagger launch (i*0.02s = 1.2s spread, each flies 2s)
+      // 1700ms   - Flashbang peaks, start fade out
+      // 3200ms   - Last munchie lands (1.2s delay + 2s flight)
+      // 3300ms   - Logo bloom replacement
+
+      // Phase 1 (200ms): Flashbang overlay builds up
+      timers.push(setTimeout(() => {
+        const flash = document.createElement('div');
+        flash.className = 'munchies-flashbang';
+        document.body.appendChild(flash);
+        // Fade out after buildup peaks
+        timers.push(setTimeout(() => flash.classList.add('fade-out'), 1500));
+        timers.push(setTimeout(() => flash.remove(), 2100));
+      }, 200));
+
+      // Phase 2 (0ms): Spawn flying munchies immediately with shake
+      timers.push(setTimeout(() => {
+        const logos = document.querySelectorAll('.nav-logo img, .footer-logo img');
+        if (!logos.length) return;
+        logos.forEach(logo => {
+          const logoRect = logo.getBoundingClientRect();
+          if (logoRect.width === 0) return;
+
+          // Spawn 60 munchies of varying sizes from random screen edges
+          for (let i = 0; i < 60; i++) {
+            const munch = document.createElement('img');
+            munch.src = munchiesImg;
+            munch.className = 'munchies-projectile';
+
+            // Random size between 40px and 120px
+            const size = 40 + Math.random() * 80;
+            munch.style.width = size + 'px';
+
+            // Random start position from edges
+            const edge = Math.floor(Math.random() * 4);
+            let startX, startY;
+            const offset = size + 20;
+            if (edge === 0) { startX = Math.random() * window.innerWidth; startY = -offset; }
+            else if (edge === 1) { startX = Math.random() * window.innerWidth; startY = window.innerHeight + offset; }
+            else if (edge === 2) { startX = -offset; startY = Math.random() * window.innerHeight; }
+            else { startX = window.innerWidth + offset; startY = Math.random() * window.innerHeight; }
+
+            // Each munchie targets a random point within the logo bounds
+            const randTargetX = logoRect.left + Math.random() * logoRect.width;
+            const randTargetY = logoRect.top + Math.random() * logoRect.height;
+            munch.style.left = (startX - size / 2) + 'px';
+            munch.style.top = (startY - size / 2) + 'px';
+            munch.style.setProperty('--tx', (randTargetX - startX) + 'px');
+            munch.style.setProperty('--ty', (randTargetY - startY) + 'px');
+            // Stagger over 1.2s so last one launches at 1.2s, lands at 3.2s
+            munch.style.animationDelay = (i * 0.02) + 's';
+
+            document.body.appendChild(munch);
+            munch.addEventListener('animationend', () => munch.remove());
+          }
+        });
+      }, 100));
+
+      // Phase 3 (3300ms): Replace logos, nav names, and "Peru" text with bouncy bloom
+      timers.push(setTimeout(() => {
+        // Replace logos
+        document.querySelectorAll('.nav-logo img, .footer-logo img').forEach(img => {
+          img.src = munchiesImg;
+          img.style.objectFit = 'contain';
+          img.classList.add('munchies-bloom');
+        });
+        document.documentElement.style.setProperty('--munchies-logo', `url(${munchiesImg})`);
+
+        // Bounce the nav names into munchies names
+        document.querySelectorAll('.munchies-nav-link').forEach(link => {
+          link.classList.add('munchies-bloom');
+        });
+
+      }, 3300));
+
+      return () => timers.forEach(t => clearTimeout(t));
+    }
+  }, [loading]);
+
   if (loading) {
     return <Spinner size="large" text="Cargando..." />;
   }
 
   return (
-    <div className="app">
+    <div className={`app ${munchiesMode ? 'munchies-shake' : ''}`}>
       <nav className={`nav ${mobileMenuOpen ? 'menu-open' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
         <div className="nav-content">
           <Link to="/" className="nav-logo">
@@ -120,11 +212,26 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-            <NavLink to="/" end>INICIO</NavLink>
-            <NavLink to="/brackets">BRACKETS</NavLink>
-            <NavLink to="/matches">PARTIDAS</NavLink>
-            <NavLink to="/players">JUGADORES</NavLink>
-            <NavLink to="/maps">MAPPOOL</NavLink>
+            <NavLink to="/" end className="munchies-nav-link">
+              <span className="munchies-name">MUNCHIES</span>
+              <span className="real-name">INICIO</span>
+            </NavLink>
+            <NavLink to="/brackets" className="munchies-nav-link">
+              <span className="munchies-name">CRUNCHY</span>
+              <span className="real-name">BRACKETS</span>
+            </NavLink>
+            <NavLink to="/matches" className="munchies-nav-link">
+              <span className="munchies-name">FLAMIN HOT</span>
+              <span className="real-name">PARTIDAS</span>
+            </NavLink>
+            <NavLink to="/players" className="munchies-nav-link">
+              <span className="munchies-name">SNACKERS</span>
+              <span className="real-name">JUGADORES</span>
+            </NavLink>
+            <NavLink to="/maps" className="munchies-nav-link">
+              <span className="munchies-name">FLAVORS</span>
+              <span className="real-name">MAPPOOL</span>
+            </NavLink>
             {user?.is_staff && (
               <>
                 <NavLink to="/staff/discord" className="nav-staff-link">
@@ -326,7 +433,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
         </div>
         <div className="footer-bottom">
           <span className="footer-hosted">
-            Peru Mania Cup 2026 Hosteado por
+            <img src={munchiesImg} alt="Munchies" className="footer-munchies-inline" /> Mania Cup 2026 Hosteado por
             <a href="https://osu.ppy.sh/users/11646616" target="_blank" rel="noopener noreferrer" className="footer-host-link">
               <img src="https://a.ppy.sh/11646616" alt="Marguenka" className="footer-host-avatar" />
               Marguenka
