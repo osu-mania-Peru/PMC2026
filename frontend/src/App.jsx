@@ -107,7 +107,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
   // Wait until page is done loading (no spinner)
   useEffect(() => {
     if (loading) return;
-    if (Math.random() < 0.8) {
+    if (false) { // Munchies easter egg disabled
       setMunchiesMode(true);
       const timers = [];
 
@@ -219,26 +219,11 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
           <div className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-            <NavLink to="/" end className="munchies-nav-link">
-              <span className="munchies-name">MUNCHIES</span>
-              <span className="real-name">INICIO</span>
-            </NavLink>
-            <NavLink to="/brackets" className="munchies-nav-link">
-              <span className="munchies-name">CRUNCHY</span>
-              <span className="real-name">BRACKETS</span>
-            </NavLink>
-            <NavLink to="/matches" className="munchies-nav-link">
-              <span className="munchies-name">FLAMIN HOT</span>
-              <span className="real-name">PARTIDAS</span>
-            </NavLink>
-            <NavLink to="/players" className="munchies-nav-link">
-              <span className="munchies-name">SNACKERS</span>
-              <span className="real-name">JUGADORES</span>
-            </NavLink>
-            <NavLink to="/maps" className="munchies-nav-link">
-              <span className="munchies-name">FLAVORS</span>
-              <span className="real-name">MAPPOOL</span>
-            </NavLink>
+            <NavLink to="/" end>INICIO</NavLink>
+            <NavLink to="/brackets">BRACKETS</NavLink>
+            <NavLink to="/matches">PARTIDAS</NavLink>
+            <NavLink to="/players">JUGADORES</NavLink>
+            <NavLink to="/maps">MAPPOOL</NavLink>
             {user?.is_staff && (
               <>
                 <NavLink to="/staff/discord" className="nav-staff-link">
