@@ -91,14 +91,17 @@ def _serialize_poll(poll: Poll, db: Session, user_id: int = None) -> dict:
         if vote:
             user_vote = vote.option_id
 
+    # Only show stats if user has voted or poll is closed
+    show_stats = user_vote is not None or not poll.is_active
+
     for opt in poll.options:
         vote_count = db.query(PollVote).filter(PollVote.option_id == opt.id).count()
         options.append({
             "id": opt.id,
             "option_text": opt.option_text,
             "option_order": opt.option_order,
-            "vote_count": vote_count,
-            "percentage": round(vote_count / total_votes * 100, 1) if total_votes > 0 else 0,
+            "vote_count": vote_count if show_stats else None,
+            "percentage": round(vote_count / total_votes * 100, 1) if total_votes > 0 and show_stats else 0,
         })
 
     return {
@@ -241,22 +244,20 @@ async def vote(
     if not option:
         raise HTTPException(status_code=400, detail="Opción no válida")
 
-    # Check for existing vote
+    # Check for existing vote — no changing allowed
     existing = db.query(PollVote).filter(
         PollVote.poll_id == poll_id,
         PollVote.user_id == current_user.id
     ).first()
 
     if existing:
-        # Update vote
-        existing.option_id = data.option_id
-    else:
-        # New vote
-        vote = PollVote(
-            poll_id=poll_id,
-            option_id=data.option_id,
-            user_id=current_user.id,
-        )
+        raise HTTPException(status_code=400, detail="Ya votaste en esta encuesta")
+
+    vote = PollVote(
+        poll_id=poll_id,
+        option_id=data.option_id,
+        user_id=current_user.id,
+    )
         db.add(vote)
 
     db.commit()

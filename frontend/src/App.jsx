@@ -79,20 +79,15 @@ function PollsPopup({ isOpen, onClose, user }) {
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
-    (user?.is_staff ? api.getAllPolls() : api.getPolls())
+    api.getPolls()
       .then(res => setPolls(res.polls))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [isOpen, user]);
 
-  const handleVote = async (pollId, optionId, hasVoted) => {
+  const handleVote = async (pollId, optionId) => {
     try {
-      let updated;
-      if (hasVoted) {
-        updated = await api.removeVote(pollId);
-      } else {
-        updated = await api.votePoll(pollId, optionId);
-      }
+      const updated = await api.votePoll(pollId, optionId);
       setPolls(polls.map(p => p.id === pollId ? updated : p));
     } catch (err) {
       // silently fail
@@ -120,23 +115,29 @@ function PollsPopup({ isOpen, onClose, user }) {
               <div className="polls-popup-options">
                 {poll.options.map(opt => {
                   const isSelected = poll.user_vote === opt.id;
-                  const canVote = !!user && poll.is_active;
+                  const hasVoted = poll.user_vote !== null && poll.user_vote !== undefined;
+                  const showStats = hasVoted || !poll.is_active;
+                  const canVote = !!user && poll.is_active && !hasVoted;
                   return (
                     <button
                       key={opt.id}
                       className={`polls-popup-option ${isSelected ? 'selected' : ''}`}
-                      onClick={() => canVote && handleVote(poll.id, opt.id, isSelected)}
+                      onClick={() => canVote && handleVote(poll.id, opt.id)}
                       disabled={!canVote}
                     >
-                      <div className="polls-popup-option-bar" style={{ width: `${opt.percentage}%` }} />
+                      {showStats && <div className="polls-popup-option-bar" style={{ width: `${opt.percentage}%` }} />}
                       <span className="polls-popup-option-text">{opt.option_text}</span>
-                      <span className="polls-popup-option-pct">{opt.percentage}%</span>
+                      {showStats && <span className="polls-popup-option-pct">{opt.percentage}%</span>}
                     </button>
                   );
                 })}
               </div>
               <div className="polls-popup-card-meta">
-                {poll.total_votes} voto{poll.total_votes !== 1 ? 's' : ''}
+                {(poll.user_vote !== null || !poll.is_active) ? (
+                  <>{poll.total_votes} voto{poll.total_votes !== 1 ? 's' : ''}</>
+                ) : (
+                  <>Vota para ver resultados</>
+                )}
                 {!poll.is_active && <span className="polls-popup-closed-badge">Cerrada</span>}
               </div>
             </div>

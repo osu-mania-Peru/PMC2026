@@ -5,18 +5,15 @@ import catGif from '../assets/cat.gif';
 import PageTransition from '../components/PageTransition';
 import './Polls.css';
 
-function PollCard({ poll, user, onVote, onRemoveVote, onDelete, onClose }) {
+function PollCard({ poll, user, onVote, onDelete, onClose }) {
   const hasVoted = poll.user_vote !== null && poll.user_vote !== undefined;
   const isStaff = user?.is_staff;
-  const canVote = !!user && poll.is_active;
+  const showStats = hasVoted || !poll.is_active;
+  const canVote = !!user && poll.is_active && !hasVoted;
 
   const handleVote = (optionId) => {
     if (!canVote) return;
-    if (hasVoted && poll.user_vote === optionId) {
-      onRemoveVote(poll.id);
-    } else {
-      onVote(poll.id, optionId);
-    }
+    onVote(poll.id, optionId);
   };
 
   return (
@@ -53,10 +50,10 @@ function PollCard({ poll, user, onVote, onRemoveVote, onDelete, onClose }) {
               onClick={() => handleVote(opt.id)}
               disabled={!canVote}
             >
-              <div className="poll-option-bar" style={{ width: `${opt.percentage}%` }} />
+              {showStats && <div className="poll-option-bar" style={{ width: `${opt.percentage}%` }} />}
               <span className="poll-option-text">{opt.option_text}</span>
-              <span className="poll-option-pct">{opt.percentage}%</span>
-              <span className="poll-option-count">({opt.vote_count})</span>
+              {showStats && <span className="poll-option-pct">{opt.percentage}%</span>}
+              {showStats && <span className="poll-option-count">({opt.vote_count})</span>}
             </button>
           );
         })}
@@ -225,15 +222,6 @@ export default function Polls({ user }) {
     }
   };
 
-  const handleRemoveVote = async (pollId) => {
-    try {
-      const updated = await api.removeVote(pollId);
-      setPolls(polls.map(p => p.id === pollId ? updated : p));
-    } catch (err) {
-      alert(err?.message || 'Error al quitar voto');
-    }
-  };
-
   const handleCreate = async (data) => {
     const created = await api.createPoll(data);
     setPolls([created, ...polls]);
@@ -280,7 +268,6 @@ export default function Polls({ user }) {
                 poll={poll}
                 user={user}
                 onVote={handleVote}
-                onRemoveVote={handleRemoveVote}
                 onDelete={handleDelete}
                 onClose={handleClose}
               />
