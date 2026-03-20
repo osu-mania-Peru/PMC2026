@@ -406,13 +406,26 @@
   }
 }
 
+/* Horse on spin */
+.wheel-horse {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: auto;
+  z-index: 999999;
+  pointer-events: none;
+}
+
 /* Leaderboard */
 .wheel-leaderboard {
   position: fixed;
-  left: 24px;
+  right: 24px;
   top: 50%;
   transform: translateY(-50%);
-  width: 280px;
+  width: 260px;
+  z-index: 10001;
 }
 
 .wheel-lb-title {

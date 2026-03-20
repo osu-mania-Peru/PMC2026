@@ -4,6 +4,7 @@ import pmcLogo from '../assets/pmclogo.svg';
 import caballero from '../assets/caballero.png';
 import catGif from '../assets/cat.gif';
 import catError from '../assets/caterror.gif';
+import horseSpin from '../assets/horse-spin-fast.gif';
 import './PMCWheel.css';
 
 const SEGMENTS = [
@@ -235,6 +236,8 @@ export default function PMCWheel({ user }) {
             </div>
 
             <div className="wheel-wrapper">
+              {/* Horse on spin */}
+              {spinning && <img src={horseSpin} alt="" className="wheel-horse" />}
               {/* Pointer */}
               <div className="wheel-pointer">&#9660;</div>
 
