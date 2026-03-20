@@ -261,6 +261,29 @@ export const api = {
     method: 'POST',
   }),
 
+  // Polls
+  getPolls: () => api.fetch('/polls'),
+  getAllPolls: () => api.fetch('/polls/all'),
+  getPoll: (id) => api.fetch(`/polls/${id}`),
+  createPoll: (data) => api.fetch('/polls', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  updatePoll: (id, data) => api.fetch(`/polls/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  }),
+  deletePoll: (id) => api.fetch(`/polls/${id}`, {
+    method: 'DELETE',
+  }),
+  votePoll: (pollId, optionId) => api.fetch(`/polls/${pollId}/vote`, {
+    method: 'POST',
+    body: JSON.stringify({ option_id: optionId }),
+  }),
+  removeVote: (pollId) => api.fetch(`/polls/${pollId}/vote`, {
+    method: 'DELETE',
+  }),
+
   // Whitelist
   getWhitelist: () => api.fetch('/whitelist'),
   addToWhitelist: (username) => api.fetch('/whitelist', {

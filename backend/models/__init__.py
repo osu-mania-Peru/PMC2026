@@ -14,6 +14,7 @@ from models.mappool import Mappool, MappoolMap
 from models.slot import Slot
 from models.availability import MatchAvailability, MatchTimeProposal
 from models.wheel_score import WheelScore
+from models.poll import Poll, PollOption, PollVote
 
 __all__ = [
     "Base",
@@ -34,4 +35,7 @@ __all__ = [
     "MatchAvailability",
     "MatchTimeProposal",
     "WheelScore",
+    "Poll",
+    "PollOption",
+    "PollVote",
 ]

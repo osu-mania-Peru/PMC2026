@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import Config
-from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline, news, mappool, slot, whitelist, scheduling, wheel
+from routers import auth, users, tournament, brackets, maps, matches, notifications, api_keys, internal, timeline, news, mappool, slot, whitelist, scheduling, wheel, polls
 
 # Configure logging
 logging.basicConfig(
@@ -108,6 +108,7 @@ app.include_router(slot.router)
 app.include_router(whitelist.router)
 app.include_router(scheduling.router)
 app.include_router(wheel.router)
+app.include_router(polls.router)
 
 # Internal routers (for inter-service communication)
 app.include_router(internal.router)

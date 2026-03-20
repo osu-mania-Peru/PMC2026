@@ -52,6 +52,7 @@ import StaffDiscord from "./pages/StaffDiscord";
 import StaffWhitelist from "./pages/StaffWhitelist";
 import AdminControl from "./pages/AdminControl";
 import MatchScheduling from "./pages/MatchScheduling";
+import Polls from "./pages/Polls";
 // Timba removed - tournament committee prohibits gambling
 
 // Components
@@ -224,6 +225,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <NavLink to="/matches">PARTIDAS</NavLink>
             <NavLink to="/players">JUGADORES</NavLink>
             <NavLink to="/maps">MAPPOOL</NavLink>
+            <NavLink to="/polls">ENCUESTAS</NavLink>
             {user?.is_staff && (
               <>
                 <NavLink to="/staff/discord" className="nav-staff-link">
@@ -326,6 +328,14 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
           element={
             <main className="main">
               <Mappool user={user} />
+            </main>
+          }
+        />
+        <Route
+          path="/polls"
+          element={
+            <main className="main has-container">
+              <Polls user={user} />
             </main>
           }
         />
