@@ -43,14 +43,18 @@ export default function PMCWheel({ user }) {
   const [score, setScore] = useState(0);
   const [scoreFlash, setScoreFlash] = useState(null);
   const [tampered, setTampered] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
   const wheelRef = useRef(null);
   const containerRef = useRef(null);
 
-  // Load score from server on open
+  // Load score and leaderboard from server on open
   useEffect(() => {
     if (open && user) {
       api.getWheelScore().then(data => {
         setScore(data.score);
+      }).catch(() => {});
+      api.getWheelLeaderboard().then(data => {
+        setLeaderboard(data.rankings);
       }).catch(() => {});
     }
   }, [open, user]);
@@ -175,6 +179,8 @@ export default function PMCWheel({ user }) {
         setScore(newScore);
         setScoreFlash({ points, bonus, curse, key: Date.now() });
         setSpinning(false);
+        // Refresh leaderboard
+        api.getWheelLeaderboard().then(data => setLeaderboard(data.rankings)).catch(() => {});
       }
     };
 
@@ -303,6 +309,32 @@ export default function PMCWheel({ user }) {
             <button className="wheel-spin-btn" onClick={spin} disabled={spinning || tampered}>
               {spinning ? 'Spinning...' : tampered ? 'DISABLED' : 'SPIN!'}
             </button>
+
+            {/* Leaderboard */}
+            {leaderboard.length > 0 && (
+              <div className="wheel-leaderboard">
+                <h3 className="wheel-lb-title">RANKING</h3>
+                <div className="wheel-lb-list">
+                  {leaderboard.map((entry) => (
+                    <div
+                      key={entry.osu_id}
+                      className={`wheel-lb-row ${user && entry.osu_id === user.osu_id ? 'wheel-lb-me' : ''}`}
+                    >
+                      <span className="wheel-lb-rank">#{entry.rank}</span>
+                      <img
+                        src={`https://a.ppy.sh/${entry.osu_id}`}
+                        alt=""
+                        className="wheel-lb-avatar"
+                      />
+                      <span className="wheel-lb-name">{entry.username}</span>
+                      <span className={`wheel-lb-score ${entry.score >= 0 ? 'positive' : 'negative'}`}>
+                        {entry.score}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

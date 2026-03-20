@@ -76,6 +76,30 @@ def _compute_spin(ws: WheelScore) -> dict:
     }
 
 
+@router.get("/leaderboard")
+async def get_leaderboard(db: Session = Depends(get_db)):
+    """Obtener ranking de la rueda PMC."""
+    results = (
+        db.query(WheelScore, User)
+        .join(User, User.id == WheelScore.user_id)
+        .order_by(WheelScore.score.desc())
+        .limit(50)
+        .all()
+    )
+    return {
+        "rankings": [
+            {
+                "rank": i + 1,
+                "username": user.username,
+                "osu_id": user.osu_id,
+                "score": ws.score,
+                "spins": ws.spins,
+            }
+            for i, (ws, user) in enumerate(results)
+        ]
+    }
+
+
 @router.get("/score")
 async def get_score(
     current_user: User = Depends(get_current_user),

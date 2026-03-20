@@ -257,6 +257,7 @@ export const api = {
 
   // Wheel
   getWheelScore: () => api.fetch('/wheel/score'),
+  getWheelLeaderboard: () => api.fetch('/wheel/leaderboard'),
   recordWheelSpin: () => api.fetch('/wheel/spin', {
     method: 'POST',
   }),
