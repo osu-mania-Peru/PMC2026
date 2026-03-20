@@ -75,7 +75,7 @@ def _compute_spin(ws: WheelScore) -> dict:
 
     # 80% chance to trigger super mode on next spin when landing PMC
     trigger_super = False
-    if label == "PMC" and random.random() < 0.8:
+    if label == "PMC" and random.random() < 0.4:
         ws.super_mode = True
         trigger_super = True
 
