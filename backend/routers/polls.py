@@ -258,8 +258,7 @@ async def vote(
         option_id=data.option_id,
         user_id=current_user.id,
     )
-        db.add(vote)
-
+    db.add(vote)
     db.commit()
     return _serialize_poll(poll, db, user_id=current_user.id)
 
