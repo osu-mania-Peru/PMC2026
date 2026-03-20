@@ -3,11 +3,12 @@ Endpoints de encuestas comunitarias
 """
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from utils.auth import get_current_user, get_current_staff_user
+from utils.auth import get_current_user, get_current_staff_user, optional_security, decode_access_token
 from utils.database import get_db
 from models.poll import Poll, PollOption, PollVote
 from models.user import User
@@ -120,10 +121,19 @@ def _serialize_poll(poll: Poll, db: Session, user_id: int = None) -> dict:
 
 
 @router.get("")
-async def get_polls(db: Session = Depends(get_db)):
-    """Obtener todas las encuestas activas"""
+async def get_polls(
+    db: Session = Depends(get_db),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
+):
+    """Obtener todas las encuestas activas (con voto del usuario si está logueado)"""
+    user_id = None
+    if credentials:
+        payload = decode_access_token(credentials.credentials)
+        if payload:
+            user_id = payload.get("user_id")
+
     polls = db.query(Poll).filter(Poll.is_active.is_(True)).order_by(Poll.created_at.desc()).all()
-    return {"polls": [_serialize_poll(p, db) for p in polls]}
+    return {"polls": [_serialize_poll(p, db, user_id=user_id) for p in polls]}
 
 
 @router.get("/all")
