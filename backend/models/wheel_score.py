@@ -18,4 +18,5 @@ class WheelScore(Base):
     spins: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     has_hit_pmc: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     first_pmc_spin: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    super_mode: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, comment='Next spin is super mode (almost all PMC)')
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -44,6 +44,7 @@ export default function PMCWheel({ user }) {
   const [score, setScore] = useState(0);
   const [scoreFlash, setScoreFlash] = useState(null);
   const [tampered, setTampered] = useState(false);
+  const [superMode, setSuperMode] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const wheelRef = useRef(null);
   const containerRef = useRef(null);
@@ -53,6 +54,7 @@ export default function PMCWheel({ user }) {
     if (open && user) {
       api.getWheelScore().then(data => {
         setScore(data.score);
+        setSuperMode(data.super_mode);
       }).catch(() => {});
       api.getWheelLeaderboard().then(data => {
         setLeaderboard(data.rankings);
@@ -142,7 +144,7 @@ export default function PMCWheel({ user }) {
       return;
     }
 
-    const { segment_index, points, bonus, curse, score: newScore } = serverResult;
+    const { segment_index, points, bonus, curse, score: newScore, super_next } = serverResult;
     const landed = SEGMENTS[segment_index];
 
     const totalRotation = rotationForSegment(segment_index, rotation);
@@ -180,6 +182,7 @@ export default function PMCWheel({ user }) {
         setScore(newScore);
         setScoreFlash({ points, bonus, curse, key: Date.now() });
         setSpinning(false);
+        setSuperMode(!!super_next);
         // Refresh leaderboard
         api.getWheelLeaderboard().then(data => setLeaderboard(data.rankings)).catch(() => {});
       }
@@ -244,7 +247,7 @@ export default function PMCWheel({ user }) {
               {/* Wheel */}
               <div
                 ref={wheelRef}
-                className="wheel"
+                className={`wheel ${superMode ? 'wheel-super' : ''}`}
                 style={{
                   transform: `rotate(${rotation}deg)`,
                   transition: 'none',
@@ -309,8 +312,11 @@ export default function PMCWheel({ user }) {
             </div>
 
             {/* Spin Button */}
-            <button className="wheel-spin-btn" onClick={spin} disabled={spinning || tampered}>
-              {spinning ? 'Spinning...' : tampered ? 'DISABLED' : 'SPIN!'}
+            {superMode && !spinning && (
+              <div className="wheel-super-banner">SUPER MODE!</div>
+            )}
+            <button className={`wheel-spin-btn ${superMode ? 'wheel-spin-btn-super' : ''}`} onClick={spin} disabled={spinning || tampered}>
+              {spinning ? 'Spinning...' : tampered ? 'DISABLED' : superMode ? 'SUPER SPIN!' : 'SPIN!'}
             </button>
 
           </div>

@@ -41,7 +41,15 @@ def _pick_segment(ws: WheelScore) -> int:
 
 def _compute_spin(ws: WheelScore) -> dict:
     """Compute a full spin result server-side."""
-    seg_idx = _pick_segment(ws)
+    is_super = ws.super_mode
+    ws.super_mode = False  # Consume super mode
+
+    if is_super:
+        # Super mode: 10 out of 12 slots are PMC (83%)
+        seg_idx = PMC_INDEX if random.random() < 0.83 else random.randint(1, len(SEGMENT_LABELS) - 1)
+    else:
+        seg_idx = _pick_segment(ws)
+
     label = SEGMENT_LABELS[seg_idx]
     base_points = SEGMENT_POINTS[seg_idx]
 
@@ -65,6 +73,12 @@ def _compute_spin(ws: WheelScore) -> dict:
 
     ws.score += points
 
+    # 80% chance to trigger super mode on next spin when landing PMC
+    trigger_super = False
+    if label == "PMC" and random.random() < 0.8:
+        ws.super_mode = True
+        trigger_super = True
+
     return {
         "score": ws.score,
         "spins": ws.spins,
@@ -73,6 +87,8 @@ def _compute_spin(ws: WheelScore) -> dict:
         "points": points,
         "bonus": bonus,
         "curse": curse,
+        "was_super": is_super,
+        "super_next": trigger_super,
     }
 
 
@@ -108,8 +124,8 @@ async def get_score(
     """Get current user's wheel score."""
     ws = db.query(WheelScore).filter(WheelScore.user_id == current_user.id).first()
     if not ws:
-        return {"score": 0, "spins": 0}
-    return {"score": ws.score, "spins": ws.spins}
+        return {"score": 0, "spins": 0, "super_mode": False}
+    return {"score": ws.score, "spins": ws.spins, "super_mode": ws.super_mode}
 
 
 @router.post("/spin")
