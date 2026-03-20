@@ -219,9 +219,7 @@ async def vote(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Votar en una encuesta (solo jugadores registrados)"""
-    if not current_user.is_registered:
-        raise HTTPException(status_code=403, detail="Solo jugadores registrados pueden votar")
+    """Votar en una encuesta (usuarios logueados)"""
 
     poll = db.query(Poll).filter(Poll.id == poll_id).first()
     if not poll:

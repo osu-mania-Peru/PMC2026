@@ -8,7 +8,7 @@ import './Polls.css';
 function PollCard({ poll, user, onVote, onRemoveVote, onDelete, onClose }) {
   const hasVoted = poll.user_vote !== null && poll.user_vote !== undefined;
   const isStaff = user?.is_staff;
-  const canVote = user?.is_registered && poll.is_active;
+  const canVote = !!user && poll.is_active;
 
   const handleVote = (optionId) => {
     if (!canVote) return;
@@ -63,9 +63,6 @@ function PollCard({ poll, user, onVote, onRemoveVote, onDelete, onClose }) {
       </div>
 
       {!user && <p className="poll-login-hint">Inicia sesión para votar</p>}
-      {user && !user.is_registered && poll.is_active && (
-        <p className="poll-login-hint">Solo jugadores registrados pueden votar</p>
-      )}
 
       {isStaff && (
         <div className="poll-staff-actions">

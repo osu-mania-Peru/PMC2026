@@ -920,6 +920,199 @@ a {
   letter-spacing: 0.02em;
 }
 
+.support-btn-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.polls-float-btn {
+  background: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  padding: 10px 18px !important;
+  border-radius: 24px !important;
+  font-size: 0.6rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  clip-path: none !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.polls-float-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* Polls Popup */
+.polls-popup {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 340px;
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: support-popup-in 0.2s ease-out;
+}
+
+.polls-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.polls-popup-title {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.polls-popup-body {
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.polls-popup-loading {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.polls-popup-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  padding: 1.5rem 0;
+}
+
+/* Poll Card inside popup */
+.polls-popup-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.polls-popup-card.closed {
+  opacity: 0.5;
+}
+
+.polls-popup-card-title {
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.polls-popup-card-desc {
+  font-size: 0.45rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.polls-popup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.polls-popup-option {
+  position: relative;
+  display: flex !important;
+  align-items: center !important;
+  background: var(--bg-tertiary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  cursor: pointer !important;
+  clip-path: none !important;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  text-align: left !important;
+  width: 100%;
+}
+
+.polls-popup-option:hover:not(:disabled) {
+  border-color: var(--accent-secondary) !important;
+}
+
+.polls-popup-option.selected {
+  border-color: var(--accent-secondary) !important;
+  background: rgba(255, 32, 87, 0.08) !important;
+}
+
+.polls-popup-option:disabled {
+  cursor: default !important;
+}
+
+.polls-popup-option-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(255, 32, 87, 0.12);
+  border-radius: 6px 0 0 6px;
+  transition: width 0.4s ease-out;
+  pointer-events: none;
+}
+
+.polls-popup-option.selected .polls-popup-option-bar {
+  background: rgba(255, 32, 87, 0.2);
+}
+
+.polls-popup-option-text {
+  position: relative;
+  flex: 1;
+  font-size: 0.48rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.polls-popup-option-pct {
+  position: relative;
+  font-size: 0.45rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-left: 6px;
+}
+
+.polls-popup-card-meta {
+  font-size: 0.42rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.polls-popup-closed-badge {
+  background: var(--text-muted);
+  color: var(--bg-primary);
+  font-size: 0.38rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .polls-popup {
+    width: 280px;
+  }
+
+  .support-btn-row {
+    flex-direction: column;
+  }
+}
+
 .support-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 24px rgba(255, 8, 68, 0.55);

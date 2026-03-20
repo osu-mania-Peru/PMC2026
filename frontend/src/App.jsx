@@ -72,23 +72,105 @@ function RedirectToHorse() {
   return null;
 }
 
-function SupportButton() {
-  const [open, setOpen] = useState(false);
+function PollsPopup({ isOpen, onClose, user }) {
+  const [polls, setPolls] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setLoading(true);
+    (user?.is_staff ? api.getAllPolls() : api.getPolls())
+      .then(res => setPolls(res.polls))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [isOpen, user]);
+
+  const handleVote = async (pollId, optionId, hasVoted) => {
+    try {
+      let updated;
+      if (hasVoted) {
+        updated = await api.removeVote(pollId);
+      } else {
+        updated = await api.votePoll(pollId, optionId);
+      }
+      setPolls(polls.map(p => p.id === pollId ? updated : p));
+    } catch (err) {
+      // silently fail
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="polls-popup">
+      <div className="polls-popup-header">
+        <span className="polls-popup-title">Encuestas</span>
+        <button className="support-popup-close" onClick={onClose}><X size={16} /></button>
+      </div>
+      <div className="polls-popup-body">
+        {loading ? (
+          <div className="polls-popup-loading"><img src={catGif} alt="" style={{ height: '2em' }} /></div>
+        ) : polls.length === 0 ? (
+          <p className="polls-popup-empty">No hay encuestas</p>
+        ) : (
+          polls.map(poll => (
+            <div key={poll.id} className={`polls-popup-card ${!poll.is_active ? 'closed' : ''}`}>
+              <div className="polls-popup-card-title">{poll.title}</div>
+              {poll.description && <div className="polls-popup-card-desc">{poll.description}</div>}
+              <div className="polls-popup-options">
+                {poll.options.map(opt => {
+                  const isSelected = poll.user_vote === opt.id;
+                  const canVote = !!user && poll.is_active;
+                  return (
+                    <button
+                      key={opt.id}
+                      className={`polls-popup-option ${isSelected ? 'selected' : ''}`}
+                      onClick={() => canVote && handleVote(poll.id, opt.id, isSelected)}
+                      disabled={!canVote}
+                    >
+                      <div className="polls-popup-option-bar" style={{ width: `${opt.percentage}%` }} />
+                      <span className="polls-popup-option-text">{opt.option_text}</span>
+                      <span className="polls-popup-option-pct">{opt.percentage}%</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="polls-popup-card-meta">
+                {poll.total_votes} voto{poll.total_votes !== 1 ? 's' : ''}
+                {!poll.is_active && <span className="polls-popup-closed-badge">Cerrada</span>}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SupportButton({ user }) {
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [pollsOpen, setPollsOpen] = useState(false);
 
   return (
     <div className="support-float">
-      {open && (
+      {supportOpen && (
         <div className="support-popup">
-          <button className="support-popup-close" onClick={() => setOpen(false)}>
+          <button className="support-popup-close" onClick={() => setSupportOpen(false)}>
             <X size={16} />
           </button>
           <img src={supportQr} alt="Yape QR" className="support-qr" />
           <p className="support-popup-text">Escanea para apoyar</p>
         </div>
       )}
-      <button className="support-btn" onClick={() => setOpen(!open)}>
-        Apoya al PMC
-      </button>
+      <PollsPopup isOpen={pollsOpen} onClose={() => setPollsOpen(false)} user={user} />
+      <div className="support-btn-row">
+        <button className="polls-float-btn" onClick={() => { setPollsOpen(!pollsOpen); setSupportOpen(false); }}>
+          Encuestas
+        </button>
+        <button className="support-btn" onClick={() => { setSupportOpen(!supportOpen); setPollsOpen(false); }}>
+          Apoya al PMC
+        </button>
+      </div>
     </div>
   );
 }
@@ -225,7 +307,6 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
             <NavLink to="/matches">PARTIDAS</NavLink>
             <NavLink to="/players">JUGADORES</NavLink>
             <NavLink to="/maps">MAPPOOL</NavLink>
-            <NavLink to="/polls">ENCUESTAS</NavLink>
             {user?.is_staff && (
               <>
                 <NavLink to="/staff/discord" className="nav-staff-link">
@@ -236,6 +317,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
                 </NavLink>
                 <NavLink to="/admin" className="nav-staff-link">
                   ADMIN<span className="staff-badge">STAFF</span>
+                </NavLink>
+                <NavLink to="/polls" className="nav-staff-link">
+                  ENCUESTAS<span className="staff-badge">STAFF</span>
                 </NavLink>
               </>
             )}
@@ -334,9 +418,13 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
         <Route
           path="/polls"
           element={
-            <main className="main has-container">
-              <Polls user={user} />
-            </main>
+            user?.is_staff ? (
+              <main className="main has-container">
+                <Polls user={user} />
+              </main>
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
         <Route
@@ -451,7 +539,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
       </footer>
 
       {/* Floating Yape Support Button */}
-      <SupportButton />
+      <SupportButton user={user} />
 
       {/* Admin Debug Panel - Hidden */}
       {/* <AdminPanel /> */}
