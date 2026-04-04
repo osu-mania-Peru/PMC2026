@@ -7,6 +7,7 @@ import logo from "./assets/logo.svg";
 import catGif from "./assets/cat.gif";
 import supportQr from "./assets/support.png";
 import munchiesImg from "./assets/munchies.jpeg";
+import oshimaiImg from "./assets/oshimai.png";
 import "./App.css";
 
 // Fuzzy match for stinky detection
@@ -61,13 +62,9 @@ import Spinner from "./components/Spinner";
 import NotificationBell from "./components/NotificationBell";
 // SlotMachine minigame available at /timba
 
-function RedirectToHorse() {
+function RedirectToHome() {
   useEffect(() => {
-    if (localStorage.getItem('skip_horse') === 'true') {
-      window.location.href = '/home';
-    } else {
-      window.location.href = '/horse';
-    }
+    window.location.href = '/home';
   }, []);
   return null;
 }
@@ -172,6 +169,53 @@ function SupportButton({ user }) {
           Apoya al PMC
         </button>
       </div>
+    </div>
+  );
+}
+
+function OshimaiOverlay() {
+  const [players, setPlayers] = useState([]);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    api.getAllUsers()
+      .then(data => {
+        setPlayers(data.users || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  if (dismissed) return null;
+
+  return (
+    <div className="oshimai-overlay">
+      <div className="oshimai-credits">
+        <div className="oshimai-credits-scroll">
+          {[...players, ...players, ...players].map((p, i) => (
+            <div key={`${p.id}-${i}`} className="oshimai-credit-name">
+              <img src={`https://a.ppy.sh/${p.osu_id}`} alt="" className="oshimai-credit-avatar" />
+              {p.username}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="oshimai-thanks">Gracias por participar!</div>
+      <div className="oshimai-header">
+        <img src="/2026/PMCcolor.svg" alt="PMC" className="oshimai-logo" onClick={() => setDismissed(true)} style={{ cursor: 'pointer', pointerEvents: 'auto' }} />
+        <div className="oshimai-organizers">
+          <span>Organizado por</span>
+          <div className="oshimai-organizer">
+            <img src="https://a.ppy.sh/9938020" alt="Sakisagee" className="oshimai-organizer-avatar" />
+            <span>Sakisagee</span>
+          </div>
+          <span>y</span>
+          <div className="oshimai-organizer">
+            <img src="https://a.ppy.sh/10055648" alt="Miaurichesu" className="oshimai-organizer-avatar" />
+            <span>Miaurichesu</span>
+          </div>
+        </div>
+      </div>
+      <img src={oshimaiImg} alt="Oshimai" className="oshimai-img" />
     </div>
   );
 }
@@ -350,7 +394,7 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
       <Routes>
         <Route
           path="/"
-          element={<RedirectToHorse />}
+          element={<RedirectToHome />}
         />
         <Route
           path="/home"
@@ -544,6 +588,9 @@ function AppContent({ user, setUser, loading, handleLogin, handleLogout }) {
 
       {/* Admin Debug Panel - Hidden */}
       {/* <AdminPanel /> */}
+
+      {/* PMC Over - Oshimai overlay */}
+      <OshimaiOverlay />
     </div>
   );
 }

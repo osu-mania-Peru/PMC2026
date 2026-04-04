@@ -277,6 +277,3 @@ test_api_key.ps1
 
 # Exception: hero background video needed for frontend
 !frontend/public/hero-bg.mp4
-
-# Horse game unused UI
-frontend/public/horse/umamusume-ui/
