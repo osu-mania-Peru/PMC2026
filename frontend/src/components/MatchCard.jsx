@@ -45,7 +45,11 @@ export default function MatchCard({ match, player1, player2, statusInfo, hasScor
         )}
         <div className="match-score-display">
           {hasScore ? (
-            <span className="match-score">{match.player1_score} - {match.player2_score}</span>
+            <div className="match-score-row">
+              {player1 && <img src={getAvatarUrl(player1)} alt="" className="match-score-avatar" />}
+              <span className="match-score">{match.player1_score} - {match.player2_score}</span>
+              {player2 && <img src={getAvatarUrl(player2)} alt="" className="match-score-avatar" />}
+            </div>
           ) : (
             <span className="match-no-info">NO INFO</span>
           )}

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // Plugin to serve /horse as static (not SPA)
-const HORSE_ENABLED = false
+const HORSE_ENABLED = true
 const horseStaticPlugin = () => ({
   name: 'horse-static',
   configureServer(server) {

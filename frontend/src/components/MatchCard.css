@@ -197,6 +197,20 @@
 }
 
 /* Score display */
+.match-score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.match-score-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
 .match-score {
   font-family: 'Poppins', sans-serif;
   font-size: 3rem;

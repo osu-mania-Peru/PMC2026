@@ -44,7 +44,7 @@ export default function PMCWheel({ user }) {
   const [score, setScore] = useState(0);
   const [scoreFlash, setScoreFlash] = useState(null);
   const [tampered, setTampered] = useState(false);
-  const [superMode, setSuperMode] = useState(false);
+  const [superMode, setSuperMode] = useState(true); // TEMP: testing super mode
   const [leaderboard, setLeaderboard] = useState([]);
   const wheelRef = useRef(null);
   const containerRef = useRef(null);

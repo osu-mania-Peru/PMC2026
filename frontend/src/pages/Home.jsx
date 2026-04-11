@@ -1,20 +1,20 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { api } from '../api';
-import { Link } from 'react-router-dom';
-import DiscordModal from '../components/DiscordModal';
-import ConfirmModal from '../components/ConfirmModal';
-import TimelineEditModal from '../components/TimelineEditModal';
-import NewsEditModal from '../components/NewsEditModal';
-import catGif from '../assets/cat.gif';
-import PMCWheel from '../components/PMCWheel';
-const heroBgVideo = '/hero-bg.mp4';
-import './Home.css';
+import { useEffect, useState, useMemo, useRef } from "react";
+import { api } from "../api";
+import { Link } from "react-router-dom";
+import DiscordModal from "../components/DiscordModal";
+import ConfirmModal from "../components/ConfirmModal";
+import TimelineEditModal from "../components/TimelineEditModal";
+import NewsEditModal from "../components/NewsEditModal";
+import catGif from "../assets/cat.gif";
+import PMCWheel from "../components/PMCWheel";
+const heroBgVideo = "/hero-bg.mp4";
+import "./Home.css";
 
 // Parse DD/MM/YYYY or DD/MM date string to Date object
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
   const trimmed = dateStr.trim();
-  const parts = trimmed.split('/').map(Number);
+  const parts = trimmed.split("/").map(Number);
 
   if (parts.length === 2) {
     // DD/MM format - assume 2026 for backwards compatibility
@@ -33,7 +33,7 @@ const parseDate = (dateStr) => {
 
 // Get event status based on date range
 const getEventStatus = (dateRange) => {
-  if (!dateRange) return 'future';
+  if (!dateRange) return "future";
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -42,15 +42,15 @@ const getEventStatus = (dateRange) => {
   const startDate = parseDate(parts[0]);
   const endDate = parts[1] ? parseDate(parts[1]) : startDate;
 
-  if (!startDate) return 'future';
+  if (!startDate) return "future";
 
   // Set end date to end of day
   const endOfDay = new Date(endDate || startDate);
   endOfDay.setHours(23, 59, 59, 999);
 
-  if (today > endOfDay) return 'completed';
-  if (today >= startDate && today <= endOfDay) return 'active';
-  return 'future';
+  if (today > endOfDay) return "completed";
+  if (today >= startDate && today <= endOfDay) return "active";
+  return "future";
 };
 
 export default function Home({ user, setUser, dangerHover, setDangerHover }) {
@@ -76,12 +76,13 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const initAudioContext = () => {
     if (audioContextRef.current || !videoRef.current) return;
 
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioContext = new (window.AudioContext ||
+      window.webkitAudioContext)();
     const source = audioContext.createMediaElementSource(videoRef.current);
     const filter = audioContext.createBiquadFilter();
     const gain = audioContext.createGain();
 
-    filter.type = 'lowpass';
+    filter.type = "lowpass";
     filter.frequency.value = 22000; // Start fully open
     filter.Q.value = 1;
 
@@ -96,10 +97,11 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
 
   const slowDownVideo = () => {
     setDangerHover(true);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     if (!videoRef.current) return;
     initAudioContext();
-    if (videoTransitionRef.current) cancelAnimationFrame(videoTransitionRef.current);
+    if (videoTransitionRef.current)
+      cancelAnimationFrame(videoTransitionRef.current);
 
     const video = videoRef.current;
     const duration = 500;
@@ -116,7 +118,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       video.playbackRate = Math.max(0.1, startRate + (0.3 - startRate) * eased);
 
       if (filterRef.current) {
-        filterRef.current.frequency.value = startFreq + (300 - startFreq) * eased;
+        filterRef.current.frequency.value =
+          startFreq + (300 - startFreq) * eased;
       }
       if (gainRef.current) {
         gainRef.current.gain.value = startGain + (0.5 - startGain) * eased;
@@ -132,9 +135,10 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const restoreVideoSpeed = (force = false) => {
     if (modalOpenRef.current && !force) return;
     setDangerHover(false);
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
     if (!videoRef.current) return;
-    if (videoTransitionRef.current) cancelAnimationFrame(videoTransitionRef.current);
+    if (videoTransitionRef.current)
+      cancelAnimationFrame(videoTransitionRef.current);
 
     const video = videoRef.current;
     const duration = 500;
@@ -151,7 +155,8 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       video.playbackRate = startRate + (1 - startRate) * eased;
 
       if (filterRef.current) {
-        filterRef.current.frequency.value = startFreq + (22000 - startFreq) * eased;
+        filterRef.current.frequency.value =
+          startFreq + (22000 - startFreq) * eased;
       }
       if (gainRef.current) {
         gainRef.current.gain.value = startGain + (1 - startGain) * eased;
@@ -168,17 +173,21 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   const timelineProgress = useMemo(() => {
     if (!timelineEvents.length) return { events: [], progressPercent: 0 };
 
-    const eventsWithStatus = timelineEvents.map(event => ({
+    const eventsWithStatus = timelineEvents.map((event) => ({
       ...event,
       status: getEventStatus(event.date),
     }));
 
     // Find the active or last completed event index
-    let activeIndex = eventsWithStatus.findIndex(e => e.status === 'active');
+    let activeIndex = eventsWithStatus.findIndex((e) => e.status === "active");
     if (activeIndex === -1) {
       // No active event, find last completed
-      const lastCompleted = eventsWithStatus.map((e, i) => e.status === 'completed' ? i : -1).filter(i => i !== -1);
-      activeIndex = lastCompleted.length ? lastCompleted[lastCompleted.length - 1] : -1;
+      const lastCompleted = eventsWithStatus
+        .map((e, i) => (e.status === "completed" ? i : -1))
+        .filter((i) => i !== -1);
+      activeIndex = lastCompleted.length
+        ? lastCompleted[lastCompleted.length - 1]
+        : -1;
     }
 
     // Calculate progress percentage (center of active event or end of last completed)
@@ -193,16 +202,18 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
 
   const refreshTimeline = () => {
     setTimelineLoading(true);
-    api.getTimeline()
-      .then(data => setTimelineEvents(data.events))
+    api
+      .getTimeline()
+      .then((data) => setTimelineEvents(data.events))
       .catch(console.error)
       .finally(() => setTimelineLoading(false));
   };
 
   const refreshNews = () => {
     setNewsLoading(true);
-    api.getNews()
-      .then(data => setNewsItems(data.items))
+    api
+      .getNews()
+      .then((data) => setNewsItems(data.items))
       .catch(console.error)
       .finally(() => setNewsLoading(false));
   };
@@ -253,7 +264,9 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
   return (
     <div className="home-page">
       {/* Video Background Section */}
-      <div className={`video-section ${user ? 'logged-in' : ''} ${dangerHover ? 'danger-hover' : ''}`}>
+      <div
+        className={`video-section ${user ? "logged-in" : ""} ${dangerHover ? "danger-hover" : ""}`}
+      >
         <video
           ref={videoRef}
           className="video-bg"
@@ -268,51 +281,61 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
         {/* Hero Section */}
         <div className="home-hero">
           <div className="hero-left">
-          <h1 className="hero-title">
-            Peru Mania<br />
-            Cup 2026
-          </h1>
-          <p className="hero-subtitle">
-            El torneo de osu!mania 4K más grande de Perú.
-          </p>
-          <div className="hero-cta">
-            {!user ? (
-              // Not logged in - show login button
-              <button onClick={api.login} className="cta-button">
-                Iniciar Sesión
-              </button>
-            ) : user.is_registered ? (
-              // Logged in and registered - show unregister button
-              <button
-                onClick={() => { setShowConfirmModal(true); modalOpenRef.current = true; }}
-                onMouseEnter={slowDownVideo}
-                onMouseLeave={() => restoreVideoSpeed()}
-                disabled={loading}
-                className="cta-button danger"
-              >
-                {loading ? <><img src={catGif} alt="" className="btn-loading-cat" /> Procesando...</> : 'Cancelar Registro'}
-              </button>
-            ) : status?.registration_open ? (
-              // Logged in, not registered, registration open - show register button
-              <button
-                onClick={() => setShowDiscordModal(true)}
-                disabled={loading}
-                className="cta-button"
-              >
-                Inscribirse
-              </button>
-            ) : status && !status.registration_open ? (
-              // Logged in, not registered, registration closed - show disabled
-              <button className="cta-button" disabled>
-                Registro Cerrado
-              </button>
-            ) : null}
-            <Link to="/brackets" className="cta-button secondary">
-              Brackets
-            </Link>
+            <h1 className="hero-title">
+              Peru Mania
+              <br />
+              Cup 20267
+            </h1>
+            <p className="hero-subtitle">
+              El torneo de osu!mania 4K más grande de Perú.
+            </p>
+            <div className="hero-cta">
+              {!user ? (
+                // Not logged in - show login button
+                <button onClick={api.login} className="cta-button">
+                  Iniciar Sesión
+                </button>
+              ) : user.is_registered ? (
+                // Logged in and registered - show unregister button
+                <button
+                  onClick={() => {
+                    setShowConfirmModal(true);
+                    modalOpenRef.current = true;
+                  }}
+                  onMouseEnter={slowDownVideo}
+                  onMouseLeave={() => restoreVideoSpeed()}
+                  disabled={loading}
+                  className="cta-button danger"
+                >
+                  {loading ? (
+                    <>
+                      <img src={catGif} alt="" className="btn-loading-cat" />{" "}
+                      Procesando...
+                    </>
+                  ) : (
+                    "Cancelar Registro"
+                  )}
+                </button>
+              ) : status?.registration_open ? (
+                // Logged in, not registered, registration open - show register button
+                <button
+                  onClick={() => setShowDiscordModal(true)}
+                  disabled={loading}
+                  className="cta-button"
+                >
+                  Inscribirse
+                </button>
+              ) : status && !status.registration_open ? (
+                // Logged in, not registered, registration closed - show disabled
+                <button className="cta-button" disabled>
+                  Registro Cerrado
+                </button>
+              ) : null}
+              <Link to="/brackets" className="cta-button secondary">
+                Brackets
+              </Link>
+            </div>
           </div>
-
-        </div>
         </div>
       </div>
 
@@ -320,7 +343,9 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       <div className="timeline-section">
         <div className="section-header">
           <h2>CRONOGRAMA</h2>
-          <p className="section-subtitle">Cronologia del progreso del torneo actual.</p>
+          <p className="section-subtitle">
+            Cronologia del progreso del torneo actual.
+          </p>
           {user?.is_staff && (
             <button
               className="timeline-edit-btn"
@@ -343,10 +368,7 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
               style={{ width: `${timelineProgress.progressPercent}%` }}
             ></div>
             {timelineProgress.events.map((event) => (
-              <div
-                key={event.id}
-                className={`timeline-event ${event.status}`}
-              >
+              <div key={event.id} className={`timeline-event ${event.status}`}>
                 <div className="timeline-dot"></div>
                 <div className="timeline-content">
                   <span className="timeline-event-title">{event.title}</span>
@@ -361,15 +383,25 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
       {/* Registration Status Banner */}
       <div className="registration-banner">
         <div className="banner-stat banner-left">
-          <span className="banner-number">{(status?.total_registered_players ?? 0).toString().padStart(2, '0')}</span>
+          <span className="banner-number">
+            {(status?.total_registered_players ?? 0)
+              .toString()
+              .padStart(2, "0")}
+          </span>
           <span className="banner-label">JUGADORES</span>
         </div>
         <div className="banner-center">
-          <span className="banner-status">{status?.registration_open ? 'ABIERTO' : 'CERRADO'}</span>
+          <span className="banner-status">
+            {status?.registration_open ? "ABIERTO" : "CERRADO"}
+          </span>
           <span className="banner-status-label">ESTADO DE INSCRIPCIONES</span>
         </div>
         <div className="banner-stat banner-right">
-          <span className="banner-number">{(status?.total_registered_players ?? 0).toString().padStart(2, '0')}</span>
+          <span className="banner-number">
+            {(status?.total_registered_players ?? 0)
+              .toString()
+              .padStart(2, "0")}
+          </span>
           <span className="banner-label">REGISTRADOS</span>
         </div>
       </div>
@@ -417,7 +449,12 @@ export default function Home({ user, setUser, dangerHover, setDangerHover }) {
 
       <ConfirmModal
         isOpen={showConfirmModal}
-        onClose={() => { setShowConfirmModal(false); setError(null); modalOpenRef.current = false; restoreVideoSpeed(true); }}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setError(null);
+          modalOpenRef.current = false;
+          restoreVideoSpeed(true);
+        }}
         onConfirm={handleUnregister}
         title="Cancelar Registro"
         message="¿Estás seguro de que quieres cancelar tu registro del torneo?"

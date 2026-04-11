@@ -1273,3 +1273,121 @@ a {
 .munchies-nav-link:hover .real-name {
   display: inline;
 }
+
+/* Oshimai overlay - PMC is over */
+.oshimai-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 99999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.oshimai-header {
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  z-index: 4;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.oshimai-logo {
+  width: 720px;
+}
+
+.oshimai-organizers {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  padding-bottom: 0.3rem;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.oshimai-organizer {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.oshimai-organizer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.oshimai-credits {
+  position: absolute;
+  top: 30%;
+  left: 20%;
+  width: 720px;
+  height: 40%;
+  overflow: hidden;
+  z-index: 3;
+  text-align: center;
+  mask-image: linear-gradient(to bottom, transparent 0%, white 10%, white 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, white 10%, white 85%, transparent 100%);
+}
+
+.oshimai-credits-scroll {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  animation: oshimai-scroll 15s linear infinite;
+  min-height: max-content;
+}
+
+@keyframes oshimai-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-33.333%);
+  }
+}
+
+.oshimai-thanks {
+  position: absolute;
+  top: 72%;
+  left: 20%;
+  width: 720px;
+  text-align: center;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  z-index: 4;
+}
+
+.oshimai-credit-name {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.oshimai-credit-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.oshimai-img {
+  max-width: 1200px;
+  max-height: 120vh;
+  object-fit: contain;
+  z-index: 1;
+}
